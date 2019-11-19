@@ -63,3 +63,6 @@ typings/
 # ignore built js
 *.js
 *.js.map
+
+#ignore data folder
+data/
