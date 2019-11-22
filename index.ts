@@ -1,3 +1,4 @@
+import { runFrcs } from '@ucdavis/frcs';
 import dotenv from 'dotenv';
 import knex from 'knex';
 import { Pixel } from 'models/pixel';
@@ -59,10 +60,42 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
     coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
   };
 
+  const area = pixels.length * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
+  console.log('area is: ' + area + ' acres^2');
+  const frcsInput = {
+    System: 'Cable Manual WT',
+    PartialCut: true,
+    DeliverDist: 400,
+    Slope: 30,
+    Elevation: 5000,
+    CalcLoad: true,
+    CalcMoveIn: true,
+    Area: area,
+    MoveInDist: 2,
+    CalcResidues: true,
+    UserSpecWDCT: 60,
+    UserSpecWDSLT: 58.6235,
+    UserSpecWDLLT: 62.1225,
+    UserSpecRFCT: 0,
+    UserSpecRFSLT: 0.25,
+    UserSpecRFLLT: 0.38,
+    UserSpecHFCT: 0.2,
+    UserSpecHFSLT: 0,
+    UserSpecHFLLT: 0,
+    RemovalsCT: 20,
+    TreeVolCT: 50,
+    RemovalsSLT: 50,
+    TreeVolSLT: 70,
+    RemovalsLLT: 5,
+    TreeVolLLT: 100
+  };
   console.log('finding nearest road to center of biomass:');
-  osrm.nearest(options, (err, response) => {
+  await osrm.nearest(options, (err, response) => {
     console.log('nearest road:');
     console.log(response.waypoints);
+    const frcsOutput = runFrcs(frcsInput);
+    console.log('frcs output: ');
+    console.log(frcsOutput);
   });
 };
 
