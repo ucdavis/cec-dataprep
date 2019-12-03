@@ -1,5 +1,6 @@
 import { runFrcs } from '@ucdavis/frcs';
 import dotenv from 'dotenv';
+import { getDistance } from 'geolib';
 import knex from 'knex';
 import { Pixel } from 'models/pixel';
 import OSRM from 'osrm';
@@ -60,39 +61,53 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
     coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
   };
 
-  const area = pixels.length * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
-  console.log('area is: ' + area + ' acres^2');
-  const frcsInput = {
-    System: 'Cable Manual WT',
-    PartialCut: true,
-    DeliverDist: 400,
-    Slope: 30,
-    Elevation: 5000,
-    CalcLoad: true,
-    CalcMoveIn: true,
-    Area: area,
-    MoveInDist: 2,
-    CalcResidues: true,
-    UserSpecWDCT: 60,
-    UserSpecWDSLT: 58.6235,
-    UserSpecWDLLT: 62.1225,
-    UserSpecRFCT: 0,
-    UserSpecRFSLT: 0.25,
-    UserSpecRFLLT: 0.38,
-    UserSpecHFCT: 0.2,
-    UserSpecHFSLT: 0,
-    UserSpecHFLLT: 0,
-    RemovalsCT: 20,
-    TreeVolCT: 50,
-    RemovalsSLT: 50,
-    TreeVolSLT: 70,
-    RemovalsLLT: 5,
-    TreeVolLLT: 100
-  };
   console.log('finding nearest road to center of biomass:');
   await osrm.nearest(options, (err, response) => {
     console.log('nearest road:');
     console.log(response.waypoints);
+    const landing = {
+      latitude: response.waypoints[0].location[1],
+      longitude: response.waypoints[0].location[0]
+    };
+
+    const area = pixels.length * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
+    console.log('area is: ' + area + ' acres^2');
+    const pixel = pixels[1];
+    let distance = getDistance(landing, {
+      latitude: pixel.y,
+      longitude: pixel.x
+    });
+    distance = distance / 0.3048; // put in feet
+
+    const frcsInput = {
+      System: 'Cable Manual WT',
+      PartialCut: true,
+      DeliverDist: distance,
+      Slope: 30,
+      Elevation: 5000,
+      CalcLoad: true,
+      CalcMoveIn: true,
+      Area: area,
+      MoveInDist: 2,
+      CalcResidues: true,
+      UserSpecWDCT: 60,
+      UserSpecWDSLT: 58.6235,
+      UserSpecWDLLT: 62.1225,
+      UserSpecRFCT: 0,
+      UserSpecRFSLT: 0.25,
+      UserSpecRFLLT: 0.38,
+      UserSpecHFCT: 0.2,
+      UserSpecHFSLT: 0,
+      UserSpecHFLLT: 0,
+      RemovalsCT: calcRemovalsCT(pixel),
+      TreeVolCT: calcTreeVolCT(pixel),
+      RemovalsSLT: calcRemovalsSLT(pixel),
+      TreeVolSLT: calcTreeVolSLT(pixel),
+      RemovalsLLT: calcRemovalsLLT(pixel),
+      TreeVolLLT: calcTreeVolLLT(pixel)
+    };
+    console.log('FRCS INPUT: -------');
+    console.log(frcsInput);
     const frcsOutput = runFrcs(frcsInput);
     console.log('frcs output: ');
     console.log(frcsOutput);
@@ -178,7 +193,7 @@ const calcTreeVolSLT = (pixel: Pixel) => {
   );
 };
 
-const calcTreeVolLT = (pixel: Pixel) => {
+const calcTreeVolLLT = (pixel: Pixel) => {
   return (
     pixel.total3run_bmfol_25_nomgt_2016_v20190630 +
     pixel.total3run_bmfol_35_nomgt_2016_v20190630 +
