@@ -1,4 +1,5 @@
 import { runFrcs } from '@ucdavis/frcs';
+import { OutputVarMod } from '@ucdavis/frcs/out/systems/frcs.model';
 import dotenv from 'dotenv';
 import { getDistance } from 'geolib';
 import knex from 'knex';
@@ -82,48 +83,61 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
     console.log('pixel length: ' + pixels.length);
     const area = pixels.length * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
     console.log('area is: ' + area + ' acres^2');
-    const testingPixel = pixels[1];
-    let distance = getDistance(landing, {
-      latitude: testingPixel.y,
-      longitude: testingPixel.x
-    });
-    distance = distance / 0.3048; // put in feet
-    const slope =
-      ((landingElevation - testingPixel.elevation) / distance) * 100;
-    console.log('slope: ' + slope);
-
-    const frcsInput = {
-      System: 'Cable Manual WT',
-      PartialCut: true,
-      DeliverDist: distance,
-      Slope: slope,
-      Elevation: testingPixel.elevation,
-      CalcLoad: true,
-      CalcMoveIn: true,
-      Area: area,
-      MoveInDist: 2,
-      CalcResidues: true,
-      UserSpecWDCT: 60,
-      UserSpecWDSLT: 58.6235,
-      UserSpecWDLLT: 62.1225,
-      UserSpecRFCT: 0,
-      UserSpecRFSLT: 0.25,
-      UserSpecRFLLT: 0.38,
-      UserSpecHFCT: 0.2,
-      UserSpecHFSLT: 0,
-      UserSpecHFLLT: 0,
-      RemovalsCT: calcRemovalsCT(testingPixel),
-      TreeVolCT: calcTreeVolCT(testingPixel),
-      RemovalsSLT: calcRemovalsSLT(testingPixel),
-      TreeVolSLT: calcTreeVolSLT(testingPixel),
-      RemovalsLLT: calcRemovalsLLT(testingPixel),
-      TreeVolLLT: calcTreeVolLLT(testingPixel)
+    let totalFrcsOutputs: OutputVarMod = {
+      TotalPerAcre: 0,
+      TotalPerBoleCCF: 0,
+      TotalPerGT: 0
     };
-    console.log('FRCS INPUT: -------');
-    console.log(frcsInput);
-    const frcsOutput = runFrcs(frcsInput);
-    console.log('frcs output: ');
-    console.log(frcsOutput);
+    pixels.forEach(p => {
+      let distance = getDistance(landing, {
+        latitude: p.y,
+        longitude: p.x
+      });
+      distance = distance / 0.3048; // put in feet
+      const slope = ((landingElevation - p.elevation) / distance) * 100;
+      console.log('slope: ' + slope);
+
+      const frcsInput = {
+        System: 'Cable Manual WT',
+        PartialCut: true,
+        DeliverDist: distance,
+        Slope: slope,
+        Elevation: p.elevation,
+        CalcLoad: true,
+        CalcMoveIn: true,
+        Area: area,
+        MoveInDist: 2,
+        CalcResidues: true,
+        UserSpecWDCT: 60,
+        UserSpecWDSLT: 58.6235,
+        UserSpecWDLLT: 62.1225,
+        UserSpecRFCT: 0,
+        UserSpecRFSLT: 0.25,
+        UserSpecRFLLT: 0.38,
+        UserSpecHFCT: 0.2,
+        UserSpecHFSLT: 0,
+        UserSpecHFLLT: 0,
+        RemovalsCT: calcRemovalsCT(p),
+        TreeVolCT: calcTreeVolCT(p),
+        RemovalsSLT: calcRemovalsSLT(p),
+        TreeVolSLT: calcTreeVolSLT(p),
+        RemovalsLLT: calcRemovalsLLT(p),
+        TreeVolLLT: calcTreeVolLLT(p)
+      };
+      console.log('FRCS INPUT: -------');
+      console.log(frcsInput);
+      const frcsOutput = runFrcs(frcsInput);
+      console.log('frcs output: ');
+      console.log(frcsOutput);
+      totalFrcsOutputs = {
+        TotalPerAcre: totalFrcsOutputs.TotalPerAcre + frcsOutput.TotalPerAcre,
+        TotalPerBoleCCF:
+          totalFrcsOutputs.TotalPerBoleCCF + frcsOutput.TotalPerBoleCCF,
+        TotalPerGT: totalFrcsOutputs.TotalPerGT + frcsOutput.TotalPerGT
+      };
+    });
+    console.log('total sum per acre * area: ');
+    console.log(totalFrcsOutputs.TotalPerAcre * area);
   });
 };
 
