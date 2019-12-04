@@ -62,29 +62,42 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
   };
 
   console.log('finding nearest road to center of biomass:');
-  await osrm.nearest(options, (err, response) => {
+  await osrm.nearest(options, async (err, response) => {
     console.log('nearest road:');
     console.log(response.waypoints);
     const landing = {
       latitude: response.waypoints[0].location[1],
       longitude: response.waypoints[0].location[0]
     };
-
+    console.log('landingElevation');
+    // TODO: pull this from db
+    const landingElevation = pixels.filter(
+      p =>
+        p.x > landing.longitude - 0.0001 &&
+        p.x < landing.longitude + 0.0001 &&
+        p.y > landing.latitude - 0.0001 &&
+        p.y < landing.latitude + 0.0001
+    )[0].elevation;
+    console.log('landingElevetion: ' + landingElevation);
+    console.log('pixel length: ' + pixels.length);
     const area = pixels.length * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
     console.log('area is: ' + area + ' acres^2');
-    const pixel = pixels[1];
+    const testingPixel = pixels[1];
     let distance = getDistance(landing, {
-      latitude: pixel.y,
-      longitude: pixel.x
+      latitude: testingPixel.y,
+      longitude: testingPixel.x
     });
     distance = distance / 0.3048; // put in feet
+    const slope =
+      ((landingElevation - testingPixel.elevation) / distance) * 100;
+    console.log('slope: ' + slope);
 
     const frcsInput = {
       System: 'Cable Manual WT',
       PartialCut: true,
       DeliverDist: distance,
-      Slope: 30,
-      Elevation: 5000,
+      Slope: slope,
+      Elevation: testingPixel.elevation,
       CalcLoad: true,
       CalcMoveIn: true,
       Area: area,
@@ -99,12 +112,12 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
       UserSpecHFCT: 0.2,
       UserSpecHFSLT: 0,
       UserSpecHFLLT: 0,
-      RemovalsCT: calcRemovalsCT(pixel),
-      TreeVolCT: calcTreeVolCT(pixel),
-      RemovalsSLT: calcRemovalsSLT(pixel),
-      TreeVolSLT: calcTreeVolSLT(pixel),
-      RemovalsLLT: calcRemovalsLLT(pixel),
-      TreeVolLLT: calcTreeVolLLT(pixel)
+      RemovalsCT: calcRemovalsCT(testingPixel),
+      TreeVolCT: calcTreeVolCT(testingPixel),
+      RemovalsSLT: calcRemovalsSLT(testingPixel),
+      TreeVolSLT: calcTreeVolSLT(testingPixel),
+      RemovalsLLT: calcRemovalsLLT(testingPixel),
+      TreeVolLLT: calcTreeVolLLT(testingPixel)
     };
     console.log('FRCS INPUT: -------');
     console.log(frcsInput);
