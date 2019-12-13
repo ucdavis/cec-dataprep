@@ -1,7 +1,7 @@
 import { runFrcs } from '@ucdavis/frcs';
 import { OutputVarMod } from '@ucdavis/frcs/out/systems/frcs.model';
 import dotenv from 'dotenv';
-import { getDistance } from 'geolib';
+import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import { Pixel } from 'models/pixel';
 import OSRM from 'osrm';
@@ -24,15 +24,17 @@ const main = async () => {
 
   const pixelsInCluster: Pixel[] = await pg
     .table('plumas136')
-    .where({ cluster_no: 7779 });
-  await processCluster(pixelsInCluster, osrm);
+    .where({ cluster_no: 44127 });
+  const outputs = await processCluster(pixelsInCluster, osrm);
 
+  console.log('destroying pg...');
   pg.destroy();
 };
 
 main();
 
 const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
+  return new Promise(async (resolve, reject) => {
   const centerOfBiomassSum = {
     lat: 0,
     lng: 0,
@@ -74,14 +76,14 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
     // TODO: pull this from db
     const landingElevation = pixels.filter(
       p =>
-        p.x > landing.longitude - 0.0001 &&
-        p.x < landing.longitude + 0.0001 &&
-        p.y > landing.latitude - 0.0001 &&
-        p.y < landing.latitude + 0.0001
+        p.x > landing.longitude - 0.01 &&
+        p.x < landing.longitude + 0.01 &&
+        p.y > landing.latitude - 0.01 &&
+        p.y < landing.latitude + 0.01
     )[0].elevation;
     console.log('landingElevetion: ' + landingElevation);
     console.log('pixel length: ' + pixels.length);
-    const area = pixels.length * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
+    const area = pixels.length * 30 * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
     console.log('area is: ' + area + ' acres^2');
     let totalFrcsOutputs: OutputVarMod = {
       TotalPerAcre: 0,
@@ -89,16 +91,16 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
       TotalPerGT: 0
     };
     pixels.forEach(p => {
-      let distance = getDistance(landing, {
+      let distance = getPreciseDistance(landing, {
         latitude: p.y,
         longitude: p.x
       });
       distance = distance / 0.3048; // put in feet
-      const slope = ((landingElevation - p.elevation) / distance) * 100;
+      const slope = Math.abs(((landingElevation - p.elevation) / distance)) * 100;
       console.log('slope: ' + slope);
 
       const frcsInput = {
-        System: 'Cable Manual WT',
+        System: 'Ground-Based Mech WT',
         PartialCut: true,
         DeliverDist: distance,
         Slope: slope,
@@ -138,7 +140,9 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
     });
     console.log('total sum per acre * area: ');
     console.log(totalFrcsOutputs.TotalPerAcre * area);
+    resolve(totalFrcsOutputs);
   });
+});
 };
 
 const sumBiomass = (pixel: Pixel) => {
