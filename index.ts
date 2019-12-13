@@ -22,8 +22,8 @@ const main = async () => {
   });
   const osrm = new OSRM('./data/california-latest.osrm');
 
-  const pixelsInCluster: Pixel[] = await pg.table('plumas136').where({ cluster_no: 44127 });
-  const outputs = await processCluster(pixelsInCluster, osrm);
+  const pixelsInCluster: Pixel[] = await pg.table('plumas136').where({ cluster_no: 42656 });
+  const outputs = await processCluster(pixelsInCluster, osrm, pg);
 
   console.log('destroying pg...');
   pg.destroy();
@@ -31,7 +31,7 @@ const main = async () => {
 
 main();
 
-const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
+const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
   return new Promise(async (resolve, reject) => {
     const centerOfBiomassSum = {
       lat: 0,
@@ -62,15 +62,30 @@ const processCluster = async (pixels: Pixel[], osrm: OSRM) => {
         latitude: response.waypoints[0].location[1],
         longitude: response.waypoints[0].location[0]
       };
-      console.log('landingElevation');
       // TODO: pull this from db
-      const landingElevation = pixels.filter(
+      const landingElevationFromDb: Pixel[] = await pg
+        .table('plumas136')
+        .whereBetween('x', [landing.longitude - 0.0005, landing.longitude + 0.0005])
+        .whereBetween('y', [landing.latitude - 0.0005, landing.latitude + 0.0005]);
+      console.log('LANDING ELEVATION FROM DB: ' + landingElevationFromDb[0].elevation);
+      console.log('LANDING ELEVATION RESULTS FROM DB: ' + landingElevationFromDb.length);
+
+      const landingElevationFromPixels = pixels.filter(
         p =>
-          p.x > landing.longitude - 0.01 &&
-          p.x < landing.longitude + 0.01 &&
-          p.y > landing.latitude - 0.01 &&
-          p.y < landing.latitude + 0.01
-      )[0].elevation;
+          p.x > landing.longitude - 0.0005 &&
+          p.x < landing.longitude + 0.0005 &&
+          p.y > landing.latitude - 0.0005 &&
+          p.y < landing.latitude + 0.0005
+      );
+      console.log('--------------');
+      console.log('LANDING ELEVATION FROM PIXELS: ' + landingElevationFromPixels[0]?.elevation);
+      console.log('LANDING ELEVATION RESULTS FROM PIXELS: ' + landingElevationFromPixels.length);
+
+      const landingElevation =
+        landingElevationFromPixels[0]?.elevation ?? landingElevationFromDb[0]?.elevation;
+
+      // ?? landingElevationFromDb[0].elevation;
+
       console.log('landingElevetion: ' + landingElevation);
       console.log('pixel length: ' + pixels.length);
       const area = pixels.length * 30 * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
