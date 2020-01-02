@@ -1,5 +1,5 @@
 import { runFrcs } from '@ucdavis/frcs';
-import { OutputVarMod } from '@ucdavis/frcs/out/systems/frcs.model';
+import { InputVarMod, OutputVarMod } from '@ucdavis/frcs/out/systems/frcs.model';
 import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import { Pixel } from 'models/pixel';
@@ -69,6 +69,43 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
         TotalPerBoleCCF: 0,
         TotalPerGT: 0
       };
+
+      const averageDeliverDistance = response.waypoints[0].distance / 0.3048; // put in feet
+      const centerOfBiomassPixel: Pixel[] = await pg
+        .table('pixels')
+        .whereBetween('x', [centerOfBiomassLng - 0.0005, centerOfBiomassLng + 0.0005])
+        .whereBetween('y', [centerOfBiomassLat - 0.0005, centerOfBiomassLat + 0.0005]);
+      const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation;
+      const averageSlope =
+        Math.abs((landingElevation - centerOfBiomassElevation) / averageDeliverDistance) * 100;
+      let totalFrcsInptus: InputVarMod = {
+        System: 'Ground-Based Mech WT',
+        PartialCut: true,
+        DeliverDist: averageDeliverDistance,
+        Slope: averageSlope,
+        Elevation: centerOfBiomassElevation,
+        CalcLoad: true,
+        CalcMoveIn: true,
+        Area: area,
+        MoveInDist: 2,
+        CalcResidues: true,
+        UserSpecWDCT: 60,
+        UserSpecWDSLT: 58.6235,
+        UserSpecWDLLT: 62.1225,
+        UserSpecRFCT: 0,
+        UserSpecRFSLT: 0.25,
+        UserSpecRFLLT: 0.38,
+        UserSpecHFCT: 0.2,
+        UserSpecHFSLT: 0,
+        UserSpecHFLLT: 0,
+        RemovalsCT: 0,
+        TreeVolCT: 0,
+        RemovalsSLT: 0,
+        TreeVolSLT: 0,
+        RemovalsLLT: 0,
+        TreeVolLLT: 0,
+        DieselFuelPrice: 3.882
+      };
       pixels.forEach(p => {
         let distance = getPreciseDistance(landing, {
           latitude: p.y,
@@ -103,7 +140,17 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
           RemovalsSLT: calcRemovalsSLT(p),
           TreeVolSLT: calcTreeVolSLT(p),
           RemovalsLLT: calcRemovalsLLT(p),
-          TreeVolLLT: calcTreeVolLLT(p)
+          TreeVolLLT: calcTreeVolLLT(p),
+          DieselFuelPrice: 3.882
+        };
+        totalFrcsInptus = {
+          ...totalFrcsInptus,
+          RemovalsCT: totalFrcsInptus.RemovalsCT + calcRemovalsCT(p),
+          TreeVolCT: totalFrcsInptus.TreeVolCT + calcTreeVolCT(p),
+          RemovalsSLT: totalFrcsInptus.RemovalsSLT + calcRemovalsSLT(p),
+          TreeVolSLT: totalFrcsInptus.TreeVolSLT + calcTreeVolSLT(p),
+          RemovalsLLT: totalFrcsInptus.RemovalsLLT + calcRemovalsLLT(p),
+          TreeVolLLT: totalFrcsInptus.TreeVolLLT + calcTreeVolLLT(p)
         };
         console.log('FRCS INPUT: -------');
         console.log(frcsInput);
@@ -116,8 +163,17 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
           TotalPerGT: totalFrcsOutputs.TotalPerGT + frcsOutput.TotalPerGT
         };
       });
+      const clusterFrcsOutput = runFrcs(totalFrcsInptus);
+      console.log('--------------------------\n');
+      console.log('FRCS PIXEL OUTPUT:');
+      console.log(totalFrcsOutputs);
       console.log('total sum per acre * area: ');
       console.log(totalFrcsOutputs.TotalPerAcre * area);
+      console.log('-----------');
+      console.log('FRCS CLUSTER OUTPUT:');
+      console.log(clusterFrcsOutput);
+      console.log('total sum per acre * area: ');
+      console.log(clusterFrcsOutput.TotalPerAcre * area);
       resolve(totalFrcsOutputs);
     });
   });
