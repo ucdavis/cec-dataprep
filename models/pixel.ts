@@ -42,3 +42,48 @@ export interface Pixel {
   y: number;
   cluster_no: number;
 }
+// tslint:disable: variable-name
+export class Pixel implements Pixel {
+  elevation = 0;
+  df_ele_cnty_name = '';
+  total3run_bmcwn_0_nomgt_2016_v20190630 = 0;
+  total3run_bmcwn_15_nomgt_2016_v20190630 = 0;
+  total3run_bmcwn_2_nomgt_2016_v20190630 = 0;
+  total3run_bmcwn_25_nomgt_2016_v20190630 = 0;
+  total3run_bmcwn_35_nomgt_2016_v20190630 = 0;
+  total3run_bmcwn_40_nomgt_2016_v20190630 = 0;
+  total3run_bmcwn_7_nomgt_2016_v20190630 = 0;
+  total3run_bmfol_0_nomgt_2016_v20190630 = 0;
+  total3run_bmfol_15_nomgt_2016_v20190630 = 0;
+  total3run_bmfol_2_nomgt_2016_v20190630 = 0;
+  total3run_bmfol_25_nomgt_2016_v20190630 = 0;
+  total3run_bmfol_35_nomgt_2016_v20190630 = 0;
+  total3run_bmfol_40_nomgt_2016_v20190630 = 0;
+  total3run_bmfol_7_nomgt_2016_v20190630 = 0;
+  total3run_bmstm_0_nomgt_2016_v20190630 = 0;
+  total3run_bmstm_15_nomgt_2016_v20190630 = 0;
+  total3run_bmstm_2_nomgt_2016_v20190630 = 0;
+  total3run_bmstm_25_nomgt_2016_v20190630 = 0;
+  total3run_bmstm_35_nomgt_2016_v20190630 = 0;
+  total3run_bmstm_40_nomgt_2016_v20190630 = 0;
+  total3run_bmstm_7_nomgt_2016_v20190630 = 0;
+  total3run_sng_0_nomgt_2016_v20190630 = 0;
+  total3run_sng_15_nomgt_2016_v20190630 = 0;
+  total3run_sng_2_nomgt_2016_v20190630 = 0;
+  total3run_sng_25_nomgt_2016_v20190630 = 0;
+  total3run_sng_35_nomgt_2016_v20190630 = 0;
+  total3run_sng_40_nomgt_2016_v20190630 = 0;
+  total3run_sng_7_nomgt_2016_v20190630 = 0;
+  total3run_tpa_0_nomgt_2016_v20190630 = 0;
+  total3run_tpa_15_nomgt_2016_v20190630 = 0;
+  total3run_tpa_2_nomgt_2016_v20190630 = 0;
+  total3run_tpa_25_nomgt_2016_v20190630 = 0;
+  total3run_tpa_35_nomgt_2016_v20190630 = 0;
+  total3run_tpa_40_nomgt_2016_v20190630 = 0;
+  total3run_tpa_7_nomgt_2016_v20190630 = 0;
+  cluster1 = 0;
+  cluster2 = 0;
+  x = 0;
+  y = 0;
+  cluster_no = 0;
+}

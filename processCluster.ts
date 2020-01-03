@@ -2,8 +2,18 @@ import { runFrcs } from '@ucdavis/frcs';
 import { InputVarMod, OutputVarMod } from '@ucdavis/frcs/out/systems/frcs.model';
 import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
-import { Pixel } from 'models/pixel';
 import OSRM = require('osrm');
+import {
+  calcRemovalsCT,
+  calcRemovalsLLT,
+  calcRemovalsSLT,
+  calcTreeVolCT,
+  calcTreeVolLLT,
+  calcTreeVolSLT,
+  sumBiomass,
+  sumPixel
+} from './frcsInputCalculations';
+import { Pixel } from './models/pixel';
 
 export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
   return new Promise(async (resolve, reject) => {
@@ -76,36 +86,8 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
         .whereBetween('x', [centerOfBiomassLng - 0.0005, centerOfBiomassLng + 0.0005])
         .whereBetween('y', [centerOfBiomassLat - 0.0005, centerOfBiomassLat + 0.0005]);
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation;
-      const averageSlope =
-        Math.abs((landingElevation - centerOfBiomassElevation) / averageDeliverDistance) * 100;
-      let totalFrcsInptus: InputVarMod = {
-        System: 'Ground-Based Mech WT',
-        PartialCut: true,
-        DeliverDist: averageDeliverDistance,
-        Slope: averageSlope,
-        Elevation: centerOfBiomassElevation,
-        CalcLoad: true,
-        CalcMoveIn: true,
-        Area: area,
-        MoveInDist: 2,
-        CalcResidues: true,
-        UserSpecWDCT: 60,
-        UserSpecWDSLT: 58.6235,
-        UserSpecWDLLT: 62.1225,
-        UserSpecRFCT: 0,
-        UserSpecRFSLT: 0.25,
-        UserSpecRFLLT: 0.38,
-        UserSpecHFCT: 0.2,
-        UserSpecHFSLT: 0,
-        UserSpecHFLLT: 0,
-        RemovalsCT: 0,
-        TreeVolCT: 0,
-        RemovalsSLT: 0,
-        TreeVolSLT: 0,
-        RemovalsLLT: 0,
-        TreeVolLLT: 0,
-        DieselFuelPrice: 3.882
-      };
+
+      let pixelSummation = new Pixel();
       pixels.forEach(p => {
         let distance = getPreciseDistance(landing, {
           latitude: p.y,
@@ -115,16 +97,19 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
         const slope = Math.abs((landingElevation - p.elevation) / distance) * 100;
         console.log('slope: ' + slope);
 
-        const frcsInput = {
+        const removalsCT = calcRemovalsCT(p);
+        const removalsSLT = calcRemovalsSLT(p);
+        const removalsLLT = calcRemovalsLLT(p);
+        const frcsInput: InputVarMod = {
           System: 'Ground-Based Mech WT',
-          PartialCut: true,
+          PartialCut: false,
           DeliverDist: distance,
           Slope: slope,
           Elevation: p.elevation,
           CalcLoad: true,
           CalcMoveIn: true,
           Area: area,
-          MoveInDist: 2,
+          MoveInDist: 0,
           CalcResidues: true,
           UserSpecWDCT: 60,
           UserSpecWDSLT: 58.6235,
@@ -135,23 +120,15 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
           UserSpecHFCT: 0.2,
           UserSpecHFSLT: 0,
           UserSpecHFLLT: 0,
-          RemovalsCT: calcRemovalsCT(p),
-          TreeVolCT: calcTreeVolCT(p),
-          RemovalsSLT: calcRemovalsSLT(p),
-          TreeVolSLT: calcTreeVolSLT(p),
-          RemovalsLLT: calcRemovalsLLT(p),
-          TreeVolLLT: calcTreeVolLLT(p),
+          RemovalsCT: removalsCT,
+          RemovalsSLT: removalsSLT,
+          RemovalsLLT: removalsLLT,
+          TreeVolCT: calcTreeVolCT(p) / removalsCT,
+          TreeVolSLT: calcTreeVolSLT(p) / removalsSLT,
+          TreeVolLLT: calcTreeVolLLT(p) / removalsLLT,
           DieselFuelPrice: 3.882
         };
-        totalFrcsInptus = {
-          ...totalFrcsInptus,
-          RemovalsCT: totalFrcsInptus.RemovalsCT + calcRemovalsCT(p),
-          TreeVolCT: totalFrcsInptus.TreeVolCT + calcTreeVolCT(p),
-          RemovalsSLT: totalFrcsInptus.RemovalsSLT + calcRemovalsSLT(p),
-          TreeVolSLT: totalFrcsInptus.TreeVolSLT + calcTreeVolSLT(p),
-          RemovalsLLT: totalFrcsInptus.RemovalsLLT + calcRemovalsLLT(p),
-          TreeVolLLT: totalFrcsInptus.TreeVolLLT + calcTreeVolLLT(p)
-        };
+        pixelSummation = sumPixel(pixelSummation, p);
         console.log('FRCS INPUT: -------');
         console.log(frcsInput);
         const frcsOutput = runFrcs(frcsInput);
@@ -163,6 +140,48 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
           TotalPerGT: totalFrcsOutputs.TotalPerGT + frcsOutput.TotalPerGT
         };
       });
+
+      const averageSlope =
+        Math.abs((landingElevation - centerOfBiomassElevation) / averageDeliverDistance) * 100;
+      const totalFrcsInptus: InputVarMod = {
+        System: 'Ground-Based Mech WT',
+        PartialCut: true,
+        DeliverDist: averageDeliverDistance,
+        Slope: averageSlope,
+        Elevation: centerOfBiomassElevation,
+        CalcLoad: true,
+        CalcMoveIn: true,
+        Area: area,
+        MoveInDist: 0,
+        CalcResidues: true,
+        UserSpecWDCT: 60,
+        UserSpecWDSLT: 58.6235,
+        UserSpecWDLLT: 62.1225,
+        UserSpecRFCT: 0,
+        UserSpecRFSLT: 0.25,
+        UserSpecRFLLT: 0.38,
+        UserSpecHFCT: 0.2,
+        UserSpecHFSLT: 0,
+        UserSpecHFLLT: 0,
+        RemovalsCT: calcRemovalsCT(pixelSummation),
+        TreeVolCT:
+          calcTreeVolCT(pixelSummation) /
+          (pixelSummation.total3run_tpa_0_nomgt_2016_v20190630 +
+            pixelSummation.total3run_tpa_2_nomgt_2016_v20190630 +
+            pixelSummation.total3run_tpa_7_nomgt_2016_v20190630),
+        RemovalsSLT: calcRemovalsSLT(pixelSummation),
+        TreeVolSLT:
+          calcTreeVolSLT(pixelSummation) / pixelSummation.total3run_tpa_15_nomgt_2016_v20190630,
+        RemovalsLLT: calcRemovalsLLT(pixelSummation),
+        TreeVolLLT:
+          calcTreeVolLLT(pixelSummation) /
+          (pixelSummation.total3run_tpa_25_nomgt_2016_v20190630 +
+            pixelSummation.total3run_tpa_35_nomgt_2016_v20190630 +
+            pixelSummation.total3run_tpa_40_nomgt_2016_v20190630),
+        DieselFuelPrice: 3.882
+      };
+      console.log('TOTAL FRCS INPUT1: -------');
+      console.log(totalFrcsInptus);
       const clusterFrcsOutput = runFrcs(totalFrcsInptus);
       console.log('--------------------------\n');
       console.log('FRCS PIXEL OUTPUT:');
@@ -177,95 +196,4 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
       resolve(totalFrcsOutputs);
     });
   });
-};
-
-const sumBiomass = (pixel: Pixel) => {
-  return (
-    pixel.total3run_sng_0_nomgt_2016_v20190630 +
-    pixel.total3run_sng_2_nomgt_2016_v20190630 +
-    pixel.total3run_sng_7_nomgt_2016_v20190630 +
-    pixel.total3run_sng_15_nomgt_2016_v20190630 +
-    pixel.total3run_sng_25_nomgt_2016_v20190630 +
-    pixel.total3run_sng_35_nomgt_2016_v20190630 +
-    pixel.total3run_sng_40_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_0_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_2_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_7_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_15_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_25_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_35_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_40_nomgt_2016_v20190630
-  );
-};
-
-// these equations come from this sheet:
-// https://ucdavis.app.box.com/file/566320916282
-const calcRemovalsCT = (pixel: Pixel) => {
-  return (
-    pixel.total3run_tpa_0_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_2_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_7_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_15_nomgt_2016_v20190630 +
-    pixel.total3run_sng_0_nomgt_2016_v20190630 +
-    pixel.total3run_sng_2_nomgt_2016_v20190630 +
-    pixel.total3run_sng_7_nomgt_2016_v20190630 +
-    pixel.total3run_sng_15_nomgt_2016_v20190630
-  );
-};
-
-const calcRemovalsSLT = (pixel: Pixel) => {
-  return pixel.total3run_tpa_15_nomgt_2016_v20190630 + pixel.total3run_sng_15_nomgt_2016_v20190630;
-};
-
-const calcRemovalsLLT = (pixel: Pixel) => {
-  return (
-    pixel.total3run_tpa_25_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_35_nomgt_2016_v20190630 +
-    pixel.total3run_tpa_40_nomgt_2016_v20190630 +
-    pixel.total3run_sng_25_nomgt_2016_v20190630 +
-    pixel.total3run_sng_35_nomgt_2016_v20190630 +
-    pixel.total3run_sng_40_nomgt_2016_v20190630
-  );
-};
-
-const calcTreeVolCT = (pixel: Pixel) => {
-  return (
-    pixel.total3run_bmfol_0_nomgt_2016_v20190630 +
-    pixel.total3run_bmfol_2_nomgt_2016_v20190630 +
-    pixel.total3run_bmfol_7_nomgt_2016_v20190630 +
-    pixel.total3run_bmfol_15_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_0_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_2_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_7_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_15_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_0_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_2_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_7_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_15_nomgt_2016_v20190630
-    // TODO: add DBMCN and DBMSM
-  );
-};
-
-const calcTreeVolSLT = (pixel: Pixel) => {
-  return (
-    pixel.total3run_bmfol_15_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_15_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_15_nomgt_2016_v20190630
-    // TODO: add DBMCN 15 and DBMSM 15
-  );
-};
-
-const calcTreeVolLLT = (pixel: Pixel) => {
-  return (
-    pixel.total3run_bmfol_25_nomgt_2016_v20190630 +
-    pixel.total3run_bmfol_35_nomgt_2016_v20190630 +
-    pixel.total3run_bmfol_40_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_25_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_35_nomgt_2016_v20190630 +
-    pixel.total3run_bmcwn_40_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_25_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_35_nomgt_2016_v20190630 +
-    pixel.total3run_bmstm_40_nomgt_2016_v20190630
-    // TODO: add DBMCN and DBMSM
-  );
 };
