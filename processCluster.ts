@@ -13,9 +13,14 @@ import {
   sumBiomass,
   sumPixel
 } from './frcsInputCalculations';
+import { HarvestCost } from './models/harvestCost';
 import { Pixel } from './models/pixel';
 
-export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
+export const processCluster = async (
+  pixels: Pixel[],
+  osrm: OSRM,
+  pg: knex
+): Promise<HarvestCost> => {
   return new Promise(async (resolve, reject) => {
     const centerOfBiomassSum = {
       lat: 0,
@@ -71,7 +76,7 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
       // ?? landingElevationFromDb[0].elevation;
 
       console.log('landingElevetion: ' + landingElevation);
-      console.log('pixel length: ' + pixels.length);
+      console.log('number of pixels: ' + pixels.length);
       const area = pixels.length * 30 * 30 * 0.00024711; // pixels are 30m^2, area needs to be in acres
       console.log('area is: ' + area + ' acres^2');
       let totalFrcsOutputs: OutputVarMod = {
@@ -88,6 +93,7 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation;
 
       let pixelSummation = new Pixel();
+      console.log('processing pixels...');
       pixels.forEach(p => {
         let distance = getPreciseDistance(landing, {
           latitude: p.y,
@@ -193,7 +199,15 @@ export const processCluster = async (pixels: Pixel[], osrm: OSRM, pg: knex) => {
       console.log(clusterFrcsOutput);
       console.log('total sum per acre * area: ');
       console.log(clusterFrcsOutput.TotalPerAcre * area);
-      resolve(totalFrcsOutputs);
+      const output: HarvestCost = {
+        treatmentid: 1,
+        systemid: 1,
+        clusterid: pixels[0].cluster_no,
+        year: 2016,
+        biomass: centerOfBiomassSum.biomassSum,
+        totalcost: totalFrcsOutputs.TotalPerAcre * area
+      };
+      resolve(output);
     });
   });
 };
