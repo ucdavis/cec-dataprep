@@ -172,18 +172,13 @@ export const processCluster = async (
         RemovalsCT: calcRemovalsCT(pixelSummation),
         TreeVolCT:
           calcTreeVolCT(pixelSummation) /
-          (pixelSummation.total3run_tpa_0_nomgt_2016_v20190630 +
-            pixelSummation.total3run_tpa_2_nomgt_2016_v20190630 +
-            pixelSummation.total3run_tpa_7_nomgt_2016_v20190630),
+          (pixelSummation.tpa_0 + pixelSummation.tpa_2 + pixelSummation.tpa_7),
         RemovalsSLT: calcRemovalsSLT(pixelSummation),
-        TreeVolSLT:
-          calcTreeVolSLT(pixelSummation) / pixelSummation.total3run_tpa_15_nomgt_2016_v20190630,
+        TreeVolSLT: calcTreeVolSLT(pixelSummation) / pixelSummation.tpa_15,
         RemovalsLLT: calcRemovalsLLT(pixelSummation),
         TreeVolLLT:
           calcTreeVolLLT(pixelSummation) /
-          (pixelSummation.total3run_tpa_25_nomgt_2016_v20190630 +
-            pixelSummation.total3run_tpa_35_nomgt_2016_v20190630 +
-            pixelSummation.total3run_tpa_40_nomgt_2016_v20190630),
+          (pixelSummation.tpa_25 + pixelSummation.tpa_35 + pixelSummation.tpa_40),
         DieselFuelPrice: 3.882
       };
       console.log('TOTAL FRCS INPUT1: -------');
