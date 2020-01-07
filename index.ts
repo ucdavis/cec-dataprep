@@ -29,8 +29,8 @@ const main = async () => {
     .orderByRaw('RANDOM()')
     .limit(1);
   const cluster = clusters[0];
-  console.log('cluster id: ' + cluster.id);
-  const pixelsInCluster: Pixel[] = await pg.table('pixels').where({ cluster_no: cluster.id });
+  console.log('cluster id: ' + 49529);
+  const pixelsInCluster: Pixel[] = await pg.table('pixels').where({ cluster_no: 49529 });
   const outputs: HarvestCost = await processCluster(pixelsInCluster, osrm, pg);
 
   console.log('updating db...');

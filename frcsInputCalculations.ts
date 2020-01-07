@@ -18,28 +18,30 @@ export const sumBiomass = (pixel: Pixel) => {
     pixel.tpa_40
   );
 };
+const metersToAcresConstant = 0.00024711;
+
+const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
 
 // these equations come from this sheet:
 // https://ucdavis.app.box.com/file/566320916282
+
+// chip trees removed
 export const calcRemovalsCT = (pixel: Pixel) => {
-  return (
-    pixel.tpa_0 +
-    pixel.tpa_2 +
-    pixel.tpa_7 +
-    pixel.tpa_15 +
-    pixel.sng_0 +
-    pixel.sng_2 +
-    pixel.sng_7 +
-    pixel.sng_15
-  );
+  // live trees per acre + snags per acre
+  return pixel.tpa_0 + pixel.tpa_2 + pixel.tpa_7;
+  // TODO: add when we get dead biomass  + pixel.sng_0 + pixel.sng_2 + pixel.sng_7);
 };
 
 export const calcRemovalsSLT = (pixel: Pixel) => {
-  return pixel.tpa_15 + pixel.sng_15;
+  return pixel.tpa_15;
+  // + pixel.sng_15) * 1;
 };
 
 export const calcRemovalsLLT = (pixel: Pixel) => {
-  return pixel.tpa_25 + pixel.tpa_35 + pixel.tpa_40 + pixel.sng_25 + pixel.sng_35 + pixel.sng_40;
+  return (
+    pixel.tpa_25 + pixel.tpa_35 + pixel.tpa_40
+    // + pixel.sng_25 + pixel.sng_35 + pixel.sng_40) * 1
+  );
 };
 
 export const calcTreeVolCT = (pixel: Pixel) => {
@@ -80,7 +82,7 @@ export const calcTreeVolLLT = (pixel: Pixel) => {
 };
 
 export const sumPixel = (pixelSummation: Pixel, p: Pixel) => {
-  pixelSummation = {
+  const pixelSum = {
     ...pixelSummation,
     bmcwn_0: pixelSummation.bmcwn_0 + p.bmcwn_0,
     bmcwn_15: pixelSummation.bmcwn_15 + p.bmcwn_15,
@@ -118,5 +120,5 @@ export const sumPixel = (pixelSummation: Pixel, p: Pixel) => {
     tpa_40: pixelSummation.tpa_40 + p.tpa_40,
     tpa_7: pixelSummation.tpa_7 + p.tpa_7
   };
-  return pixelSummation;
+  return pixelSum;
 };
