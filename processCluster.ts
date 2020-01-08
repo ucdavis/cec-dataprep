@@ -64,14 +64,6 @@ export const processCluster = async (
         .whereBetween('x', [landing.longitude - 0.0005, landing.longitude + 0.0005])
         .whereBetween('y', [landing.latitude - 0.0005, landing.latitude + 0.0005]);
       console.log('LANDING ELEVATION FROM DB: ' + landingElevationFromDb[0].elevation);
-      // console.log('LANDING ELEVATION RESULTS FROM DB: ' + landingElevationFromDb.length);
-      // console.log(
-      //   'LANDING ELEVATION COORDS: [' +
-      //     landingElevationFromDb[0].y +
-      //     ', ' +
-      //     landingElevationFromDb[0].x +
-      //     ']'
-      // );
 
       let landingElevation = landingElevationFromDb[0]?.elevation;
       landingElevation = landingElevation / metersToFeetConstant; // put landing elevation in feet
@@ -88,8 +80,6 @@ export const processCluster = async (
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation / metersToFeetConstant;
 
       let pixelSummation = new Pixel();
-      console.log('pixel Summation: ');
-      console.log(pixelSummation);
       console.log('processing pixels...');
 
       // https://ucdavis.app.box.com/file/553138812702
@@ -98,8 +88,6 @@ export const processCluster = async (
 
       pixels.forEach(p => {
         pixelSummation = sumPixel(pixelSummation, p);
-        // console.log('pixelSummation: ');
-        // console.log(pixelSummation);
         // get distance between pixel and landing site
         let distance = getPreciseDistance(landing, {
           latitude: p.y,
@@ -112,17 +100,7 @@ export const processCluster = async (
       console.log('pixelSummation: ');
       console.log(pixelSummation);
 
-      // console.log('averageDeliverDistance (km) ' + totalYardingDistance);
-
       totalYardingDistance = (totalYardingDistance * 1000) / metersToFeetConstant; // put in feet
-      // console.log('averageDeliverDistance (ft) ' + totalYardingDistance);
-
-      // console.log(
-      //   'landingElevation: ' +
-      //     landingElevation +
-      //     ' centerOfBiomassElevation: ' +
-      //     centerOfBiomassElevation
-      // );
 
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
