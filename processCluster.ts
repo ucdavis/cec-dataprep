@@ -31,11 +31,13 @@ export const processCluster = async (
       lng: 0,
       biomassSum: 0
     };
-    pixels.forEach(pixel => {
+    pixels = pixels.map(pixel => {
+      // pixel = clearcut(pixel);
       const biomassInPixel = sumBiomass(pixel);
       centerOfBiomassSum.lat += pixel.y * biomassInPixel;
       centerOfBiomassSum.lng += pixel.x * biomassInPixel;
       centerOfBiomassSum.biomassSum += biomassInPixel;
+      return pixel;
     });
     console.log('biomassSum: ' + centerOfBiomassSum.biomassSum);
     const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
@@ -94,12 +96,26 @@ export const processCluster = async (
           longitude: p.x
         }); // meters
         distance = distance / 1000; // kilometers
-        totalYardingDistance += 2 * 1 * distance * (clearcut(p) / t); // kilometers
+        totalYardingDistance += 2 * 1 * distance * (sumBiomass(p) / t); // kilometers
       });
 
       console.log('pixelSummation: ');
       console.log(pixelSummation);
-
+      // trees per acre in cluster
+      // pixelSummation.tpa_x is total trees in cluster
+      // divided by total area
+      pixelSummation = {
+        ...pixelSummation,
+        tpa_0: pixelSummation.tpa_0 / area,
+        tpa_2: pixelSummation.tpa_2 / area,
+        tpa_7: pixelSummation.tpa_7 / area,
+        tpa_15: pixelSummation.tpa_15 / area,
+        tpa_25: pixelSummation.tpa_25 / area,
+        tpa_35: pixelSummation.tpa_35 / area,
+        tpa_40: pixelSummation.tpa_40 / area
+      };
+      console.log('pixelSummation: ');
+      console.log(pixelSummation);
       totalYardingDistance = (totalYardingDistance * 1000) / metersToFeetConstant; // put in feet
 
       const averageSlope =
@@ -107,11 +123,16 @@ export const processCluster = async (
         100;
       console.log('averageSlope ' + averageSlope);
 
-      const removalsCT = calcRemovalsCT(pixelSummation);
-      const removalsSLT = calcRemovalsSLT(pixelSummation);
-      const removalsLLT = calcRemovalsLLT(pixelSummation);
-      console.log('treeVolCT: ' + calcTreeVolCT(pixelSummation));
-      console.log('removalsCT: ' + removalsCT);
+      const removalsCT = calcRemovalsCT(pixelSummation); // # of trees/acre
+      const removalsSLT = calcRemovalsSLT(pixelSummation); //  # of trees/acre
+      const removalsLLT = calcRemovalsLLT(pixelSummation); // # of trees/acre
+
+      // TODO: determine correct density
+      const userSpecWDCT = 60;
+      const userSpecWDSLT = 58.6235;
+      // const userSpecWDLLT = 62.1225;
+      const userSpecWDLLT = 80;
+
       const totalFrcsInptus: InputVarMod = {
         System: 'Ground-Based Mech WT',
         PartialCut: true,
@@ -123,9 +144,9 @@ export const processCluster = async (
         Area: area,
         MoveInDist: 2,
         CalcResidues: true,
-        UserSpecWDCT: 60,
-        UserSpecWDSLT: 58.6235,
-        UserSpecWDLLT: 62.1225,
+        UserSpecWDCT: userSpecWDCT,
+        UserSpecWDSLT: userSpecWDSLT,
+        UserSpecWDLLT: userSpecWDLLT,
         UserSpecRFCT: 0,
         UserSpecRFSLT: 0.25,
         UserSpecRFLLT: 0.38,
@@ -135,9 +156,10 @@ export const processCluster = async (
         RemovalsCT: removalsCT,
         RemovalsLLT: removalsLLT,
         RemovalsSLT: removalsSLT,
-        TreeVolCT: calcTreeVolCT(pixelSummation) / removalsCT,
-        TreeVolSLT: calcTreeVolSLT(pixelSummation) / removalsSLT,
-        TreeVolLLT: calcTreeVolLLT(pixelSummation) / removalsLLT,
+        // * 2000 to get into pounds, divide by userSpecWDCT(density) to get cubic feet
+        TreeVolCT: (2000 * calcTreeVolCT(pixelSummation)) / (removalsCT * area) / userSpecWDCT,
+        TreeVolSLT: (2000 * calcTreeVolSLT(pixelSummation)) / (removalsSLT * area) / userSpecWDSLT,
+        TreeVolLLT: (2000 * calcTreeVolLLT(pixelSummation)) / (removalsLLT * area) / userSpecWDLLT,
         DieselFuelPrice: 3.882
       };
       console.log('TOTAL FRCS INPUT: -------');
