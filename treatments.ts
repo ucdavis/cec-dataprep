@@ -1,23 +1,55 @@
 import { Pixel } from './models/pixel';
 
-// https://ucdavis.app.box.com/file/579878129759
+// equations from:
+// https://ucdavis.app.box.com/file/593365602124
 
 // All live and dead trees over 10 inches cut.
 // For smaller size classes, cut at the following proportions for both live and dead:
 // 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
 export const clearcut = (pixel: Pixel) => {
-  return (
-    0.3 * (pixel.bmstm_0 + pixel.bmcwn_0) +
-    // TODO: add 0.3 * (DBMSM_0 + DBMCN_0)
-    0.6 * (pixel.bmstm_2 + pixel.bmcwn_2) +
-    // TODO: add 0.6 * (DBMSM_2 + DBMCN_2) +
-    0.9 * (pixel.bmstm_7 + pixel.bmcwn_7) +
-    // TODO: add 0.9 * (DBMSM_7 + DBMCN_7)
-    pixel.bmfol_15 +
-    pixel.bmcwn_35 +
-    pixel.bmcwn_40
-  );
-  // TODO:  DBMCN_15 + DBMCN_25 + DBMCN_35 + DBMCN_40 + DBMSM_15 + DBMSM_25 + DBMSM_35 + DBMSM_40
+  let p = new Pixel();
+  p = {
+    ...p,
+    elevation: pixel.elevation,
+    df_ele_cnty_name: pixel.df_ele_cnty_name,
+    cluster1: pixel.cluster1,
+    cluster2: pixel.cluster2,
+    // biomass removed
+    bmstm_0: 0.3 * pixel.bmstm_0,
+    bmcwn_0: 0.3 * pixel.bmcwn_0,
+    // TODO: dbmsm_0: 0.3 * pixel.dbmsm_0,
+    // TODO: dbmcn_0: 0.3 * pixel.dbmcn_0,
+    bmstm_2: 0.6 * pixel.bmstm_2,
+    bmcwn_2: 0.6 * pixel.bmcwn_2,
+    // TODO: dbmsm_2: 0.6 * pixel.dbmsm_2,
+    // TODO: dbmcn_2: 0.6 * pixel.dbmcn_2,
+    bmstm_7: 0.9 * pixel.bmstm_7,
+    bmcwn_7: 0.9 * pixel.bmcwn_7,
+    // TODO: dbmsm_7: 0.9 * pixel.dbmsm_7,
+    // TODO: dbmcn_7: 0.9 * pixel.dbmcn_7,
+
+    // tpa removed
+    tpa_0: 0.3 * pixel.tpa_0,
+    // TODO: sng_0: 0.3 * pixel.sng_0,
+    tpa_2: 0.6 * pixel.tpa_2,
+    // TODO: sng_2: 0.6 * pixel.sng_2,
+    tpa_7: 0.9 * pixel.tpa_7,
+    // TODO: sng_7: 0.9 * pixel.sng_7,
+    bmcwn_15: pixel.bmcwn_15,
+    bmcwn_25: pixel.bmcwn_25,
+    bmcwn_35: pixel.bmcwn_35,
+    bmcwn_40: pixel.bmcwn_40
+    // TODO:
+    // dbmcn_15: pixel.dbmcn_15,
+    // dbmcn_25: pixel.dbmcn_25,
+    // dbmcn_35: pixel.dbmcn_35,
+    // dbmcn_40: pixel.dbmcn_40,
+    // dbmsm_15: pixel.dbmsm_15,
+    // dbmsm_25: pixel.dbmsm_25,
+    // dbmsm_35: pixel.dbmsm_35,
+    // dbmsm_40: pixel.dbmsm_40
+  };
+  return p;
 };
 
 // Remove trees > 10 inches DBH, starting with small ones closest to 10”
@@ -34,7 +66,7 @@ export const commericalThinSmallTreeRemoval = (pixel: Pixel) => {
 
 // Remove all dead trees, either for timber (fire salvage) or for biomass (die-off salvage)
 export const salvage = (pixel: Pixel) => {
-  // TODO: DBMCN_15 + DBMCN_25 + DBMCN_35 + DBMCN_40 + DBMSM_15 + DBMSM_25 + DBMSM_35 + DBMSM_40
+  // TODO: dbmcn_15 + dbmcn_25 + dbmcn_35 + dbmcn_40 + dbmsm_15 + dbmsm_25 + dbmsm_35 + dbmsm_40
   return;
 };
 
@@ -43,10 +75,10 @@ export const salvage = (pixel: Pixel) => {
 export const salvageSmallTreeRemoval = (pixel: Pixel) => {
   return (
     0.3 * (pixel.bmstm_0 + pixel.bmcwn_0) +
-    // TODO: 0.3 * (DBMSM_0 + DBMCN_0) +
+    // TODO: 0.3 * (dbmsm_0 + dbmcn_0) +
     0.6 * (pixel.bmstm_2 + pixel.bmcwn_2) +
-    // TODO: 0.6 * (DBMSM_2 + DBMCN_2) +
+    // TODO: 0.6 * (dbmsm_2 + dbmcn_2) +
     0.9 * (pixel.bmstm_7 + pixel.bmcwn_7)
-    // 0.9 * (DBMSM_7 + DBMCN_7);
+    // 0.9 * (dbmsm_7 + dbmcn_7);
   );
 };
