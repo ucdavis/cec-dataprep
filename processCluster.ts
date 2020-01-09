@@ -20,6 +20,8 @@ import { clearcut } from './treatments';
 
 export const processCluster = async (
   pixels: Pixel[],
+  treatmentId: number,
+  treatmentName: string,
   osrm: OSRM,
   pg: knex
 ): Promise<TreatedCluster> => {
@@ -33,7 +35,13 @@ export const processCluster = async (
       biomassSum: 0
     };
     pixels = pixels.map(pixel => {
-      pixel = clearcut(pixel);
+      switch (treatmentName) {
+        case 'clearcut':
+          pixel = clearcut(pixel);
+          break;
+        default:
+          throw new Error('Unknown treatment option: ' + treatmentName);
+      }
       const biomassInPixel = sumBiomass(pixel);
       centerOfBiomassSum.lat += pixel.y * biomassInPixel;
       centerOfBiomassSum.lng += pixel.x * biomassInPixel;
@@ -115,8 +123,6 @@ export const processCluster = async (
       //   tpa_35: pixelSummation.tpa_35 / area,
       //   tpa_40: pixelSummation.tpa_40 / area
       // };
-      console.log('pixelSummation: ');
-      console.log(pixelSummation);
       totalYardingDistance = (totalYardingDistance * 1000) / metersToFeetConstant; // put in feet
 
       const averageSlope =
@@ -173,7 +179,7 @@ export const processCluster = async (
       // console.log(clusterFrcsOutput.TotalPerAcre * area);
       const output: TreatedCluster = {
         cluster_no: pixelSummation.cluster_no,
-        treatmentid: 1,
+        treatmentid: treatmentId,
         landing_lng: landing.longitude,
         landing_lat: landing.latitude,
         landing_elevation: landingElevation,
