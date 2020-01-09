@@ -6,14 +6,15 @@ import { Pixel } from './models/pixel';
 // All live and dead trees over 10 inches cut.
 // For smaller size classes, cut at the following proportions for both live and dead:
 // 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
-export const clearcut = (pixel: Pixel) => {
-  let p = new Pixel();
-  p = {
-    ...p,
+export const clearcut = (pixel: Pixel): Pixel => {
+  return {
+    cluster_no: pixel.cluster_no,
     elevation: pixel.elevation,
     df_ele_cnty_name: pixel.df_ele_cnty_name,
     cluster1: pixel.cluster1,
     cluster2: pixel.cluster2,
+    x: pixel.x,
+    y: pixel.y,
     // biomass removed
     bmstm_0: 0.3 * pixel.bmstm_0,
     bmcwn_0: 0.3 * pixel.bmcwn_0,
@@ -31,14 +32,31 @@ export const clearcut = (pixel: Pixel) => {
     // tpa removed
     tpa_0: 0.3 * pixel.tpa_0,
     // TODO: sng_0: 0.3 * pixel.sng_0,
+    sng_0: 0,
     tpa_2: 0.6 * pixel.tpa_2,
     // TODO: sng_2: 0.6 * pixel.sng_2,
+    sng_2: 0,
     tpa_7: 0.9 * pixel.tpa_7,
     // TODO: sng_7: 0.9 * pixel.sng_7,
+    sng_7: 0,
+
+    tpa_15: pixel.tpa_15,
+    // TODO: sng_15: pixel.sng_15,
+    sng_15: 0,
+    tpa_25: pixel.tpa_25,
+    // TODO: sng_25: pixel.sng_25,
+    sng_25: 0,
+    tpa_35: pixel.tpa_35,
+    // TODO: sng_15: pixel.sng_15,
+    sng_35: 0,
+    tpa_40: pixel.tpa_40,
+    // TODO: sng_15: pixel.sng_15,
+    sng_40: 0,
+
     bmcwn_15: pixel.bmcwn_15,
     bmcwn_25: pixel.bmcwn_25,
     bmcwn_35: pixel.bmcwn_35,
-    bmcwn_40: pixel.bmcwn_40
+    bmcwn_40: pixel.bmcwn_40,
     // TODO:
     // dbmcn_15: pixel.dbmcn_15,
     // dbmcn_25: pixel.dbmcn_25,
@@ -48,8 +66,19 @@ export const clearcut = (pixel: Pixel) => {
     // dbmsm_25: pixel.dbmsm_25,
     // dbmsm_35: pixel.dbmsm_35,
     // dbmsm_40: pixel.dbmsm_40
+
+    bmfol_0: 0,
+    bmfol_2: 0,
+    bmfol_7: 0,
+    bmfol_15: 0,
+    bmfol_25: 0,
+    bmfol_35: 0,
+    bmfol_40: 0,
+    bmstm_15: 0,
+    bmstm_25: 0,
+    bmstm_35: 0,
+    bmstm_40: 0
   };
-  return p;
 };
 
 // Remove trees > 10 inches DBH, starting with small ones closest to 10”
