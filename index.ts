@@ -54,12 +54,18 @@ const main = async () => {
       treatment[0].name,
       osrm,
       pg
-    );
+    ).catch(err => {
+      console.log('ERROR IN CATCH:');
+      console.log(err);
+      throw new Error(err);
+    });
 
     console.log('updating db...');
     const results: TreatedCluster = await pg('treatedclusters').insert(outputs);
   } catch (err) {
+    console.log('------------\n');
     console.log(err);
+    console.log('/n');
   } finally {
     console.log('destroying pg...');
     pg.destroy();

@@ -34,20 +34,25 @@ export const processCluster = async (
       lng: 0,
       biomassSum: 0
     };
-    pixels = pixels.map(pixel => {
-      switch (treatmentName) {
-        case 'clearcut':
-          pixel = clearcut(pixel);
-          break;
-        default:
-          throw new Error('Unknown treatment option: ' + treatmentName);
-      }
-      const biomassInPixel = sumBiomass(pixel);
-      centerOfBiomassSum.lat += pixel.y * biomassInPixel;
-      centerOfBiomassSum.lng += pixel.x * biomassInPixel;
-      centerOfBiomassSum.biomassSum += biomassInPixel;
-      return pixel;
-    });
+    try {
+      pixels = pixels.map(pixel => {
+        switch (treatmentName) {
+          case 'clearcut':
+            pixel = clearcut(pixel);
+            break;
+          default:
+            throw new Error('Unknown treatment option: ' + treatmentName);
+        }
+        const biomassInPixel = sumBiomass(pixel);
+        centerOfBiomassSum.lat += pixel.y * biomassInPixel;
+        centerOfBiomassSum.lng += pixel.x * biomassInPixel;
+        centerOfBiomassSum.biomassSum += biomassInPixel;
+        return pixel;
+      });
+    } catch (err) {
+      reject(err);
+      return;
+    }
     console.log('biomassSum: ' + centerOfBiomassSum.biomassSum);
     const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
     const centerOfBiomassLng = centerOfBiomassSum.lng / centerOfBiomassSum.biomassSum;
@@ -74,9 +79,9 @@ export const processCluster = async (
         .table('pixels')
         .whereBetween('x', [landing.longitude - 0.005, landing.longitude + 0.005])
         .whereBetween('y', [landing.latitude - 0.005, landing.latitude + 0.005]);
-      console.log('LANDING ELEVATION FROM DB: ' + landingElevationFromDb[0].elevation);
-      if (landingElevationFromDb.length === 0) {
-        throw new Error('No elevation for landing site found.');
+      if (landingElevationFromDb.length === 0 || !landingElevationFromDb[0]) {
+        reject('No elevation for landing site found.');
+        return;
       }
 
       let landingElevation = landingElevationFromDb[0]?.elevation;
@@ -91,8 +96,9 @@ export const processCluster = async (
         .table('pixels')
         .whereBetween('x', [centerOfBiomassLng - 0.005, centerOfBiomassLng + 0.005])
         .whereBetween('y', [centerOfBiomassLat - 0.005, centerOfBiomassLat + 0.005]);
-      if (centerOfBiomassPixel.length === 0) {
-        throw new Error('No elevation for center of biomass found.');
+      if (centerOfBiomassPixel.length === 0 || !centerOfBiomassPixel[0]) {
+        reject('No elevation for center of biomass found.');
+        return;
       }
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation / metersToFeetConstant;
 
