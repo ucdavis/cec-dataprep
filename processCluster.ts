@@ -75,6 +75,9 @@ export const processCluster = async (
         .whereBetween('x', [landing.longitude - 0.005, landing.longitude + 0.005])
         .whereBetween('y', [landing.latitude - 0.005, landing.latitude + 0.005]);
       console.log('LANDING ELEVATION FROM DB: ' + landingElevationFromDb[0].elevation);
+      if (landingElevationFromDb.length === 0) {
+        throw new Error('No elevation for landing site found.');
+      }
 
       let landingElevation = landingElevationFromDb[0]?.elevation;
       landingElevation = landingElevation / metersToFeetConstant; // put landing elevation in feet
@@ -88,6 +91,9 @@ export const processCluster = async (
         .table('pixels')
         .whereBetween('x', [centerOfBiomassLng - 0.005, centerOfBiomassLng + 0.005])
         .whereBetween('y', [centerOfBiomassLat - 0.005, centerOfBiomassLat + 0.005]);
+      if (centerOfBiomassPixel.length === 0) {
+        throw new Error('No elevation for center of biomass found.');
+      }
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation / metersToFeetConstant;
 
       let pixelSummation = new Pixel();
@@ -108,8 +114,6 @@ export const processCluster = async (
         totalYardingDistance += 2 * 1 * distance * (sumBiomass(p) / t); // kilometers
       });
 
-      console.log('pixelSummation: ');
-      console.log(pixelSummation);
       // trees per acre in cluster
       // pixelSummation.tpa_x is total trees in cluster
       // divided by total area
