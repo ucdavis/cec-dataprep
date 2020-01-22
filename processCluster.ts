@@ -11,6 +11,7 @@ import {
   calcTreeVolLLT,
   calcTreeVolSLT,
   sumBiomass,
+  sumNumberOfTrees,
   sumPixel
 } from './frcsInputCalculations';
 import { HarvestCost } from './models/harvestCost';
@@ -53,20 +54,20 @@ export const processCluster = async (
       reject(err);
       return;
     }
-    console.log('biomassSum: ' + centerOfBiomassSum.biomassSum);
+    // console.log('biomassSum: ' + centerOfBiomassSum.biomassSum);
     const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
     const centerOfBiomassLng = centerOfBiomassSum.lng / centerOfBiomassSum.biomassSum;
 
-    console.log('center of biomass: [' + centerOfBiomassLat + ', ' + centerOfBiomassLng + ']');
+    // console.log('center of biomass: [' + centerOfBiomassLat + ', ' + centerOfBiomassLng + ']');
 
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
     };
 
-    console.log('finding nearest road to center of biomass:');
+    // console.log('finding nearest road to center of biomass:');
     await osrm.nearest(options, async (err, response) => {
-      console.log('nearest road:');
-      console.log(response.waypoints);
+      // console.log('nearest road:');
+      // console.log(response.waypoints);
       const landing = {
         latitude: response.waypoints[0].location[1],
         longitude: response.waypoints[0].location[0]
@@ -87,10 +88,10 @@ export const processCluster = async (
       let landingElevation = landingElevationFromDb[0]?.elevation;
       landingElevation = landingElevation / metersToFeetConstant; // put landing elevation in feet
 
-      console.log('landingElevetion (ft): ' + landingElevation);
-      console.log('number of pixels: ' + pixels.length);
+      // console.log('landingElevetion (ft): ' + landingElevation);
+      // console.log('number of pixels: ' + pixels.length);
       const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
-      console.log('area is: ' + area + ' acres^2');
+      // console.log('area is: ' + area + ' acres^2');
 
       const centerOfBiomassPixel: Pixel[] = await pg
         .table('pixels')
@@ -138,55 +139,7 @@ export const processCluster = async (
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
         100;
-      console.log('averageSlope ' + averageSlope);
 
-      // const removalsCT = calcRemovalsCT(pixelSummation); // # of trees/acre
-      // const removalsSLT = calcRemovalsSLT(pixelSummation); //  # of trees/acre
-      // const removalsLLT = calcRemovalsLLT(pixelSummation); // # of trees/acre
-
-      // // TODO: determine correct density
-      // const userSpecWDCT = 60;
-      // const userSpecWDSLT = 58.6235;
-      // // const userSpecWDLLT = 62.1225;
-      // const userSpecWDLLT = 80;
-
-      // const totalFrcsInptus: InputVarMod = {
-      //   System: 'Ground-Based Mech WT',
-      //   PartialCut: true,
-      //   DeliverDist: totalYardingDistance,
-      //   Slope: averageSlope,
-      //   Elevation: centerOfBiomassElevation,
-      //   CalcLoad: true,
-      //   CalcMoveIn: true,
-      //   Area: area,
-      //   MoveInDist: 2,
-      //   CalcResidues: true,
-      //   UserSpecWDCT: userSpecWDCT,
-      //   UserSpecWDSLT: userSpecWDSLT,
-      //   UserSpecWDLLT: userSpecWDLLT,
-      //   UserSpecRFCT: 0,
-      //   UserSpecRFSLT: 0.25,
-      //   UserSpecRFLLT: 0.38,
-      //   UserSpecHFCT: 0.2,
-      //   UserSpecHFSLT: 0,
-      //   UserSpecHFLLT: 0,
-      //   RemovalsCT: removalsCT,
-      //   RemovalsLLT: removalsLLT,
-      //   RemovalsSLT: removalsSLT,
-      //   // * 2000 to get into pounds, divide by userSpecWDCT(density) to get cubic feet
-      //   TreeVolCT: (2000 * calcTreeVolCT(pixelSummation)) / (removalsCT * area) / userSpecWDCT,
-      //   TreeVolSLT: (2000 * calcTreeVolSLT(pixelSummation)) / (removalsSLT * area) / userSpecWDSLT,
-      //   TreeVolLLT: (2000 * calcTreeVolLLT(pixelSummation)) / (removalsLLT * area) / userSpecWDLLT,
-      //   DieselFuelPrice: 3.882
-      // };
-      // console.log('TOTAL FRCS INPUT: -------');
-      // console.log(totalFrcsInptus);
-      // const clusterFrcsOutput = runFrcs(totalFrcsInptus);
-      // console.log('-----------');
-      // console.log('FRCS CLUSTER OUTPUT:');
-      // console.log(clusterFrcsOutput);
-      // console.log('total sum per acre * area: ');
-      // console.log(clusterFrcsOutput.TotalPerAcre * area);
       const output: TreatedCluster = {
         cluster_no: pixelSummation.cluster_no,
         treatmentid: treatmentId,
@@ -236,7 +189,7 @@ export const processCluster = async (
         tpa_40: pixelSummation.tpa_40,
         tpa_7: pixelSummation.tpa_7
       };
-      console.log(output);
+      // console.log(output);
       resolve(output);
     });
   });

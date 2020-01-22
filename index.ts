@@ -1,13 +1,14 @@
 import dotenv from 'dotenv';
 import knex from 'knex';
-import { Cluster } from 'models/cluster';
-import { HarvestCost } from 'models/harvestCost';
-import { Pixel } from 'models/pixel';
 import OSRM from 'osrm';
 import { performance } from 'perf_hooks';
+import { Cluster } from './models/cluster';
+import { HarvestCost } from './models/harvestCost';
+import { Pixel } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { Treatment } from './models/treatment';
 import { processCluster } from './processCluster';
+import { runFrcsOnCluster } from './runFrcs';
 
 const main = async () => {
   const t0 = performance.now();
@@ -29,7 +30,6 @@ const main = async () => {
       .table('treatments')
       .orderByRaw('RANDOM()')
       .limit(1);
-    console.log('treatment id: ' + treatment[0].id);
     const clusters: Cluster[] = await pg
       .table('clusters')
       .select('id')
@@ -37,16 +37,18 @@ const main = async () => {
       .whereNotExists(function() {
         this.select('*')
           .from('treatedclusters')
-          .whereRaw(`clusters.id = cluster_no and treatmentid = ${treatment[0].id}`);
+          .whereRaw(
+            `clusters.id = cluster_no and treatmentid = ${treatment[0].id}`
+          );
       })
       .orderByRaw('RANDOM()')
       .limit(1);
     if (clusters.length === 0) {
       throw new Error('No clusters left to process.');
     }
-    const cluster = clusters[0];
-    console.log('cluster id: ' + cluster.id);
-    const pixelsInCluster: Pixel[] = await pg.table('pixels').where({ cluster_no: cluster.id });
+    const clusterId = clusters[0]?.id;
+    console.log('cluster id: ' + clusterId + ', treatment id: ' + treatment[0].id);
+    const pixelsInCluster: Pixel[] = await pg.table('pixels').where({ cluster_no: clusterId });
 
     const outputs: TreatedCluster = await processCluster(
       pixelsInCluster,
@@ -61,7 +63,9 @@ const main = async () => {
     });
 
     console.log('updating db...');
-    const results: TreatedCluster = await pg('treatedclusters').insert(outputs);
+    console.log(outputs);
+    const results: TreatedCluster = await pg('treatedclusters')
+      .insert(outputs);
   } catch (err) {
     console.log('------------\n');
     console.log(err);
@@ -72,6 +76,12 @@ const main = async () => {
     const t1 = performance.now();
     console.log('Running took ' + (t1 - t0) + ' milliseconds.');
   }
+  // const cluster: TreatedCluster[] = await db.table('treatedclusters').where({ cluster_no: 43253 });
+  // console.log('CLUSTER:');
+  // console.log(cluster[0]);
+  // const output = runFrcsOnCluster(cluster[0]);
+  // // console.log(output);
+  // db.destroy();
 };
 
 main();

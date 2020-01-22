@@ -1,6 +1,7 @@
 import { Pixel } from 'models/pixel';
+import { TreatedCluster } from 'models/treatedcluster';
 
-export const sumBiomass = (pixel: Pixel) => {
+export const sumNumberOfTrees = (pixel: Pixel) => {
   return (
     // pixel.sng_0 +
     // pixel.sng_2 +
@@ -14,6 +15,32 @@ export const sumBiomass = (pixel: Pixel) => {
     // pixel.tpa_40
   );
 };
+
+export const sumBiomass = (pixel: Pixel) => {
+  return (
+    pixel.bmfol_0 +
+    pixel.bmfol_2 +
+    pixel.bmfol_7 +
+    pixel.bmfol_15 +
+    pixel.bmfol_25 +
+    // pixel.bmfol_35 +
+    // pixel.bmfol_40 +
+    pixel.bmcwn_0 +
+    pixel.bmcwn_2 +
+    pixel.bmcwn_7 +
+    pixel.bmcwn_15 +
+    pixel.bmcwn_25 +
+    // pixel.bmcwn_35 +
+    // pixel.bmcwn_40 +
+    pixel.bmstm_0 +
+    pixel.bmstm_2 +
+    pixel.bmstm_7 +
+    pixel.bmstm_15 +
+    pixel.bmstm_25
+    // + pixel.bmstm_35 +
+    // pixel.bmstm_40
+  );
+};
 const metersToAcresConstant = 0.00024711;
 
 const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
@@ -22,25 +49,25 @@ const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
 // https://ucdavis.app.box.com/file/566320916282
 
 // chip trees removed
-export const calcRemovalsCT = (pixel: Pixel) => {
+export const calcRemovalsCT = (pixel: Pixel | TreatedCluster) => {
   // live trees per acre + snags per acre
   return pixel.tpa_0 + pixel.tpa_2 + pixel.tpa_7;
   // TODO: add when we get dead biomass  + pixel.sng_0 + pixel.sng_2 + pixel.sng_7);
 };
 
-export const calcRemovalsSLT = (pixel: Pixel) => {
+export const calcRemovalsSLT = (pixel: Pixel | TreatedCluster) => {
   return pixel.tpa_15;
   // + pixel.sng_15) * 1;
 };
 
-export const calcRemovalsLLT = (pixel: Pixel) => {
+export const calcRemovalsLLT = (pixel: Pixel | TreatedCluster) => {
   return pixel.tpa_25;
   // + pixel.tpa_35
   // + pixel.tpa_40
   // + pixel.sng_25 + pixel.sng_35 + pixel.sng_40) * 1
 };
 
-export const calcTreeVolCT = (pixel: Pixel) => {
+export const calcTreeVolCT = (pixel: Pixel | TreatedCluster) => {
   return (
     pixel.bmfol_0 +
     pixel.bmfol_2 +
@@ -55,14 +82,14 @@ export const calcTreeVolCT = (pixel: Pixel) => {
   );
 };
 
-export const calcTreeVolSLT = (pixel: Pixel) => {
+export const calcTreeVolSLT = (pixel: Pixel | TreatedCluster) => {
   return (
     pixel.bmfol_15 + pixel.bmcwn_15 + pixel.bmstm_15
     // TODO: add DBMCN 15 and DBMSM 15
   );
 };
 
-export const calcTreeVolLLT = (pixel: Pixel) => {
+export const calcTreeVolLLT = (pixel: Pixel | TreatedCluster) => {
   return (
     pixel.bmfol_25 +
     // pixel.bmfol_35 +
