@@ -173,7 +173,7 @@ export const processCluster = async (
         bmstm_25: pixelSummation.bmstm_25,
         bmstm_35: pixelSummation.bmstm_35,
         bmstm_40: pixelSummation.bmstm_40,
-        bmstm_7: pixelSummation.bmcwn_7,
+        bmstm_7: pixelSummation.bmstm_7,
         sng_0: pixelSummation.sng_0,
         sng_15: pixelSummation.sng_15,
         sng_2: pixelSummation.sng_2,
