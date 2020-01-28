@@ -8,7 +8,6 @@ import { Pixel } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { Treatment } from './models/treatment';
 import { processCluster } from './processCluster';
-import { runFrcsOnCluster } from './runFrcs';
 
 const main = async () => {
   const t0 = performance.now();
@@ -37,9 +36,7 @@ const main = async () => {
       .whereNotExists(function() {
         this.select('*')
           .from('treatedclusters')
-          .whereRaw(
-            `clusters.id = cluster_no and treatmentid = ${treatment[0].id}`
-          );
+          .whereRaw(`clusters.id = cluster_no and treatmentid = ${treatment[0].id}`);
       })
       .orderByRaw('RANDOM()')
       .limit(1);
@@ -64,8 +61,7 @@ const main = async () => {
 
     console.log('updating db...');
     console.log(outputs);
-    const results: TreatedCluster = await pg('treatedclusters')
-      .insert(outputs);
+    const results: TreatedCluster = await pg('treatedclusters').insert(outputs);
   } catch (err) {
     console.log('------------\n');
     console.log(err);

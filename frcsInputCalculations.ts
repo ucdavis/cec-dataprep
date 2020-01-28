@@ -41,7 +41,7 @@ export const sumBiomass = (pixel: Pixel) => {
     // pixel.bmstm_40
   );
 };
-const metersToAcresConstant = 0.00024711;
+const metersToAcresConstant = 0.000247105;
 
 const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
 
