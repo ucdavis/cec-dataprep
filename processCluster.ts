@@ -107,18 +107,31 @@ export const processCluster = async (
       console.log('processing pixels...');
 
       // https://ucdavis.app.box.com/file/553138812702
-      const t = 22.6796185; // payload of equipment delivering biomass in metric tons
+      // const t = 22.6796185; // payload of equipment delivering biomass in metric tons
+      const t = 50000;
       let totalYardingDistance = 0;
 
-      pixels.forEach(p => {
+      console.log(`LANDING LAT,LNG: ${landing.latitude}, ${landing.longitude})`);
+      pixels.forEach((p, i) => {
         pixelSummation = sumPixel(pixelSummation, p);
         // get distance between pixel and landing site
-        let distance = getPreciseDistance(landing, {
-          latitude: p.y,
-          longitude: p.x
-        }); // meters
-        distance = distance / 1000; // kilometers
-        totalYardingDistance += 2 * 1 * distance * (sumBiomass(p) / t); // kilometers
+        let distance = getPreciseDistance(
+          landing,
+          {
+            latitude: p.y,
+            longitude: p.x
+          },
+          0.0001
+        ); // meters
+        distance = distance * 3.28084;
+        const biomass = sumBiomass(p) * 2000;
+        console.log(
+          `pixel: ${i}: lat: ${p.y}, lng: ${p.x}, elevation: ${p.elevation}, tpa_2: ${
+            p.tpa_2
+          }\n distance(m): ${distance / 3.28084} (ft) ${distance}, biomass: ${biomass}`
+        );
+        // distance = distance / 1000; // kilometers
+        totalYardingDistance += 2 * 1 * distance * Math.ceil(biomass / t); // kilometers
       });
 
       // trees per acre in cluster
