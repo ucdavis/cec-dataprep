@@ -31,7 +31,7 @@ export const processCluster = async (
   db: knex
 ): Promise<TreatedCluster> => {
   return new Promise(async (resolve, reject) => {
-    const metersToFeetConstant = 0.3048;
+    const metersToFeetConstant = 3.28084;
     const metersToAcresConstant = 0.00024711;
     const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
     const centerOfBiomassSum = {
@@ -78,7 +78,7 @@ export const processCluster = async (
       };
       // get distance between pixel and landing site
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
-      centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding / metersToFeetConstant; // feet
+      centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding * metersToFeetConstant; // feet
 
       const landingElevationFromDb: Pixel[] = await db
         .table('pixels')
@@ -90,7 +90,7 @@ export const processCluster = async (
       }
 
       let landingElevation = landingElevationFromDb[0]?.elevation;
-      landingElevation = landingElevation / metersToFeetConstant; // put landing elevation in feet
+      landingElevation = landingElevation * metersToFeetConstant; // put landing elevation in feet
 
       // console.log('landingElevetion (ft): ' + landingElevation);
       // console.log('number of pixels: ' + pixels.length);
@@ -105,53 +105,27 @@ export const processCluster = async (
         reject('No elevation for center of biomass found.');
         return;
       }
-      const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation / metersToFeetConstant;
+      const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation * metersToFeetConstant;
 
       let pixelSummation = new Pixel();
       console.log('processing pixels...');
 
       // https://ucdavis.app.box.com/file/553138812702
-      // const t = 22.6796185; // payload of equipment delivering biomass in metric tons
-      const t = 50000;
+      const t = 50000; // payload of equipment delivering biomass in lbs
       let totalYardingDistance = 0;
 
       console.log(`LANDING LAT,LNG: ${landing.latitude}, ${landing.longitude})`);
       pixels.forEach((p, i) => {
         pixelSummation = sumPixel(pixelSummation, p);
         // get distance between pixel and landing site
-        let distance = getPreciseDistance(
-          landing,
-          {
-            latitude: p.y,
-            longitude: p.x
-          },
-          0.0001
-        ); // meters
-        distance = distance * 3.28084;
-        const biomass = sumBiomass(p) * 2000;
-        console.log(
-          `pixel: ${i}: lat: ${p.y}, lng: ${p.x}, elevation: ${p.elevation}, tpa_2: ${
-            p.tpa_2
-          }\n distance(m): ${distance / 3.28084} (ft) ${distance}, biomass: ${biomass}`
-        );
-        // distance = distance / 1000; // kilometers
-        totalYardingDistance += 2 * 1 * distance * Math.ceil(biomass / t); // kilometers
+        let distance = getPreciseDistance(landing, {
+          latitude: p.y,
+          longitude: p.x
+        }); // meters
+        distance = distance * metersToFeetConstant; // feet
+        const biomass = sumBiomass(p) * 2000; // pounds
+        totalYardingDistance += 2 * 1 * distance * Math.ceil(biomass / t); // feet
       });
-
-      // trees per acre in cluster
-      // pixelSummation.tpa_x is total trees in cluster
-      // divided by total area
-      // pixelSummation = {
-      //   ...pixelSummation,
-      //   tpa_0: pixelSummation.tpa_0 / area,
-      //   tpa_2: pixelSummation.tpa_2 / area,
-      //   tpa_7: pixelSummation.tpa_7 / area,
-      //   tpa_15: pixelSummation.tpa_15 / area,
-      //   tpa_25: pixelSummation.tpa_25 / area,
-      //   tpa_35: pixelSummation.tpa_35 / area,
-      //   tpa_40: pixelSummation.tpa_40 / area
-      // };
-      totalYardingDistance = (totalYardingDistance * 1000) / metersToFeetConstant; // put in feet
 
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
