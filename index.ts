@@ -28,11 +28,11 @@ const main = async () => {
     }
   });
   try {
-    const osrm = new OSRM('./data/california-latest.osrm');
-    const treatment: Treatment[] = await db
-      .table('treatments')
-      .orderByRaw('RANDOM()')
-      .limit(1);
+    // const osrm = new OSRM('./data/california-latest.osrm');
+    // const treatment: Treatment[] = await db
+    //   .table('treatments')
+    //   .orderByRaw('RANDOM()')
+    //   .limit(1);
     // const clusters: Cluster[] = await pg
     //   .table('clusters')
     //   .select('id')
@@ -47,15 +47,17 @@ const main = async () => {
     // if (clusters.length === 0) {
     //   throw new Error('No clusters left to process.');
     // }
+    const treatmentId = 1;
+    const treatmentName = 'clearcut';
     const clusterId = 43253; // clusters[0]?.id;
-    console.log('cluster id: ' + clusterId + ', treatment id: ' + treatment[0].id);
+    console.log('cluster id: ' + clusterId + ', treatment id: ' + treatmentId);
     const pixelsInCluster = await db.table('pixels').where({ cluster_no: clusterId });
     console.log(pixelsInCluster[0]);
     const outputs: TreatedCluster = await processCluster(
       pixelsInCluster,
-      treatment[0].id,
-      treatment[0].name,
-      osrm,
+      treatmentId,
+      treatmentName,
+      // osrm,
       db
     ).catch(err => {
       console.log('ERROR IN CATCH:');

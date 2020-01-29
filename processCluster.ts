@@ -27,7 +27,7 @@ export const processCluster = async (
   pixels: Pixel[],
   treatmentId: number,
   treatmentName: string,
-  osrm: OSRM,
+  // osrm: OSRM,
   db: knex
 ): Promise<TreatedCluster> => {
   return new Promise(async (resolve, reject) => {
@@ -69,145 +69,148 @@ export const processCluster = async (
     };
 
     // console.log('finding nearest road to center of biomass:');
-    await osrm.nearest(options, async (err, response) => {
-      // console.log('nearest road:');
-      // console.log(response.waypoints);
-      const landing = {
-        latitude: response.waypoints[0].location[1],
-        longitude: response.waypoints[0].location[0]
-      };
+    // await osrm.nearest(options, async (err, response) => {
+    // console.log('nearest road:');
+    // console.log(response.waypoints);
+    // const landing = {
+    //   latitude: response.waypoints[0].location[1],
+    //   longitude: response.waypoints[0].location[0]
+    // };
+    // get distance between pixel and landing site
+    // let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
+    // centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding / metersToFeetConstant; // feet
+
+    // const landingElevationFromDb: Pixel[] = await db
+    //   .table('pixels')
+    //   .whereBetween('x', [landing.longitude - 0.005, landing.longitude + 0.005])
+    //   .whereBetween('y', [landing.latitude - 0.005, landing.latitude + 0.005]);
+    // if (landingElevationFromDb.length === 0 || !landingElevationFromDb[0]) {
+    //   reject('No elevation for landing site found.');
+    //   return;
+    // }
+
+    // let landingElevation = landingElevationFromDb[0]?.elevation;
+    // landingElevation = landingElevation / metersToFeetConstant; // put landing elevation in feet
+
+    // console.log('landingElevetion (ft): ' + landingElevation);
+    // console.log('number of pixels: ' + pixels.length);
+    const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
+    // console.log('area is: ' + area + ' acres^2');
+
+    // const centerOfBiomassPixel: Pixel[] = await db
+    //   .table('pixels')
+    //   .whereBetween('x', [centerOfBiomassLng - 0.005, centerOfBiomassLng + 0.005])
+    //   .whereBetween('y', [centerOfBiomassLat - 0.005, centerOfBiomassLat + 0.005]);
+    // if (centerOfBiomassPixel.length === 0 || !centerOfBiomassPixel[0]) {
+    //   reject('No elevation for center of biomass found.');
+    //   return;
+    // }
+    // const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation / metersToFeetConstant;
+
+    let pixelSummation = new Pixel();
+    console.log('processing pixels...');
+    const landing = {
+      latitude: -120.653,
+      longitude: 39.92164
+    };
+    // https://ucdavis.app.box.com/file/553138812702
+    // const t = 22.6796185; // payload of equipment delivering biomass in metric tons
+    const t = 50000;
+    let totalYardingDistance = 0;
+
+    console.log(`LANDING LAT,LNG: ${landing.latitude}, ${landing.longitude})`);
+    pixels.forEach((p, i) => {
+      pixelSummation = sumPixel(pixelSummation, p);
       // get distance between pixel and landing site
-      let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
-      centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding / metersToFeetConstant; // feet
-
-      const landingElevationFromDb: Pixel[] = await db
-        .table('pixels')
-        .whereBetween('x', [landing.longitude - 0.005, landing.longitude + 0.005])
-        .whereBetween('y', [landing.latitude - 0.005, landing.latitude + 0.005]);
-      if (landingElevationFromDb.length === 0 || !landingElevationFromDb[0]) {
-        reject('No elevation for landing site found.');
-        return;
-      }
-
-      let landingElevation = landingElevationFromDb[0]?.elevation;
-      landingElevation = landingElevation / metersToFeetConstant; // put landing elevation in feet
-
-      // console.log('landingElevetion (ft): ' + landingElevation);
-      // console.log('number of pixels: ' + pixels.length);
-      const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
-      // console.log('area is: ' + area + ' acres^2');
-
-      const centerOfBiomassPixel: Pixel[] = await db
-        .table('pixels')
-        .whereBetween('x', [centerOfBiomassLng - 0.005, centerOfBiomassLng + 0.005])
-        .whereBetween('y', [centerOfBiomassLat - 0.005, centerOfBiomassLat + 0.005]);
-      if (centerOfBiomassPixel.length === 0 || !centerOfBiomassPixel[0]) {
-        reject('No elevation for center of biomass found.');
-        return;
-      }
-      const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation / metersToFeetConstant;
-
-      let pixelSummation = new Pixel();
-      console.log('processing pixels...');
-
-      // https://ucdavis.app.box.com/file/553138812702
-      // const t = 22.6796185; // payload of equipment delivering biomass in metric tons
-      const t = 50000;
-      let totalYardingDistance = 0;
-
-      console.log(`LANDING LAT,LNG: ${landing.latitude}, ${landing.longitude})`);
-      pixels.forEach((p, i) => {
-        pixelSummation = sumPixel(pixelSummation, p);
-        // get distance between pixel and landing site
-        let distance = getPreciseDistance(
-          landing,
-          {
-            latitude: p.y,
-            longitude: p.x
-          },
-          0.0001
-        ); // meters
-        distance = distance * 3.28084;
-        const biomass = sumBiomass(p) * 2000;
-        console.log(
-          `pixel: ${i}: lat: ${p.y}, lng: ${p.x}, elevation: ${p.elevation}, tpa_2: ${
-            p.tpa_2
-          }\n distance(m): ${distance / 3.28084} (ft) ${distance}, biomass: ${biomass}`
-        );
-        // distance = distance / 1000; // kilometers
-        totalYardingDistance += 2 * 1 * distance * Math.ceil(biomass / t); // kilometers
-      });
-
-      // trees per acre in cluster
-      // pixelSummation.tpa_x is total trees in cluster
-      // divided by total area
-      // pixelSummation = {
-      //   ...pixelSummation,
-      //   tpa_0: pixelSummation.tpa_0 / area,
-      //   tpa_2: pixelSummation.tpa_2 / area,
-      //   tpa_7: pixelSummation.tpa_7 / area,
-      //   tpa_15: pixelSummation.tpa_15 / area,
-      //   tpa_25: pixelSummation.tpa_25 / area,
-      //   tpa_35: pixelSummation.tpa_35 / area,
-      //   tpa_40: pixelSummation.tpa_40 / area
-      // };
-      totalYardingDistance = (totalYardingDistance * 1000) / metersToFeetConstant; // put in feet
-
-      const averageSlope =
-        Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
-        100;
-
-      const output: TreatedCluster = {
-        cluster_no: pixelSummation.cluster_no,
-        treatmentid: treatmentId,
-        landing_lng: landing.longitude,
-        landing_lat: landing.latitude,
-        landing_elevation: landingElevation,
-        center_lng: centerOfBiomassLng,
-        center_lat: centerOfBiomassLat,
-        center_elevation: centerOfBiomassElevation,
-        slope: averageSlope,
-        area,
-        total_yarding: totalYardingDistance,
-        df_ele_cnty_name: pixelSummation.df_ele_cnty_name,
-        bmcwn_0: pixelSummation.bmcwn_0,
-        bmcwn_15: pixelSummation.bmcwn_15,
-        bmcwn_2: pixelSummation.bmcwn_2,
-        bmcwn_25: pixelSummation.bmcwn_25,
-        bmcwn_35: pixelSummation.bmcwn_35,
-        bmcwn_40: pixelSummation.bmcwn_40,
-        bmcwn_7: pixelSummation.bmcwn_7,
-        bmfol_0: pixelSummation.bmfol_0,
-        bmfol_15: pixelSummation.bmfol_15,
-        bmfol_2: pixelSummation.bmfol_2,
-        bmfol_25: pixelSummation.bmfol_25,
-        bmfol_35: pixelSummation.bmfol_35,
-        bmfol_40: pixelSummation.bmfol_40,
-        bmfol_7: pixelSummation.bmfol_7,
-        bmstm_0: pixelSummation.bmstm_0,
-        bmstm_15: pixelSummation.bmstm_15,
-        bmstm_2: pixelSummation.bmstm_2,
-        bmstm_25: pixelSummation.bmstm_25,
-        bmstm_35: pixelSummation.bmstm_35,
-        bmstm_40: pixelSummation.bmstm_40,
-        bmstm_7: pixelSummation.bmstm_7,
-        sng_0: pixelSummation.sng_0,
-        sng_15: pixelSummation.sng_15,
-        sng_2: pixelSummation.sng_2,
-        sng_25: pixelSummation.sng_25,
-        sng_35: pixelSummation.sng_35,
-        sng_40: pixelSummation.sng_40,
-        sng_7: pixelSummation.sng_7,
-        tpa_0: pixelSummation.tpa_0,
-        tpa_15: pixelSummation.tpa_15,
-        tpa_2: pixelSummation.tpa_2,
-        tpa_25: pixelSummation.tpa_25,
-        tpa_35: pixelSummation.tpa_35,
-        tpa_40: pixelSummation.tpa_40,
-        tpa_7: pixelSummation.tpa_7
-      };
-      // console.log(output);
-      resolve(output);
+      let distance = getPreciseDistance(
+        landing,
+        {
+          latitude: p.y,
+          longitude: p.x
+        },
+        0.0001
+      ); // meters
+      distance = distance * 3.28084;
+      const biomass = sumBiomass(p) * 2000;
+      console.log(
+        `pixel: ${i}: lat: ${p.y}, lng: ${p.x}, elevation: ${p.elevation}, tpa_2: ${
+          p.tpa_2
+        }\n distance(m): ${distance / 3.28084} (ft) ${distance}, biomass: ${biomass}`
+      );
+      // distance = distance / 1000; // kilometers
+      totalYardingDistance += 2 * 1 * distance * Math.ceil(biomass / t); // kilometers
     });
+
+    // trees per acre in cluster
+    // pixelSummation.tpa_x is total trees in cluster
+    // divided by total area
+    // pixelSummation = {
+    //   ...pixelSummation,
+    //   tpa_0: pixelSummation.tpa_0 / area,
+    //   tpa_2: pixelSummation.tpa_2 / area,
+    //   tpa_7: pixelSummation.tpa_7 / area,
+    //   tpa_15: pixelSummation.tpa_15 / area,
+    //   tpa_25: pixelSummation.tpa_25 / area,
+    //   tpa_35: pixelSummation.tpa_35 / area,
+    //   tpa_40: pixelSummation.tpa_40 / area
+    // };
+    totalYardingDistance = (totalYardingDistance * 1000) / metersToFeetConstant; // put in feet
+
+    // const averageSlope =
+    //   Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
+    //   100;
+
+    const output: TreatedCluster = {
+      cluster_no: pixelSummation.cluster_no,
+      treatmentid: treatmentId,
+      landing_lng: landing.longitude,
+      landing_lat: landing.latitude,
+      landing_elevation: 6560.958,
+      center_lng: centerOfBiomassLng,
+      center_lat: centerOfBiomassLat,
+      center_elevation: 6591.3384,
+      slope: 6.4479284,
+      area,
+      total_yarding: totalYardingDistance,
+      df_ele_cnty_name: pixelSummation.df_ele_cnty_name,
+      bmcwn_0: pixelSummation.bmcwn_0,
+      bmcwn_15: pixelSummation.bmcwn_15,
+      bmcwn_2: pixelSummation.bmcwn_2,
+      bmcwn_25: pixelSummation.bmcwn_25,
+      bmcwn_35: pixelSummation.bmcwn_35,
+      bmcwn_40: pixelSummation.bmcwn_40,
+      bmcwn_7: pixelSummation.bmcwn_7,
+      bmfol_0: pixelSummation.bmfol_0,
+      bmfol_15: pixelSummation.bmfol_15,
+      bmfol_2: pixelSummation.bmfol_2,
+      bmfol_25: pixelSummation.bmfol_25,
+      bmfol_35: pixelSummation.bmfol_35,
+      bmfol_40: pixelSummation.bmfol_40,
+      bmfol_7: pixelSummation.bmfol_7,
+      bmstm_0: pixelSummation.bmstm_0,
+      bmstm_15: pixelSummation.bmstm_15,
+      bmstm_2: pixelSummation.bmstm_2,
+      bmstm_25: pixelSummation.bmstm_25,
+      bmstm_35: pixelSummation.bmstm_35,
+      bmstm_40: pixelSummation.bmstm_40,
+      bmstm_7: pixelSummation.bmstm_7,
+      sng_0: pixelSummation.sng_0,
+      sng_15: pixelSummation.sng_15,
+      sng_2: pixelSummation.sng_2,
+      sng_25: pixelSummation.sng_25,
+      sng_35: pixelSummation.sng_35,
+      sng_40: pixelSummation.sng_40,
+      sng_7: pixelSummation.sng_7,
+      tpa_0: pixelSummation.tpa_0,
+      tpa_15: pixelSummation.tpa_15,
+      tpa_2: pixelSummation.tpa_2,
+      tpa_25: pixelSummation.tpa_25,
+      tpa_35: pixelSummation.tpa_35,
+      tpa_40: pixelSummation.tpa_40,
+      tpa_7: pixelSummation.tpa_7
+    };
+    // console.log(output);
+    resolve(output);
+    // });
   });
 };
