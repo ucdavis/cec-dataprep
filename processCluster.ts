@@ -3,6 +3,7 @@ import { InputVarMod, OutputVarMod } from '@ucdavis/frcs/out/systems/frcs.model'
 import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import OSRM = require('osrm');
+import pg from 'pg';
 import {
   calcRemovalsCT,
   calcRemovalsLLT,
@@ -19,12 +20,15 @@ import { Pixel } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { clearcut } from './treatments';
 
+const PG_DECIMAL_OID = 1700;
+pg.types.setTypeParser(PG_DECIMAL_OID, parseFloat);
+
 export const processCluster = async (
   pixels: Pixel[],
   treatmentId: number,
   treatmentName: string,
   osrm: OSRM,
-  pg: knex
+  db: knex
 ): Promise<TreatedCluster> => {
   return new Promise(async (resolve, reject) => {
     const metersToFeetConstant = 0.3048;
@@ -76,7 +80,7 @@ export const processCluster = async (
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
       centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding / metersToFeetConstant; // feet
 
-      const landingElevationFromDb: Pixel[] = await pg
+      const landingElevationFromDb: Pixel[] = await db
         .table('pixels')
         .whereBetween('x', [landing.longitude - 0.005, landing.longitude + 0.005])
         .whereBetween('y', [landing.latitude - 0.005, landing.latitude + 0.005]);
@@ -93,7 +97,7 @@ export const processCluster = async (
       const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
       // console.log('area is: ' + area + ' acres^2');
 
-      const centerOfBiomassPixel: Pixel[] = await pg
+      const centerOfBiomassPixel: Pixel[] = await db
         .table('pixels')
         .whereBetween('x', [centerOfBiomassLng - 0.005, centerOfBiomassLng + 0.005])
         .whereBetween('y', [centerOfBiomassLat - 0.005, centerOfBiomassLat + 0.005]);
