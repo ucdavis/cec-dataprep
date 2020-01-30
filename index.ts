@@ -33,24 +33,23 @@ const main = async () => {
       .table('treatments')
       .orderByRaw('RANDOM()')
       .limit(1);
-    // const clusters: Cluster[] = await pg
-    //   .table('clusters')
-    //   .select('id')
-    //   // tslint:disable-next-line: space-before-function-paren
-    //   .whereNotExists(function() {
-    //     this.select('*')
-    //       .from('treatedclusters')
-    //       .whereRaw(`clusters.id = cluster_no and treatmentid = ${treatment[0].id}`);
-    //   })
-    //   .orderByRaw('RANDOM()')
-    //   .limit(1);
-    // if (clusters.length === 0) {
-    //   throw new Error('No clusters left to process.');
-    // }
-    const clusterId = 43253; // clusters[0]?.id;
+    const clusters: Cluster[] = await db
+      .table('clusters')
+      .select('id')
+      // tslint:disable-next-line: space-before-function-paren
+      .whereNotExists(function() {
+        this.select('*')
+          .from('treatedclusters')
+          .whereRaw(`clusters.id = cluster_no and treatmentid = ${treatment[0].id}`);
+      })
+      .orderByRaw('RANDOM()')
+      .limit(1);
+    if (clusters.length === 0) {
+      throw new Error('No clusters left to process.');
+    }
+    const clusterId = clusters[0]?.id;
     console.log('cluster id: ' + clusterId + ', treatment id: ' + treatment[0].id);
     const pixelsInCluster = await db.table('pixels').where({ cluster_no: clusterId });
-    console.log(pixelsInCluster[0]);
     const outputs: TreatedCluster = await processCluster(
       pixelsInCluster,
       treatment[0].id,
@@ -64,8 +63,7 @@ const main = async () => {
     });
 
     console.log('updating db...');
-    console.log(outputs);
-    // const results: TreatedCluster = await pg('treatedclusters').insert(outputs);
+    const results: TreatedCluster = await db('treatedclusters').insert(outputs);
   } catch (err) {
     console.log('------------\n');
     console.log(err);
@@ -76,12 +74,6 @@ const main = async () => {
     const t1 = performance.now();
     console.log('Running took ' + (t1 - t0) + ' milliseconds.');
   }
-  // const cluster: TreatedCluster[] = await db.table('treatedclusters').where({ cluster_no: 43253 });
-  // console.log('CLUSTER:');
-  // console.log(cluster[0]);
-  // const output = runFrcsOnCluster(cluster[0]);
-  // // console.log(output);
-  // db.destroy();
 };
 
 main();

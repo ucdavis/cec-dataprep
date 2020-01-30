@@ -58,20 +58,14 @@ export const processCluster = async (
       reject(err);
       return;
     }
-    // console.log('biomassSum: ' + centerOfBiomassSum.biomassSum);
     const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
     const centerOfBiomassLng = centerOfBiomassSum.lng / centerOfBiomassSum.biomassSum;
-
-    // console.log('center of biomass: [' + centerOfBiomassLat + ', ' + centerOfBiomassLng + ']');
 
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
     };
 
-    // console.log('finding nearest road to center of biomass:');
     await osrm.nearest(options, async (err, response) => {
-      // console.log('nearest road:');
-      // console.log(response.waypoints);
       const landing = {
         latitude: response.waypoints[0].location[1],
         longitude: response.waypoints[0].location[0]
@@ -92,10 +86,7 @@ export const processCluster = async (
       let landingElevation = landingElevationFromDb[0]?.elevation;
       landingElevation = landingElevation * metersToFeetConstant; // put landing elevation in feet
 
-      // console.log('landingElevetion (ft): ' + landingElevation);
-      // console.log('number of pixels: ' + pixels.length);
       const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
-      // console.log('area is: ' + area + ' acres^2');
 
       const centerOfBiomassPixel: Pixel[] = await db
         .table('pixels')
@@ -108,13 +99,11 @@ export const processCluster = async (
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation * metersToFeetConstant;
 
       let pixelSummation = new Pixel();
-      console.log('processing pixels...');
 
       // https://ucdavis.app.box.com/file/553138812702
       const t = 50000; // payload of equipment delivering biomass in lbs
       let totalYardingDistance = 0;
 
-      console.log(`LANDING LAT,LNG: ${landing.latitude}, ${landing.longitude})`);
       pixels.forEach((p, i) => {
         pixelSummation = sumPixel(pixelSummation, p);
         // get distance between pixel and landing site
@@ -180,7 +169,6 @@ export const processCluster = async (
         tpa_40: pixelSummation.tpa_40,
         tpa_7: pixelSummation.tpa_7
       };
-      // console.log(output);
       resolve(output);
     });
   });
