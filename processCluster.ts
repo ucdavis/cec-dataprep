@@ -16,7 +16,7 @@ import {
   sumPixel
 } from './frcsInputCalculations';
 import { HarvestCost } from './models/harvestCost';
-import { Pixel } from './models/pixel';
+import { Pixel, PixelClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { clearcut } from './treatments';
 
@@ -98,7 +98,7 @@ export const processCluster = async (
       }
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation * metersToFeetConstant;
 
-      let pixelSummation = new Pixel();
+      let pixelSummation = new PixelClass();
 
       // https://ucdavis.app.box.com/file/553138812702
       const t = 50000; // payload of equipment delivering biomass in lbs
@@ -141,42 +141,9 @@ export const processCluster = async (
         area,
         // TODO: change to meanYarding in db
         total_yarding: meanYardingDistance,
-        df_ele_cnty_name: pixelSummation.county,
-        bmcwn_0: pixelSummation.bmcwn_0,
-        bmcwn_15: pixelSummation.bmcwn_15,
-        bmcwn_2: pixelSummation.bmcwn_2,
-        bmcwn_25: pixelSummation.bmcwn_25,
-        bmcwn_35: pixelSummation.bmcwn_35,
-        bmcwn_40: pixelSummation.bmcwn_40,
-        bmcwn_7: pixelSummation.bmcwn_7,
-        bmfol_0: pixelSummation.bmfol_0,
-        bmfol_15: pixelSummation.bmfol_15,
-        bmfol_2: pixelSummation.bmfol_2,
-        bmfol_25: pixelSummation.bmfol_25,
-        bmfol_35: pixelSummation.bmfol_35,
-        bmfol_40: pixelSummation.bmfol_40,
-        bmfol_7: pixelSummation.bmfol_7,
-        bmstm_0: pixelSummation.bmstm_0,
-        bmstm_15: pixelSummation.bmstm_15,
-        bmstm_2: pixelSummation.bmstm_2,
-        bmstm_25: pixelSummation.bmstm_25,
-        bmstm_35: pixelSummation.bmstm_35,
-        bmstm_40: pixelSummation.bmstm_40,
-        bmstm_7: pixelSummation.bmstm_7,
-        sng_0: pixelSummation.sng_0,
-        sng_15: pixelSummation.sng_15,
-        sng_2: pixelSummation.sng_2,
-        sng_25: pixelSummation.sng_25,
-        sng_35: pixelSummation.sng_35,
-        sng_40: pixelSummation.sng_40,
-        sng_7: pixelSummation.sng_7,
-        tpa_0: pixelSummation.tpa_0,
-        tpa_15: pixelSummation.tpa_15,
-        tpa_2: pixelSummation.tpa_2,
-        tpa_25: pixelSummation.tpa_25,
-        tpa_35: pixelSummation.tpa_35,
-        tpa_40: pixelSummation.tpa_40,
-        tpa_7: pixelSummation.tpa_7
+        county: pixelSummation.county,
+
+        ...pixelSummation
       };
       resolve(output);
     });
