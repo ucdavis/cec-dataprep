@@ -4,17 +4,7 @@ import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import OSRM = require('osrm');
 import pg from 'pg';
-import {
-  calcRemovalsCT,
-  calcRemovalsLLT,
-  calcRemovalsSLT,
-  calcTreeVolCT,
-  calcTreeVolLLT,
-  calcTreeVolSLT,
-  sumBiomass,
-  sumNumberOfTrees,
-  sumPixel
-} from './frcsInputCalculations';
+import { sumBiomass, sumNumberOfTrees, sumPixel } from './frcsInputCalculations';
 import { HarvestCost } from './models/harvestCost';
 import { Pixel, PixelClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
