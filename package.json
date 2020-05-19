@@ -17,9 +17,6 @@
   },
   "dependencies": {
     "@rauschma/stringio": "^1.4.0",
-    "@types/dotenv": "^6.1.0",
-    "@types/geolib": "^2.0.23",
-    "@types/knex": "^0.15.2",
     "@ucdavis/frcs": "^1.0.6",
     "body-parser": "^1.18.3",
     "dotenv": "^6.2.0",
@@ -31,6 +28,9 @@
     "ps": "^1.0.0"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.0",
+    "@types/geolib": "^2.0.23",
+    "@types/knex": "^0.15.2",
     "@types/node": "^10.12.21",
     "@types/osrm": "^5.12.0",
     "@types/pg": "^7.14.1",

@@ -103,6 +103,7 @@ export const processCluster = async (
       // https://ucdavis.app.box.com/file/553138812702
       const t = 50000; // payload of equipment delivering biomass in lbs
       let totalYardingDistance = 0;
+      let totalNumTrips = 0;
 
       pixels.forEach((p, i) => {
         pixelSummation = sumPixel(pixelSummation, p);
@@ -113,9 +114,16 @@ export const processCluster = async (
         }); // meters
         distance = distance * metersToFeetConstant; // feet
         const biomass = sumBiomass(p) * 2000; // pounds
-        totalYardingDistance += 2 * 1 * distance * Math.ceil(biomass / t); // feet
+        const numTrips = Math.ceil(biomass / t);
+        totalNumTrips += numTrips;
+        totalYardingDistance += 2 * 1 * distance * numTrips; // feet
       });
 
+      const meanYardingDistance = totalYardingDistance / totalNumTrips;
+
+      console.log(
+        `meanYarding: ${meanYardingDistance}, totalYarding: ${totalYardingDistance}, numTrips: ${totalNumTrips}`
+      );
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
         100;
@@ -131,8 +139,9 @@ export const processCluster = async (
         center_elevation: centerOfBiomassElevation,
         slope: averageSlope,
         area,
-        total_yarding: totalYardingDistance,
-        df_ele_cnty_name: pixelSummation.df_ele_cnty_name,
+        // TODO: change to meanYarding in db
+        total_yarding: meanYardingDistance,
+        df_ele_cnty_name: pixelSummation.county,
         bmcwn_0: pixelSummation.bmcwn_0,
         bmcwn_15: pixelSummation.bmcwn_15,
         bmcwn_2: pixelSummation.bmcwn_2,

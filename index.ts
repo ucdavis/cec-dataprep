@@ -63,6 +63,7 @@ const main = async () => {
     });
 
     console.log('updating db...');
+    console.log(outputs);
     const results: TreatedCluster = await db('treatedclusters').insert(outputs);
   } catch (err) {
     console.log('------------\n');
