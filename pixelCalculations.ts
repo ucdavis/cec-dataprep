@@ -1,4 +1,5 @@
-import { Pixel } from 'models/pixel';
+import { Pixel, PixelVariables } from 'models/pixel';
+import { CenterOfBiomassSum } from 'models/shared';
 const metersToAcresConstant = 0.000247105;
 const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
 
@@ -61,11 +62,8 @@ export const sumBiomass = (pixel: Pixel) => {
   );
 };
 
-export const sumPixel = (pixelSummation: Pixel, p: Pixel) => {
-  const pixelSum: Pixel = {
-    ...pixelSummation,
-    cluster_no: p.cluster_no,
-
+export const sumPixel = (pixelSummation: PixelVariables, p: Pixel) => {
+  const pixelSum: PixelVariables = {
     bmcwn_0: pixelSummation.bmcwn_0 + p.bmcwn_0,
     bmcwn_2: pixelSummation.bmcwn_2 + p.bmcwn_2,
     bmcwn_7: pixelSummation.bmcwn_7 + p.bmcwn_7,
@@ -156,4 +154,14 @@ export const sumPixel = (pixelSummation: Pixel, p: Pixel) => {
     basa_wi: pixelSummation.basa_wi + p.basa_wi
   };
   return pixelSum;
+};
+
+export const calculateCenterOfBiomass = (
+  centerOfBiomassSum: CenterOfBiomassSum,
+  treatedPixel: Pixel
+) => {
+  const biomassInPixel = sumBiomass(treatedPixel); // excludes 35, 40 size classes
+  centerOfBiomassSum.lat += treatedPixel.y * biomassInPixel;
+  centerOfBiomassSum.lng += treatedPixel.x * biomassInPixel;
+  centerOfBiomassSum.biomassSum += biomassInPixel;
 };

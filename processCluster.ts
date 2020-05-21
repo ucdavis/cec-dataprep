@@ -1,11 +1,12 @@
 import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
+import { CenterOfBiomassSum } from 'models/shared';
 import OSRM = require('osrm');
 import pg from 'pg';
-import { Pixel, PixelClass } from './models/pixel';
+import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { sumBiomass, sumNumberOfTrees, sumPixel } from './pixelCalculations';
-import { clearcut } from './treatments';
+import { processClearcut } from './treatments/clearcut';
 
 const PG_DECIMAL_OID = 1700;
 pg.types.setTypeParser(PG_DECIMAL_OID, parseFloat);
@@ -21,28 +22,15 @@ export const processCluster = async (
     const metersToFeetConstant = 3.28084;
     const metersToAcresConstant = 0.00024711;
     const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
-    const centerOfBiomassSum = {
+    const centerOfBiomassSum: CenterOfBiomassSum = {
       lat: 0,
       lng: 0,
       biomassSum: 0
     };
-    let clusterSum = new PixelClass();
     try {
-      pixels = pixels.map(pixel => {
-        // treat pixel
-        pixel = clearcut(pixel);
-        // clusterSum = sumPixel(clusterSum, pixel);
-        // move after treatments, reduce?, for commercial thin, use calculated p values for each pixel
-        // return center of biomass from treatment
-        const biomassInPixel = sumBiomass(pixel); // excludes 35, 40 size classes
-        centerOfBiomassSum.lat += pixel.y * biomassInPixel;
-        centerOfBiomassSum.lng += pixel.x * biomassInPixel;
-        centerOfBiomassSum.biomassSum += biomassInPixel;
-        return pixel;
-      });
       switch (treatmentName) {
         case 'clearcut':
-          clusterSum = clearcut(clusterSum);
+          pixels = processClearcut(pixels, centerOfBiomassSum);
           break;
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);
@@ -91,7 +79,7 @@ export const processCluster = async (
       }
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation * metersToFeetConstant;
 
-      let pixelSummation = new PixelClass();
+      let pixelSummation = new PixelVariablesClass();
 
       // https://ucdavis.app.box.com/file/553138812702
       const t = 50000; // payload of equipment delivering biomass in lbs
@@ -122,7 +110,7 @@ export const processCluster = async (
         100;
 
       const output: TreatedCluster = {
-        cluster_no: pixelSummation.cluster_no,
+        cluster_no: pixels[0].cluster_no,
         treatmentid: treatmentId,
         landing_lng: landing.longitude,
         landing_lat: landing.latitude,
@@ -134,7 +122,7 @@ export const processCluster = async (
         area,
         // TODO: change to meanYarding in db
         total_yarding: meanYardingDistance,
-        county: pixelSummation.county,
+        county: pixels[0].county,
 
         ...pixelSummation
       };

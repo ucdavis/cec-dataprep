@@ -4,8 +4,8 @@ import OSRM from 'osrm';
 import { performance } from 'perf_hooks';
 import pg from 'pg';
 import { Cluster } from './models/cluster';
+import { Treatment } from './models/shared';
 import { TreatedCluster } from './models/treatedcluster';
-import { Treatment } from './models/treatment';
 import { processCluster } from './processCluster';
 
 const PG_DECIMAL_OID = 1700;
@@ -31,21 +31,21 @@ const main = async () => {
       .table('treatments')
       .orderByRaw('RANDOM()')
       .limit(1);
-    const clusters: Cluster[] = await db
-      .table('clusters')
-      .select('id')
-      // tslint:disable-next-line: space-before-function-paren
-      .whereNotExists(function() {
-        this.select('*')
-          .from('treatedclusters')
-          .whereRaw(`clusters.id = cluster_no and treatmentid = ${treatment[0].id}`);
-      })
-      .orderByRaw('RANDOM()')
-      .limit(1);
-    if (clusters.length === 0) {
-      throw new Error('No clusters left to process.');
-    }
-    const clusterId = clusters[0]?.id;
+    // const clusters: Cluster[] = await db
+    //   .table('clusters')
+    //   .select('id')
+    //   // tslint:disable-next-line: space-before-function-paren
+    //   .whereNotExists(function() {
+    //     this.select('*')
+    //       .from('treatedclusters')
+    //       .whereRaw(`clusters.id = cluster_no and treatmentid = ${treatment[0].id}`);
+    //   })
+    //   .orderByRaw('RANDOM()')
+    //   .limit(1);
+    // if (clusters.length === 0) {
+    //   throw new Error('No clusters left to process.');
+    // }
+    const clusterId = 21894; // clusters[0]?.id;
     console.log('cluster id: ' + clusterId + ', treatment id: ' + treatment[0].id);
     const pixelsInCluster = await db.table('pixels').where({ cluster_no: clusterId });
     const outputs: TreatedCluster = await processCluster(
