@@ -64,6 +64,7 @@ export const sumBiomass = (pixel: Pixel) => {
 
 export const sumPixel = (pixelSummation: PixelVariables, p: Pixel) => {
   const pixelSum: PixelVariables = {
+    ...pixelSummation,
     bmcwn_0: pixelSummation.bmcwn_0 + p.bmcwn_0,
     bmcwn_2: pixelSummation.bmcwn_2 + p.bmcwn_2,
     bmcwn_7: pixelSummation.bmcwn_7 + p.bmcwn_7,

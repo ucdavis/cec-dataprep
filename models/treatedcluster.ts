@@ -13,4 +13,5 @@ export interface TreatedCluster extends PixelVariables {
   area: number;
   mean_yarding: number;
   county: string;
+  land_use: string;
 }

@@ -1,4 +1,9 @@
 export interface PixelVariables {
+  cluster_no: number;
+  county: string;
+  land_use: string;
+  sit_raster: number;
+
   ba_0: number;
   ba_15: number;
   ba_2: number;
@@ -74,6 +79,10 @@ export interface PixelVariables {
 }
 
 export class PixelVariablesClass implements PixelVariables {
+  cluster_no = 0;
+  county = '';
+  land_use = '';
+  sit_raster = 0;
   ba_0 = 0;
   ba_2 = 0;
   ba_7 = 0;
@@ -150,10 +159,6 @@ export class PixelVariablesClass implements PixelVariables {
 }
 
 export interface Pixel extends PixelVariables {
-  cluster_no: number;
-  county: string;
-  land_use: string;
-  sit_raster: number;
   elevation: number;
   cluster1: number;
   cluster2: number;

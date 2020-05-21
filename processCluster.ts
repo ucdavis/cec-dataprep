@@ -79,7 +79,15 @@ export const processCluster = async (
       }
       const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation * metersToFeetConstant;
 
+      // initialize sum with important variables, 0 everything else
       let pixelSummation = new PixelVariablesClass();
+      pixelSummation = {
+        ...pixelSummation,
+        cluster_no: pixels[0].cluster_no,
+        county: pixels[0].county,
+        sit_raster: pixels[0].sit_raster,
+        land_use: pixels[0].land_use
+      };
 
       // https://ucdavis.app.box.com/file/553138812702
       const t = 50000; // payload of equipment delivering biomass in lbs
@@ -110,7 +118,6 @@ export const processCluster = async (
         100;
 
       const output: TreatedCluster = {
-        cluster_no: pixels[0].cluster_no,
         treatmentid: treatmentId,
         landing_lng: landing.longitude,
         landing_lat: landing.latitude,
@@ -120,9 +127,7 @@ export const processCluster = async (
         center_elevation: centerOfBiomassElevation,
         slope: averageSlope,
         area,
-        // TODO: change to meanYarding in db
-        total_yarding: meanYardingDistance,
-        county: pixels[0].county,
+        mean_yarding: meanYardingDistance,
 
         ...pixelSummation
       };
