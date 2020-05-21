@@ -1,13 +1,10 @@
-import { runFrcs } from '@ucdavis/frcs';
-import { InputVarMod, OutputVarMod } from '@ucdavis/frcs/out/systems/frcs.model';
 import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import OSRM = require('osrm');
 import pg from 'pg';
-import { sumBiomass, sumNumberOfTrees, sumPixel } from './frcsInputCalculations';
-import { HarvestCost } from './models/harvestCost';
 import { Pixel, PixelClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
+import { sumBiomass, sumNumberOfTrees, sumPixel } from './pixelCalculations';
 import { clearcut } from './treatments';
 
 const PG_DECIMAL_OID = 1700;
@@ -29,21 +26,27 @@ export const processCluster = async (
       lng: 0,
       biomassSum: 0
     };
+    let clusterSum = new PixelClass();
     try {
       pixels = pixels.map(pixel => {
-        switch (treatmentName) {
-          case 'clearcut':
-            pixel = clearcut(pixel);
-            break;
-          default:
-            throw new Error('Unknown treatment option: ' + treatmentName);
-        }
-        const biomassInPixel = sumBiomass(pixel);
+        // treat pixel
+        pixel = clearcut(pixel);
+        // clusterSum = sumPixel(clusterSum, pixel);
+        // move after treatments, reduce?, for commercial thin, use calculated p values for each pixel
+        // return center of biomass from treatment
+        const biomassInPixel = sumBiomass(pixel); // excludes 35, 40 size classes
         centerOfBiomassSum.lat += pixel.y * biomassInPixel;
         centerOfBiomassSum.lng += pixel.x * biomassInPixel;
         centerOfBiomassSum.biomassSum += biomassInPixel;
         return pixel;
       });
+      switch (treatmentName) {
+        case 'clearcut':
+          clusterSum = clearcut(clusterSum);
+          break;
+        default:
+          throw new Error('Unknown treatment option: ' + treatmentName);
+      }
     } catch (err) {
       reject(err);
       return;

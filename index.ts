@@ -4,8 +4,6 @@ import OSRM from 'osrm';
 import { performance } from 'perf_hooks';
 import pg from 'pg';
 import { Cluster } from './models/cluster';
-import { HarvestCost } from './models/harvestCost';
-import { Pixel } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { Treatment } from './models/treatment';
 import { processCluster } from './processCluster';

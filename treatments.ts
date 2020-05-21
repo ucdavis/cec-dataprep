@@ -18,6 +18,7 @@ export const clearcut = (pixel: Pixel): Pixel => {
     elevation: pixel.elevation,
     county: pixel.county,
     land_use: pixel.land_use,
+    sit_raster: pixel.sit_raster,
     cluster1: pixel.cluster1,
     cluster2: pixel.cluster2,
     x: pixel.x,
@@ -72,7 +73,7 @@ export const clearcut = (pixel: Pixel): Pixel => {
     tpa_40: pixel.tpa_40,
 
     // volume removed
-    vol_0: 0.3 * pixel.vol_0,
+    // vol_0: 0.3 * pixel.vol_0,
     vmsg_0: 0.3 * pixel.vmsg_0,
     vol_2: 0.6 * pixel.vol_2,
     vmsg_2: 0.6 * pixel.vmsg_2,
@@ -95,6 +96,9 @@ export const clearcut = (pixel: Pixel): Pixel => {
 // Remove trees > 10 inches DBH, starting with small ones closest to 10”
 // until a certain residual basal area is reached, which is based on site class
 export const commercialThin = (pixel: Pixel) => {
+  // first sum all pixels and calculate p values off of cluster variables
+  // then use p values to treat each pixel
+  // then calculate center of biomass using each pixel after its been treated
   return;
 };
 
@@ -186,7 +190,7 @@ export const timberSalvageChipTreeRemoval = (pixel: Pixel) => {
     sng_7: c7 * pixel.sng_7,
 
     // volume removed
-    vol_0: c0 * pixel.vol_0,
+    // vol_0: c0 * pixel.vol_0,
     vmsg_0: c0 * pixel.vmsg_0,
     vol_2: c2 * pixel.vol_2,
     vmsg_2: c2 * pixel.vmsg_2,

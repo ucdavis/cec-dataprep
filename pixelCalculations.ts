@@ -1,5 +1,4 @@
 import { Pixel } from 'models/pixel';
-import { TreatedCluster } from 'models/treatedcluster';
 const metersToAcresConstant = 0.000247105;
 const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
 
@@ -92,14 +91,13 @@ export const sumPixel = (pixelSummation: Pixel, p: Pixel) => {
     bmstm_40: pixelSummation.bmstm_40 + p.bmstm_40,
 
     // get # of trees per pixel
-    tpa_0: pixelSummation.tpa_0 + p.tpa_0, // * pixelsToAcreConstant,
-    tpa_15: pixelSummation.tpa_15 + p.tpa_15, // * pixelsToAcreConstant,
-    tpa_2: pixelSummation.tpa_2 + p.tpa_2, // * pixelsToAcreConstant,
-    tpa_25: pixelSummation.tpa_25 + p.tpa_25, // * pixelsToAcreConstant,
-    tpa_35: pixelSummation.tpa_35 + p.tpa_35, // * pixelsToAcreConstant,
-    tpa_40: pixelSummation.tpa_40 + p.tpa_40, // * pixelsToAcreConstant,
-    tpa_7: pixelSummation.tpa_7 + p.tpa_7, // * pixelsToAcreConstant
-
+    tpa_0: pixelSummation.tpa_0 + p.tpa_0,
+    tpa_15: pixelSummation.tpa_15 + p.tpa_15,
+    tpa_2: pixelSummation.tpa_2 + p.tpa_2,
+    tpa_25: pixelSummation.tpa_25 + p.tpa_25,
+    tpa_35: pixelSummation.tpa_35 + p.tpa_35,
+    tpa_40: pixelSummation.tpa_40 + p.tpa_40,
+    tpa_7: pixelSummation.tpa_7 + p.tpa_7,
     // dead biomass
     dbmsm_0: pixelSummation.dbmsm_0 + p.dbmsm_0,
     dbmsm_2: pixelSummation.dbmsm_2 + p.dbmsm_2,
@@ -126,7 +124,8 @@ export const sumPixel = (pixelSummation: Pixel, p: Pixel) => {
     sng_40: pixelSummation.sng_40 + p.sng_40,
 
     // volume
-    vol_0: pixelSummation.vol_0 + p.vol_0,
+    // F3 not giving us vol_0
+    // vol_0: pixelSummation.vol_0 + p.vol_0,
     vol_2: pixelSummation.vol_2 + p.vol_2,
     vol_7: pixelSummation.vol_7 + p.vol_7,
     vol_15: pixelSummation.vol_15 + p.vol_15,
@@ -149,7 +148,12 @@ export const sumPixel = (pixelSummation: Pixel, p: Pixel) => {
     ba_15: pixelSummation.ba_15 + p.ba_15,
     ba_25: pixelSummation.ba_25 + p.ba_25,
     ba_35: pixelSummation.ba_35 + p.ba_35,
-    ba_40: pixelSummation.ba_40 + p.ba_40
+    ba_40: pixelSummation.ba_40 + p.ba_40,
+
+    //
+    basa_as: pixelSummation.basa_as + p.basa_as,
+    basa_ra: pixelSummation.basa_ra + p.basa_ra,
+    basa_wi: pixelSummation.basa_wi + p.basa_wi
   };
   return pixelSum;
 };

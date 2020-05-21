@@ -2,6 +2,7 @@ export interface Pixel extends PixelVariables {
   cluster_no: number;
   county: string;
   land_use: string;
+  sit_raster: number;
   elevation: number;
   cluster1: number;
   cluster2: number;
@@ -10,6 +11,7 @@ export interface Pixel extends PixelVariables {
 }
 
 export class PixelClass implements Pixel {
+  sit_raster = 0;
   elevation = 0;
   county = '';
   land_use = 'Private';
@@ -69,7 +71,7 @@ export class PixelClass implements Pixel {
   tpa_35 = 0;
   tpa_40 = 0;
   tpa_7 = 0;
-  vol_0 = 0;
+  // vol_0 = 0;
   vol_15 = 0;
   vol_2 = 0;
   vol_25 = 0;
@@ -88,6 +90,9 @@ export class PixelClass implements Pixel {
   x = 0;
   y = 0;
   cluster_no = 0;
+  basa_as = 0;
+  basa_ra = 0;
+  basa_wi = 0;
 }
 
 export interface PixelVariables {
@@ -98,6 +103,9 @@ export interface PixelVariables {
   ba_35: number;
   ba_40: number;
   ba_7: number;
+  basa_as: number;
+  basa_ra: number;
+  basa_wi: number;
   bmcwn_0: number;
   bmcwn_15: number;
   bmcwn_2: number;
@@ -105,20 +113,6 @@ export interface PixelVariables {
   bmcwn_35: number;
   bmcwn_40: number;
   bmcwn_7: number;
-  dbmcn_0: number;
-  dbmcn_2: number;
-  dbmcn_7: number;
-  dbmcn_15: number;
-  dbmcn_25: number;
-  dbmcn_35: number;
-  dbmcn_40: number;
-  dbmsm_0: number;
-  dbmsm_2: number;
-  dbmsm_7: number;
-  dbmsm_15: number;
-  dbmsm_25: number;
-  dbmsm_35: number;
-  dbmsm_40: number;
   bmfol_0: number;
   bmfol_15: number;
   bmfol_2: number;
@@ -133,6 +127,20 @@ export interface PixelVariables {
   bmstm_35: number;
   bmstm_40: number;
   bmstm_7: number;
+  dbmcn_0: number;
+  dbmcn_15: number;
+  dbmcn_2: number;
+  dbmcn_25: number;
+  dbmcn_35: number;
+  dbmcn_40: number;
+  dbmcn_7: number;
+  dbmsm_0: number;
+  dbmsm_15: number;
+  dbmsm_2: number;
+  dbmsm_25: number;
+  dbmsm_35: number;
+  dbmsm_40: number;
+  dbmsm_7: number;
   sng_0: number;
   sng_15: number;
   sng_2: number;
@@ -147,13 +155,6 @@ export interface PixelVariables {
   tpa_35: number;
   tpa_40: number;
   tpa_7: number;
-  vol_0: number;
-  vol_15: number;
-  vol_2: number;
-  vol_25: number;
-  vol_35: number;
-  vol_40: number;
-  vol_7: number;
   vmsg_0: number;
   vmsg_15: number;
   vmsg_2: number;
@@ -161,4 +162,10 @@ export interface PixelVariables {
   vmsg_35: number;
   vmsg_40: number;
   vmsg_7: number;
+  vol_15: number;
+  vol_2: number;
+  vol_25: number;
+  vol_35: number;
+  vol_40: number;
+  vol_7: number;
 }
