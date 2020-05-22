@@ -7,6 +7,10 @@ import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from './models
 import { TreatedCluster } from './models/treatedcluster';
 import { sumBiomass, sumNumberOfTrees, sumPixel } from './pixelCalculations';
 import { processClearcut } from './treatments/clearcut';
+import {
+  processTimberSalvage,
+  processTimberSalvageChipTreeRemoval
+} from 'treatments/timberSalvage';
 
 const PG_DECIMAL_OID = 1700;
 pg.types.setTypeParser(PG_DECIMAL_OID, parseFloat);
@@ -31,6 +35,12 @@ export const processCluster = async (
       switch (treatmentName) {
         case 'clearcut':
           pixels = processClearcut(pixels, centerOfBiomassSum);
+          break;
+        case 'timberSalvage':
+          pixels = processTimberSalvage(pixels, centerOfBiomassSum);
+          break;
+        case 'timberSalvageChipTreeRemoval':
+          pixels = processTimberSalvageChipTreeRemoval(pixels, centerOfBiomassSum);
           break;
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);

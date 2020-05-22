@@ -5,12 +5,13 @@ import { calculateCenterOfBiomass, sumBiomass } from '../pixelCalculations';
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 export const processClearcut = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
+  if (pixels[0].land_use === 'Forest') {
+    throw new Error('clearcut cannot be performed on forest land');
+  }
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = clearcut(pixel);
-    // clusterSum = sumPixel(clusterSum, pixel);
-    // move after treatments, reduce?, for commercial thin, use calculated p values for each pixel
-    // return center of biomass from treatment
+    // this will update centerOfBiomassSum
     calculateCenterOfBiomass(centerOfBiomassSum, treatedPixel);
     return treatedPixel;
   });
@@ -21,10 +22,6 @@ export const processClearcut = (pixels: Pixel[], centerOfBiomassSum: CenterOfBio
 // For smaller size classes, cut at the following proportions for both live and dead:
 // 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
 const clearcut = (pixel: Pixel): Pixel => {
-  if (pixel.land_use === 'Forest') {
-    throw new Error('clearcut cannot be performed on forest land');
-  }
-
   const treatedPixel: Pixel = {
     cluster_no: pixel.cluster_no,
     elevation: pixel.elevation,
