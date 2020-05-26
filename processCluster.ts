@@ -3,14 +3,14 @@ import knex from 'knex';
 import { CenterOfBiomassSum } from 'models/shared';
 import OSRM = require('osrm');
 import pg from 'pg';
-import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from './models/pixel';
+import { Pixel, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
-import { sumBiomass, sumNumberOfTrees, sumPixel } from './pixelCalculations';
+import { sumBiomass, sumPixel } from './pixelCalculations';
 import { processClearcut } from './treatments/clearcut';
 import {
   processTimberSalvage,
   processTimberSalvageChipTreeRemoval
-} from 'treatments/timberSalvage';
+} from './treatments/timberSalvage';
 
 const PG_DECIMAL_OID = 1700;
 pg.types.setTypeParser(PG_DECIMAL_OID, parseFloat);
