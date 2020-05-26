@@ -7,6 +7,7 @@ import { Pixel, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { sumBiomass, sumPixel } from './pixelCalculations';
 import { processClearcut } from './treatments/clearcut';
+import { processCommercialThin } from './treatments/commercialThin';
 import {
   processTimberSalvage,
   processTimberSalvageChipTreeRemoval
@@ -41,6 +42,9 @@ export const processCluster = async (
           break;
         case 'timberSalvageChipTreeRemoval':
           pixels = processTimberSalvageChipTreeRemoval(pixels, centerOfBiomassSum);
+          break;
+        case 'commercialThin':
+          pixels = await processCommercialThin(pixels, centerOfBiomassSum);
           break;
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);
