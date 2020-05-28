@@ -4,15 +4,12 @@ import { calculateCenterOfBiomass, sumBiomass, sumPixel } from '../pixelCalculat
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
-export const processCommercialThin = async (
-  pixels: Pixel[],
-  centerOfBiomassSum: CenterOfBiomassSum
-) => {
+export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
   if (pixels[0].land_use === 'Forest') {
     throw new Error('commercial thin cannot be performed on forest land');
   }
   console.log('calculating p values...');
-  const { p15, p25, p35, p40 } = await calculatePValues(pixels);
+  const { p15, p25, p35, p40 } = calculatePValues(pixels);
   console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
   console.log('treating pixels...');
   const treatedPixels = pixels.map(pixel => {
@@ -77,57 +74,157 @@ const commercialThin = (
   return treatedPixel;
 };
 
-const calculatePValues = async (pixels: Pixel[]): Promise<any> => {
-  return new Promise(async (resolve, reject) => {
-    // first get cluster level data
-    console.log('summing pixels...');
-    let pixelSum = new PixelVariablesClass();
-    pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
-    pixelSum.ba_15 = pixelSum.ba_15 / pixels.length;
-    pixelSum.ba_25 = pixelSum.ba_25 / pixels.length;
-    pixelSum.ba_35 = pixelSum.ba_35 / pixels.length;
-    pixelSum.ba_40 = pixelSum.ba_40 / pixels.length;
+const calculatePValues = (pixels: Pixel[]) => {
+  // first get cluster level data
+  console.log('summing pixels...');
+  let pixelSum = new PixelVariablesClass();
+  pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
+  // average based on the number of pixels in cluster
+  pixelSum.ba_15 = pixelSum.ba_15 / pixels.length;
+  pixelSum.ba_25 = pixelSum.ba_25 / pixels.length;
+  pixelSum.ba_35 = pixelSum.ba_35 / pixels.length;
+  pixelSum.ba_40 = pixelSum.ba_40 / pixels.length;
 
-    console.log('pixel sum:');
-    console.log(pixelSum);
-    const residualBaTarget = 100; // ft^2/ac
-    let p15 = 0;
-    let p25 = 0;
-    let p35 = 0;
-    let p40 = 0;
-    let residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
-    console.log(`residualBa: ${residualBa}`);
-    while (residualBa > residualBaTarget && p15 < 100) {
-      console.log(`p15: ${p15}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
-      p15 += 10;
-      residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
-    }
-    console.log(`p15: ${p15}, residualBa: ${residualBa}`);
-    console.log('-----------------');
-    while (residualBa > residualBaTarget && p25 < 100) {
-      console.log(`p25: ${p25}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
-      p25 += 10;
-      residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
-    }
-    console.log(`p25: ${p25}, residualBa: ${residualBa}`);
-    console.log('-----------------');
-    while (residualBa > residualBaTarget && p35 < 100) {
-      console.log(`p35: ${p35}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
-      p35 += 10;
-      residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
-    }
-    console.log(`p35: ${p35}, residualBa: ${residualBa}`);
-    console.log('-----------------');
+  pixelSum.bmcwn_15 = pixelSum.bmcwn_15 / pixels.length;
+  pixelSum.bmcwn_25 = pixelSum.bmcwn_25 / pixels.length;
+  pixelSum.bmcwn_35 = pixelSum.bmcwn_35 / pixels.length;
+  pixelSum.bmcwn_40 = pixelSum.bmcwn_40 / pixels.length;
 
-    while (residualBa > residualBaTarget && p40 < 100) {
-      console.log(`p40: ${p40}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
-      p40 += 10;
-      residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
+  console.log('pixel sum:');
+  console.log(pixelSum);
+  // residual_BA_target is determined by the site class and forest type
+  // it represents the BA that will remain in the forest after we remove biomass
+  // a lower site class = more productive forest = higher residual BA target
+  const residualBaTarget = 25; // ft^2/ac
+  // these p values represent the percentage of each size class we are removing
+  let p15 = 0;
+  let p25 = 0;
+  let p35 = 0;
+  let p40 = 0;
+  let residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
+  console.log(`residualBa: ${residualBa}`);
+  // our goal here is to find p values such that our calculated residual BA = the residual BA target
+  // starting with smaller trees and working our way up
+  while (residualBa !== residualBaTarget && p15 < 100) {
+    console.log(`p15: ${p15}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    const percentDifference = Number(
+      (
+        (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
+        100
+      ).toFixed(0)
+    );
+    console.log('percent difference: ' + percentDifference);
+    p15 += percentDifference;
+    if (p15 > 100) {
+      p15 -= Math.abs(100 - p15);
     }
-    console.log(`p40: ${p40}, residualBa: ${residualBa}`);
-    console.log('-----------------');
-    resolve({ p15, p25, p35, p40 });
-  });
+    residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
+  }
+  console.log(`p15: ${p15}, residualBa: ${residualBa}`);
+  console.log('-----------------');
+  while (residualBa !== residualBaTarget && p25 < 100) {
+    console.log(`p25: ${p25}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    const percentDifference = Number(
+      (
+        (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
+        100
+      ).toFixed(0)
+    );
+    console.log('percent difference: ' + percentDifference);
+    p25 += percentDifference;
+    if (p25 > 100) {
+      p25 -= Math.abs(100 - p25);
+    }
+    residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
+  }
+  console.log(`p25: ${p25}, residualBa: ${residualBa}`);
+  console.log('-----------------');
+  while (residualBa !== residualBaTarget && p35 < 100) {
+    console.log(`p35: ${p35}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    const percentDifference = Number(
+      (
+        (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
+        100
+      ).toFixed(0)
+    );
+    console.log('percent difference: ' + percentDifference);
+    p35 += percentDifference;
+    if (p35 > 100) {
+      p35 -= Math.abs(100 - p35);
+    }
+    residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
+  }
+  console.log(`p35: ${p35}, residualBa: ${residualBa}`);
+  console.log('-----------------');
+
+  while (residualBa !== residualBaTarget && p40 < 100) {
+    console.log(`p40: ${p40}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    const percentDifference = Number(
+      (
+        (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
+        100
+      ).toFixed(0)
+    );
+    console.log('percent difference: ' + percentDifference);
+    p40 += percentDifference;
+    if (p40 > 100) {
+      p40 -= Math.abs(100 - p40);
+    }
+    residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
+  }
+  console.log(`p40: ${p40}, residualBa: ${residualBa}`);
+  console.log('-----------------');
+
+  // naive way
+
+  let p15_naive = 0;
+  let p25_naive = 0;
+  let p35_naive = 0;
+  let p40_naive = 0;
+  let residualBa_naive = calculateResidualBa(pixelSum, p15_naive, p25_naive, p35_naive, p40_naive);
+  // if total is already less than target, do not remove any biomass
+  if (residualBa_naive < residualBaTarget) {
+    console.log(`residualBa_naive: ${residualBa_naive} less than target of ${residualBaTarget}`);
+    return { p15: 0, p25: 0, p35: 0, p40: 0 };
+  }
+  console.log(`residualBa_naive: ${residualBa_naive}`);
+  // our goal here is to find p values such that our calculated residual BA = the residual BA target
+  // starting with smaller trees and working our way up
+  while (residualBa_naive !== residualBaTarget && p15_naive < 100) {
+    console.log(
+      `p15_naive: ${p15_naive}, residualBa: ${residualBa_naive}, residualBaTarget: ${residualBaTarget}`
+    );
+    p15_naive += 1;
+    residualBa_naive = calculateResidualBa(pixelSum, p15_naive, p25_naive, p35_naive, p40_naive);
+  }
+  console.log(`p15_naive: ${p15_naive}, residualBa_naive: ${residualBa_naive}`);
+  console.log('-----------------');
+  while (residualBa_naive !== residualBaTarget && p25_naive < 100) {
+    console.log(
+      `p25_naive: ${p25_naive}, residualBa: ${residualBa_naive}, residualBaTarget: ${residualBaTarget}`
+    );
+    p25_naive += 1;
+    residualBa_naive = calculateResidualBa(pixelSum, p15_naive, p25_naive, p35_naive, p40_naive);
+  }
+  console.log(`p25_naive: ${p25_naive}, residualBa_naive: ${residualBa_naive}`);
+  console.log('-----------------');
+  while (residualBa_naive !== residualBaTarget && p35_naive < 100) {
+    p35_naive += 1;
+    residualBa_naive = calculateResidualBa(pixelSum, p15_naive, p25_naive, p35_naive, p40_naive);
+  }
+  console.log(`p35_naive: ${p35_naive}, residualBa_naive: ${residualBa_naive}`);
+  console.log('-----------------');
+
+  while (residualBa_naive !== residualBaTarget && p40_naive < 100) {
+    p40_naive += 1;
+    residualBa_naive = calculateResidualBa(pixelSum, p15_naive, p25_naive, p35_naive, p40_naive);
+  }
+  console.log(`p40_naive: ${p40_naive}, residualBa_naive: ${residualBa_naive}`);
+  console.log('-----------------');
+
+  // ---
+  // resolve({ p15, p25, p35, p40 });
+  return { p15: p15_naive, p25: p25_naive, p35: p35_naive, p40: p40_naive };
 };
 
 const calculateResidualBa = (
@@ -137,10 +234,12 @@ const calculateResidualBa = (
   p35: number,
   p40: number
 ) => {
-  return (
-    (100 - p15) * pixelSum.ba_15 +
-    (100 - p25) * pixelSum.ba_25 +
-    (100 - p35) * pixelSum.ba_35 +
-    (100 - p40) * pixelSum.ba_40
+  return Number(
+    (
+      ((100 - p15) / 100) * pixelSum.ba_15 +
+      ((100 - p25) / 100) * pixelSum.ba_25 +
+      ((100 - p35) / 100) * pixelSum.ba_35 +
+      ((100 - p40) / 100) * pixelSum.ba_40
+    ).toFixed(0)
   );
 };

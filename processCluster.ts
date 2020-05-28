@@ -44,7 +44,7 @@ export const processCluster = async (
           pixels = processTimberSalvageChipTreeRemoval(pixels, centerOfBiomassSum);
           break;
         case 'commercialThin':
-          pixels = await processCommercialThin(pixels, centerOfBiomassSum);
+          pixels = processCommercialThin(pixels, centerOfBiomassSum);
           break;
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);
@@ -59,7 +59,7 @@ export const processCluster = async (
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
     };
-
+    console.log('running osrm...');
     await osrm.nearest(options, async (err, response) => {
       const landing = {
         latitude: response.waypoints[0].location[1],
@@ -145,6 +145,7 @@ export const processCluster = async (
 
         ...pixelSummation
       };
+
       resolve(output);
     });
   });
