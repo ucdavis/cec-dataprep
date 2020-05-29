@@ -3,21 +3,6 @@ import { Pixel, PixelClass } from '../models/pixel';
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 
-// Remove trees > 10 inches DBH, starting with small ones closest to 10”
-// until a certain residual basal area is reached, which is based on site class
-export const commercialThin = (pixel: Pixel) => {
-  // first sum all pixels and calculate p values off of cluster variables
-  // then use p values to treat each pixel
-  // then calculate center of biomass using each pixel after its been treated
-  return;
-};
-
-// Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
-// 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
-export const commericalThinSmallTreeRemoval = (pixel: Pixel) => {
-  return;
-};
-
 // Remove some trees but leave behind at least 15 sq ft/ac of basal area of trees > 18" DBH
 export const selection = (pixel: Pixel) => {
   if (pixel.land_use === 'Forest') {
