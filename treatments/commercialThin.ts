@@ -176,7 +176,7 @@ const calculatePValues = (pixels: Pixel[]) => {
   // residual_BA_target is determined by the site class and forest type
   // it represents the BA that will remain in the forest after we remove biomass
   // a lower site class = more productive forest = higher residual BA target
-  const residualBaTarget = 25; // ft^2/ac
+  const residualBaTarget = 100; // ft^2/ac
   // these p values represent the percentage of each size class we are removing
   let p15 = 0;
   let p25 = 0;
