@@ -1,6 +1,6 @@
 import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, sumBiomass, sumPixel } from '../pixelCalculations';
+import { calculateCenterOfBiomass, sumPixel } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124

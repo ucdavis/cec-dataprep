@@ -1,12 +1,12 @@
 import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, sumBiomass, sumPixel } from '../pixelCalculations';
+import { calculateCenterOfBiomass, sumPixel } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 export const processSelection = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
   if (pixels[0].land_use === 'Forest') {
-    throw new Error('commercial thin cannot be performed on forest land');
+    throw new Error('selection cannot be performed on forest land');
   }
   console.log('calculating p values...');
   const p = calculatePValues(pixels);
@@ -29,7 +29,7 @@ export const processSelectionSmallTreeRemoval = (
   centerOfBiomassSum: CenterOfBiomassSum
 ) => {
   if (pixels[0].land_use === 'Forest') {
-    throw new Error('commercial thin cannot be performed on forest land');
+    throw new Error('selection with small tree removal cannot be performed on forest land');
   }
   console.log('calculating p values...');
   const p = calculatePValues(pixels);
@@ -147,7 +147,7 @@ const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
   console.log('summing pixels...');
   let pixelSum = new PixelVariablesClass();
-  pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
+  pixels.map(pixel => (pixelSum = sumPixel(pixelSum, pixel)));
   // average based on the number of pixels in cluster
   pixelSum.ba_15 = pixelSum.ba_15 / pixels.length;
   pixelSum.ba_25 = pixelSum.ba_25 / pixels.length;
