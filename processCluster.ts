@@ -8,6 +8,7 @@ import { TreatedCluster } from './models/treatedcluster';
 import { sumBiomass, sumPixel } from './pixelCalculations';
 import { processClearcut } from './treatments/clearcut';
 import { processCommercialThin } from './treatments/commercialThin';
+import { processTenPercentGroupSelection } from './treatments/groupSelection';
 import {
   processTimberSalvage,
   processTimberSalvageChipTreeRemoval
@@ -45,6 +46,9 @@ export const processCluster = async (
           break;
         case 'commercialThin':
           pixels = processCommercialThin(pixels, centerOfBiomassSum);
+          break;
+        case 'tenPercentGroupSelection':
+          pixels = processTenPercentGroupSelection(pixels, centerOfBiomassSum);
           break;
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);
