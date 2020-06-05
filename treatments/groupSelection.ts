@@ -7,15 +7,16 @@ import { processSelection } from './selection';
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 
-export const processTenPercentGroupSelection = (
+export const processGroupSelection = (
   pixels: Pixel[],
-  centerOfBiomassSum: CenterOfBiomassSum
+  centerOfBiomassSum: CenterOfBiomassSum,
+  percent: number
 ): Pixel[] => {
   if (pixels[0].land_use === 'Forest') {
     throw new Error('selection with small tree removal cannot be performed on forest land');
   }
 
-  // randomly pull 10% of pixels for clearcut
+  // randomly pull 10% or 20% of pixels for clearcut
   let clearcutPixels: Pixel[] = getRandom(pixels, Math.floor(pixels.length * 0.1));
   // the rest are selection
   let selectionPixels: Pixel[] = pixels.filter(x => !clearcutPixels.includes(x));
