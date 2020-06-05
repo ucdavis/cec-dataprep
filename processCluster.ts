@@ -6,9 +6,14 @@ import pg from 'pg';
 import { Pixel, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import { sumBiomass, sumPixel } from './pixelCalculations';
+import { processBiomassSalvage } from './treatments/biomassSalvage';
 import { processClearcut } from './treatments/clearcut';
-import { processCommercialThin } from './treatments/commercialThin';
+import {
+  processCommercialThin,
+  processCommericalThinSmallTreeRemoval
+} from './treatments/commercialThin';
 import { processGroupSelection } from './treatments/groupSelection';
+import { processSelection, processSelectionSmallTreeRemoval } from './treatments/selection';
 import {
   processTimberSalvage,
   processTimberSalvageChipTreeRemoval
@@ -38,20 +43,32 @@ export const processCluster = async (
         case 'clearcut':
           pixels = processClearcut(pixels, centerOfBiomassSum);
           break;
+        case 'commercialThin':
+          pixels = processCommercialThin(pixels, centerOfBiomassSum);
+          break;
+        case 'commericalThinSmallTreeRemoval':
+          pixels = processCommericalThinSmallTreeRemoval(pixels, centerOfBiomassSum);
+          break;
         case 'timberSalvage':
           pixels = processTimberSalvage(pixels, centerOfBiomassSum);
           break;
         case 'timberSalvageChipTreeRemoval':
           pixels = processTimberSalvageChipTreeRemoval(pixels, centerOfBiomassSum);
           break;
-        case 'commercialThin':
-          pixels = processCommercialThin(pixels, centerOfBiomassSum);
+        case 'selection':
+          pixels = processSelection(pixels, centerOfBiomassSum);
+          break;
+        case 'selectionSmallTreeRemoval':
+          pixels = processSelectionSmallTreeRemoval(pixels, centerOfBiomassSum);
           break;
         case 'tenPercentGroupSelection':
           pixels = processGroupSelection(pixels, centerOfBiomassSum, 10);
           break;
         case 'twentyPercentGroupSelection':
           pixels = processGroupSelection(pixels, centerOfBiomassSum, 20);
+          break;
+        case 'biomassSalvage':
+          pixels = processBiomassSalvage(pixels, centerOfBiomassSum);
           break;
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);

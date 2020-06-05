@@ -8,10 +8,10 @@ export const processSelection = (pixels: Pixel[], centerOfBiomassSum: CenterOfBi
   if (pixels[0].land_use === 'Forest') {
     throw new Error('selection cannot be performed on forest land');
   }
-  console.log('calculating p values...');
+  console.log('selection: calculating p values...');
   const p = calculatePValues(pixels);
   console.log(`p: ${p} `);
-  console.log('treating pixels...');
+  console.log('selection: treating pixels...');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = selection(pixel, p);

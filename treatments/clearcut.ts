@@ -8,6 +8,7 @@ export const processClearcut = (pixels: Pixel[], centerOfBiomassSum: CenterOfBio
   if (pixels[0].land_use === 'Forest') {
     throw new Error('clearcut cannot be performed on forest land');
   }
+  console.log('clearcut: processing pixels');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = clearcut(pixel);
