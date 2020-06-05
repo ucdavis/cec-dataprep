@@ -1,6 +1,7 @@
 export interface Treatment {
   id: number;
   name: string;
+  land_use: string;
 }
 
 export interface CenterOfBiomassSum {

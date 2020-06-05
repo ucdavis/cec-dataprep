@@ -17,7 +17,7 @@ export const processGroupSelection = (
   }
 
   // randomly pull 10% or 20% of pixels for clearcut
-  let clearcutPixels: Pixel[] = getRandom(pixels, Math.floor(pixels.length * 0.1));
+  let clearcutPixels: Pixel[] = getRandom(pixels, Math.floor(pixels.length * (percent / 100)));
   // the rest are selection
   let selectionPixels: Pixel[] = pixels.filter(x => !clearcutPixels.includes(x));
 
@@ -30,23 +30,6 @@ export const processGroupSelection = (
 
   const ret = [...clearcutPixels, ...selectionPixels];
   return ret;
-};
-
-export const tenPercentGroupSelection = (pixel: Pixel) => {
-  let treatedPixel = new PixelClass();
-
-  treatedPixel = {
-    ...treatedPixel,
-    cluster_no: pixel.cluster_no,
-    elevation: pixel.elevation,
-    county: pixel.county,
-    land_use: pixel.land_use,
-    cluster1: pixel.cluster1,
-    cluster2: pixel.cluster2,
-    x: pixel.x,
-    y: pixel.y
-  };
-  return treatedPixel;
 };
 
 // https://stackoverflow.com/questions/19269545/how-to-get-n-no-elements-randomly-from-an-array

@@ -24,7 +24,7 @@ export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: Cente
 
 // Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
 // 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
-export const processCommericalThinSmallTreeRemoval = (
+export const processCommericalThinChipTreeRemoval = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum
 ) => {
@@ -37,7 +37,7 @@ export const processCommericalThinSmallTreeRemoval = (
   console.log('treating pixels...');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
-    const treatedPixel = commericalThinSmallTreeRemoval(pixel, p15, p25, p35, p40);
+    const treatedPixel = commericalThinChipTreeRemoval(pixel, p15, p25, p35, p40);
     // this will update centerOfBiomassSum
     calculateCenterOfBiomass(centerOfBiomassSum, treatedPixel);
     return treatedPixel;
@@ -99,7 +99,7 @@ const commercialThin = (
 
 // Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
 // 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
-const commericalThinSmallTreeRemoval = (
+const commericalThinChipTreeRemoval = (
   pixel: Pixel,
   p15: number,
   p25: number,

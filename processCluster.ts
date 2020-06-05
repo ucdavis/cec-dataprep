@@ -10,10 +10,10 @@ import { processBiomassSalvage } from './treatments/biomassSalvage';
 import { processClearcut } from './treatments/clearcut';
 import {
   processCommercialThin,
-  processCommericalThinSmallTreeRemoval
+  processCommericalThinChipTreeRemoval
 } from './treatments/commercialThin';
 import { processGroupSelection } from './treatments/groupSelection';
-import { processSelection, processSelectionSmallTreeRemoval } from './treatments/selection';
+import { processSelection, processSelectionChipTreeRemoval } from './treatments/selection';
 import {
   processTimberSalvage,
   processTimberSalvageChipTreeRemoval
@@ -46,8 +46,8 @@ export const processCluster = async (
         case 'commercialThin':
           pixels = processCommercialThin(pixels, centerOfBiomassSum);
           break;
-        case 'commericalThinSmallTreeRemoval':
-          pixels = processCommericalThinSmallTreeRemoval(pixels, centerOfBiomassSum);
+        case 'commericalThinChipTreeRemoval':
+          pixels = processCommericalThinChipTreeRemoval(pixels, centerOfBiomassSum);
           break;
         case 'timberSalvage':
           pixels = processTimberSalvage(pixels, centerOfBiomassSum);
@@ -58,8 +58,8 @@ export const processCluster = async (
         case 'selection':
           pixels = processSelection(pixels, centerOfBiomassSum);
           break;
-        case 'selectionSmallTreeRemoval':
-          pixels = processSelectionSmallTreeRemoval(pixels, centerOfBiomassSum);
+        case 'selectionChipTreeRemoval':
+          pixels = processSelectionChipTreeRemoval(pixels, centerOfBiomassSum);
           break;
         case 'tenPercentGroupSelection':
           pixels = processGroupSelection(pixels, centerOfBiomassSum, 10);

@@ -31,9 +31,12 @@ const main = async () => {
       .table('treatments')
       .orderByRaw('RANDOM()')
       .limit(1);
+    const treatmentLandUse = treatment[0].land_use.split(',');
+    console.log(`treatment ${treatment[0].name} allows ${treatment[0].land_use}`);
     const clusters: Cluster[] = await db
       .table('clusters')
-      .select('id')
+      .select('*')
+      .whereIn('land_use', treatmentLandUse) // only pull clusters viable for this treatment type
       // tslint:disable-next-line: space-before-function-paren
       .whereNotExists(function() {
         this.select('*')
@@ -46,7 +49,9 @@ const main = async () => {
       throw new Error('No clusters left to process.');
     }
     const clusterId = clusters[0]?.id;
+    const clusterLandUse = clusters[0]?.land_use;
     console.log('cluster id: ' + clusterId + ', treatment: ' + treatment[0].name);
+    console.log(`cluster ${clusterId} is ${clusterLandUse}`);
     const pixelsInCluster = await db.table('pixels').where({ cluster_no: clusterId });
     const outputs: TreatedCluster = await processCluster(
       pixelsInCluster,
