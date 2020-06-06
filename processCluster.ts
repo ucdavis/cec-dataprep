@@ -1,4 +1,4 @@
-import { getPreciseDistance } from 'geolib';
+import { findNearest, getBoundsOfDistance, getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import { CenterOfBiomassSum } from 'models/shared';
 import OSRM = require('osrm');
@@ -93,29 +93,54 @@ export const processCluster = async (
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
       centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding * metersToFeetConstant; // feet
 
-      const landingElevationFromDb: Pixel[] = await db
+      const bounds = getBoundsOfDistance(
+        { latitude: landing.latitude, longitude: landing.longitude },
+        500
+      );
+      const closestPixelsToLanding: Pixel[] = await db
         .table('pixels')
-        .whereBetween('x', [landing.longitude - 0.005, landing.longitude + 0.005])
-        .whereBetween('y', [landing.latitude - 0.005, landing.latitude + 0.005]);
-      if (landingElevationFromDb.length === 0 || !landingElevationFromDb[0]) {
+        .whereBetween('y', [bounds[0].latitude, bounds[1].latitude])
+        .andWhereBetween('x', [bounds[0].longitude, bounds[1].longitude]);
+      if (closestPixelsToLanding.length === 0 || !closestPixelsToLanding[0]) {
         reject('No elevation for landing site found.');
         return;
       }
-
-      let landingElevation = landingElevationFromDb[0]?.elevation;
+      const nearestPixel: any = findNearest(
+        { latitude: landing.latitude, longitude: landing.longitude },
+        closestPixelsToLanding.map(pixel => {
+          return { latitude: pixel.y, longitude: pixel.x, elevation: pixel.elevation };
+        })
+      );
+      let landingElevation = nearestPixel.elevation;
       landingElevation = landingElevation * metersToFeetConstant; // put landing elevation in feet
-
       const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
 
-      const centerOfBiomassPixel: Pixel[] = await db
+      const boundsOnCenterOfBiomass = getBoundsOfDistance(
+        { latitude: landing.latitude, longitude: landing.longitude },
+        1000
+      );
+      const closestPixelsToCenterOfBiomass: Pixel[] = await db
         .table('pixels')
-        .whereBetween('x', [centerOfBiomassLng - 0.005, centerOfBiomassLng + 0.005])
-        .whereBetween('y', [centerOfBiomassLat - 0.005, centerOfBiomassLat + 0.005]);
-      if (centerOfBiomassPixel.length === 0 || !centerOfBiomassPixel[0]) {
+        .whereBetween('y', [
+          boundsOnCenterOfBiomass[0].latitude,
+          boundsOnCenterOfBiomass[1].latitude
+        ])
+        .andWhereBetween('x', [
+          boundsOnCenterOfBiomass[0].longitude,
+          boundsOnCenterOfBiomass[1].longitude
+        ]);
+      if (closestPixelsToCenterOfBiomass.length === 0 || !closestPixelsToCenterOfBiomass[0]) {
         reject('No elevation for center of biomass found.');
         return;
       }
-      const centerOfBiomassElevation = centerOfBiomassPixel[0].elevation * metersToFeetConstant;
+      const nearestPixelTocenterOfBiomass: any = findNearest(
+        { latitude: centerOfBiomassLat, longitude: centerOfBiomassLng },
+        closestPixelsToCenterOfBiomass.map(pixel => {
+          return { latitude: pixel.y, longitude: pixel.x, elevation: pixel.elevation };
+        })
+      );
+      const centerOfBiomassElevation =
+        nearestPixelTocenterOfBiomass.elevation * metersToFeetConstant;
 
       // initialize sum with important variables, 0 everything else
       let pixelSummation = new PixelVariablesClass();
@@ -148,9 +173,9 @@ export const processCluster = async (
 
       const meanYardingDistance = totalYardingDistance / totalNumTrips;
 
-      console.log(
-        `meanYarding: ${meanYardingDistance}, totalYarding: ${totalYardingDistance}, numTrips: ${totalNumTrips}`
-      );
+      // console.log(
+      //   `meanYarding: ${meanYardingDistance}, totalYarding: ${totalYardingDistance}, numTrips: ${totalNumTrips}`
+      // );
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
         100;

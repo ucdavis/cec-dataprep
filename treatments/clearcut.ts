@@ -4,8 +4,12 @@ import { calculateCenterOfBiomass, sumBiomass } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
-export const processClearcut = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
-  if (pixels[0].land_use === 'Forest') {
+export const processClearcut = (
+  pixels: Pixel[],
+  centerOfBiomassSum: CenterOfBiomassSum,
+  treatmentName?: string
+) => {
+  if (treatmentName === 'clearcut' && pixels[0].land_use === 'Forest') {
     throw new Error('clearcut cannot be performed on forest land');
   }
   console.log('clearcut: processing pixels');

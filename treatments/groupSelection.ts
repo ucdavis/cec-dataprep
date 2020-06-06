@@ -12,21 +12,18 @@ export const processGroupSelection = (
   centerOfBiomassSum: CenterOfBiomassSum,
   percent: number
 ): Pixel[] => {
-  if (pixels[0].land_use === 'Forest') {
-    throw new Error('selection with small tree removal cannot be performed on forest land');
+  if (percent === 20 && pixels[0].land_use === 'Forest') {
+    throw new Error('20% group selection cannot be performed on forest land');
   }
+  console.log('group selection: processing pixels');
 
   // randomly pull 10% or 20% of pixels for clearcut
   let clearcutPixels: Pixel[] = getRandom(pixels, Math.floor(pixels.length * (percent / 100)));
   // the rest are selection
   let selectionPixels: Pixel[] = pixels.filter(x => !clearcutPixels.includes(x));
 
-  console.log('processing clearcut pixels');
-  clearcutPixels = processClearcut(clearcutPixels, centerOfBiomassSum);
-  console.log('after clearcut, biomass sum: ' + centerOfBiomassSum.biomassSum);
-  console.log('processing selection pixels');
-  selectionPixels = processSelection(selectionPixels, centerOfBiomassSum);
-  console.log('after selection, biomass sum: ' + centerOfBiomassSum.biomassSum);
+  clearcutPixels = processClearcut(clearcutPixels, centerOfBiomassSum, 'groupSelection');
+  selectionPixels = processSelection(selectionPixels, centerOfBiomassSum, 'groupSelection');
 
   const ret = [...clearcutPixels, ...selectionPixels];
   return ret;

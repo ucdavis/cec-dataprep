@@ -8,10 +8,11 @@ export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: Cente
   if (pixels[0].land_use === 'Forest') {
     throw new Error('commercial thin cannot be performed on forest land');
   }
-  console.log('calculating p values...');
+  console.log('commercial thin: processing pixels');
+  // console.log('calculating p values...');
   const { p15, p25, p35, p40 } = calculatePValues(pixels);
-  console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
-  console.log('treating pixels...');
+  // console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
+  // console.log('treating pixels...');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = commercialThin(pixel, p15, p25, p35, p40);
@@ -31,10 +32,11 @@ export const processCommericalThinChipTreeRemoval = (
   if (pixels[0].land_use === 'Forest') {
     throw new Error('commercial thin cannot be performed on forest land');
   }
-  console.log('calculating p values...');
+  console.log('commercial thin chip tree: processing pixels');
+  // console.log('calculating p values...');
   const { p15, p25, p35, p40 } = calculatePValues(pixels);
-  console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
-  console.log('treating pixels...');
+  // console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
+  // console.log('treating pixels...');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = commericalThinChipTreeRemoval(pixel, p15, p25, p35, p40);
@@ -171,8 +173,6 @@ const calculatePValues = (pixels: Pixel[]) => {
   pixelSum.bmcwn_35 = pixelSum.bmcwn_35 / pixels.length;
   pixelSum.bmcwn_40 = pixelSum.bmcwn_40 / pixels.length;
 
-  console.log('pixel sum:');
-  console.log(pixelSum);
   // residual_BA_target is determined by the site class and forest type
   // it represents the BA that will remain in the forest after we remove biomass
   // a lower site class = more productive forest = higher residual BA target
@@ -183,78 +183,78 @@ const calculatePValues = (pixels: Pixel[]) => {
   let p35 = 0;
   let p40 = 0;
   let residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
-  console.log(`residualBa: ${residualBa}`);
+  // console.log(`residualBa: ${residualBa}`);
   // our goal here is to find p values such that our calculated residual BA = the residual BA target
   // starting with smaller trees and working our way up
   while (residualBa !== residualBaTarget && p15 < 100) {
-    console.log(`p15: ${p15}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    // console.log(`p15: ${p15}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
     const percentDifference = Number(
       (
         (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
         100
       ).toFixed(0)
     );
-    console.log('percent difference: ' + percentDifference);
+    // console.log('percent difference: ' + percentDifference);
     p15 += percentDifference;
     if (p15 > 100) {
       p15 -= Math.abs(100 - p15);
     }
     residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
   }
-  console.log(`p15: ${p15}, residualBa: ${residualBa}`);
-  console.log('-----------------');
+  // console.log(`p15: ${p15}, residualBa: ${residualBa}`);
+  // console.log('-----------------');
   while (residualBa !== residualBaTarget && p25 < 100) {
-    console.log(`p25: ${p25}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    // console.log(`p25: ${p25}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
     const percentDifference = Number(
       (
         (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
         100
       ).toFixed(0)
     );
-    console.log('percent difference: ' + percentDifference);
+    // console.log('percent difference: ' + percentDifference);
     p25 += percentDifference;
     if (p25 > 100) {
       p25 -= Math.abs(100 - p25);
     }
     residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
   }
-  console.log(`p25: ${p25}, residualBa: ${residualBa}`);
-  console.log('-----------------');
+  // console.log(`p25: ${p25}, residualBa: ${residualBa}`);
+  // console.log('-----------------');
   while (residualBa !== residualBaTarget && p35 < 100) {
-    console.log(`p35: ${p35}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    // console.log(`p35: ${p35}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
     const percentDifference = Number(
       (
         (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
         100
       ).toFixed(0)
     );
-    console.log('percent difference: ' + percentDifference);
+    // console.log('percent difference: ' + percentDifference);
     p35 += percentDifference;
     if (p35 > 100) {
       p35 -= Math.abs(100 - p35);
     }
     residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
   }
-  console.log(`p35: ${p35}, residualBa: ${residualBa}`);
-  console.log('-----------------');
+  // console.log(`p35: ${p35}, residualBa: ${residualBa}`);
+  // console.log('-----------------');
 
   while (residualBa !== residualBaTarget && p40 < 100) {
-    console.log(`p40: ${p40}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    // console.log(`p40: ${p40}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
     const percentDifference = Number(
       (
         (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
         100
       ).toFixed(0)
     );
-    console.log('percent difference: ' + percentDifference);
+    // console.log('percent difference: ' + percentDifference);
     p40 += percentDifference;
     if (p40 > 100) {
       p40 -= Math.abs(100 - p40);
     }
     residualBa = calculateResidualBa(pixelSum, p15, p25, p35, p40);
   }
-  console.log(`p40: ${p40}, residualBa: ${residualBa}`);
-  console.log('-----------------');
+  // console.log(`p40: ${p40}, residualBa: ${residualBa}`);
+  // console.log('-----------------');
 
   // ---
   return { p15, p25, p35, p40 };

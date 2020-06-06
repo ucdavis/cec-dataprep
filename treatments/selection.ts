@@ -4,14 +4,16 @@ import { calculateCenterOfBiomass, sumPixel } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
-export const processSelection = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
-  if (pixels[0].land_use === 'Forest') {
+export const processSelection = (
+  pixels: Pixel[],
+  centerOfBiomassSum: CenterOfBiomassSum,
+  treatmentName?: string
+) => {
+  if (treatmentName === 'selection' && pixels[0].land_use === 'Forest') {
     throw new Error('selection cannot be performed on forest land');
   }
-  console.log('selection: calculating p values...');
+  console.log('selection: processing pixels');
   const p = calculatePValues(pixels);
-  console.log(`p: ${p} `);
-  console.log('selection: treating pixels...');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = selection(pixel, p);
@@ -31,10 +33,9 @@ export const processSelectionChipTreeRemoval = (
   if (pixels[0].land_use === 'Forest') {
     throw new Error('selection with small tree removal cannot be performed on forest land');
   }
-  console.log('calculating p values...');
+  console.log('selection chip tree removal: processing pixels');
+
   const p = calculatePValues(pixels);
-  console.log(`p: ${p} `);
-  console.log('treating pixels...');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = selectionChipTreeRemoval(pixel, p);
@@ -145,7 +146,6 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number): Pixel => {
 
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
-  console.log('summing pixels...');
   let pixelSum = new PixelVariablesClass();
   pixels.map(pixel => (pixelSum = sumPixel(pixelSum, pixel)));
   // average based on the number of pixels in cluster
@@ -159,8 +159,6 @@ const calculatePValues = (pixels: Pixel[]) => {
   pixelSum.bmcwn_35 = pixelSum.bmcwn_35 / pixels.length;
   pixelSum.bmcwn_40 = pixelSum.bmcwn_40 / pixels.length;
 
-  console.log('pixel sum:');
-  console.log(pixelSum);
   // residual_BA_target is just 15
   // it represents the BA that will remain in the forest after we remove biomass
   // a lower site class = more productive forest = higher residual BA target
@@ -168,26 +166,26 @@ const calculatePValues = (pixels: Pixel[]) => {
   // these p values represent the percentage of each size class we are removing
   let p = 0;
   let residualBa = calculateResidualBa(pixelSum, p);
-  console.log(`residualBa: ${residualBa}`);
+  // console.log(`residualBa: ${residualBa}`);
   // our goal here is to find p values such that our calculated residual BA = the residual BA target
   // starting with smaller trees and working our way up
   while (residualBa !== residualBaTarget && p < 100) {
-    console.log(`p: ${p}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
+    // console.log(`p: ${p}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
     const percentDifference = Number(
       (
         (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
         100
       ).toFixed(0)
     );
-    console.log('percent difference: ' + percentDifference);
+    // console.log('percent difference: ' + percentDifference);
     p += percentDifference;
     if (p > 100) {
       p -= Math.abs(100 - p);
     }
     residualBa = calculateResidualBa(pixelSum, p);
   }
-  console.log(`p: ${p}, residualBa: ${residualBa}`);
-  console.log('-----------------');
+  // console.log(`p: ${p}, residualBa: ${residualBa}`);
+  // console.log('-----------------');
 
   // ---
   return p;
