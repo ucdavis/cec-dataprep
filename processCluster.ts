@@ -77,6 +77,11 @@ export const processCluster = async (
       reject(err);
       return;
     }
+    if (centerOfBiomassSum.biomassSum === 0) {
+      reject('No useable biomass found in cluster under this treatment.');
+    }
+    console.log('centerOfBiomass:');
+    console.log(JSON.stringify(centerOfBiomassSum));
     const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
     const centerOfBiomassLng = centerOfBiomassSum.lng / centerOfBiomassSum.biomassSum;
 

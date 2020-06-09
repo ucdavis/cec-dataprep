@@ -5,6 +5,7 @@ import { calculateCenterOfBiomass } from '../pixelCalculations';
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 export const processTimberSalvage = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
+  console.log('timberSalvage: processing pixels');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = timberSalvage(pixel);
@@ -24,9 +25,9 @@ const timberSalvage = (pixel: Pixel) => {
     elevation: pixel.elevation,
     county: pixel.county,
     land_use: pixel.land_use,
+    sit_raster: pixel.sit_raster,
     cluster1: pixel.cluster1,
     cluster2: pixel.cluster2,
-    sit_raster: pixel.sit_raster,
     x: pixel.x,
     y: pixel.y,
 
