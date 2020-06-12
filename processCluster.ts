@@ -80,10 +80,13 @@ export const processCluster = async (
     if (centerOfBiomassSum.biomassSum === 0) {
       reject('No useable biomass found in cluster under this treatment.');
     }
-    console.log('centerOfBiomass:');
-    console.log(JSON.stringify(centerOfBiomassSum));
+
     const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
     const centerOfBiomassLng = centerOfBiomassSum.lng / centerOfBiomassSum.biomassSum;
+    console.log('centerOfBiomass:');
+    console.log(
+      `lat: ${centerOfBiomassLat}, lng: ${centerOfBiomassLng}, sum: ${centerOfBiomassSum.biomassSum}`
+    );
 
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
@@ -122,7 +125,7 @@ export const processCluster = async (
 
       const boundsOnCenterOfBiomass = getBoundsOfDistance(
         { latitude: landing.latitude, longitude: landing.longitude },
-        1000
+        500
       );
       const closestPixelsToCenterOfBiomass: Pixel[] = await db
         .table('pixels')

@@ -26,6 +26,15 @@ const biomassSalvage = (pixel: Pixel): Pixel => {
 
   treatedPixel = {
     ...treatedPixel,
+    cluster_no: pixel.cluster_no,
+    elevation: pixel.elevation,
+    county: pixel.county,
+    land_use: pixel.land_use,
+    sit_raster: pixel.sit_raster,
+    cluster1: pixel.cluster1,
+    cluster2: pixel.cluster2,
+    x: pixel.x,
+    y: pixel.y,
     // biomass removed
     bmstm_2: c2 * pixel.bmstm_2,
     bmcwn_2: c2 * pixel.bmcwn_2,
