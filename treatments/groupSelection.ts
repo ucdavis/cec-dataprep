@@ -15,7 +15,7 @@ export const processGroupSelection = (
   if (percent === 20 && pixels[0].land_use === 'Forest') {
     throw new Error('20% group selection cannot be performed on forest land');
   }
-  console.log('group selection: processing pixels');
+  // console.log('group selection: processing pixels');
 
   // randomly pull 10% or 20% of pixels for clearcut
   let clearcutPixels: Pixel[] = getRandom(pixels, Math.floor(pixels.length * (percent / 100)));

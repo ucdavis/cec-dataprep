@@ -8,7 +8,7 @@ export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: Cente
   if (pixels[0].land_use === 'Forest') {
     throw new Error('commercial thin cannot be performed on forest land');
   }
-  console.log('commercial thin: processing pixels');
+  // console.log('commercial thin: processing pixels');
   // console.log('calculating p values...');
   const { p15, p25, p35, p40 } = calculatePValues(pixels);
   // console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
@@ -29,10 +29,7 @@ export const processCommericalThinChipTreeRemoval = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum
 ) => {
-  if (pixels[0].land_use === 'Forest') {
-    throw new Error('commercial thin cannot be performed on forest land');
-  }
-  console.log('commercial thin chip tree: processing pixels');
+  // console.log('commercial thin chip tree: processing pixels');
   // console.log('calculating p values...');
   const { p15, p25, p35, p40 } = calculatePValues(pixels);
   // console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
@@ -65,6 +62,7 @@ const commercialThin = (
     county: pixel.county,
     land_use: pixel.land_use,
     sit_raster: pixel.sit_raster,
+    forest_type: pixel.forest_type,
     cluster1: pixel.cluster1,
     cluster2: pixel.cluster2,
     x: pixel.x,
@@ -159,7 +157,7 @@ const commericalThinChipTreeRemoval = (
 
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
-  console.log('summing pixels...');
+  // console.log('summing pixels...');
   let pixelSum = new PixelVariablesClass();
   pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
   // average based on the number of pixels in cluster
@@ -176,7 +174,8 @@ const calculatePValues = (pixels: Pixel[]) => {
   // residual_BA_target is determined by the site class and forest type
   // it represents the BA that will remain in the forest after we remove biomass
   // a lower site class = more productive forest = higher residual BA target
-  const residualBaTarget = 100; // ft^2/ac
+  const residualBaTarget = calculateResidualBaTarget(pixels[0]); // ft^2/ac
+  // console.log('residualBaTarget: ' + residualBaTarget);
   // these p values represent the percentage of each size class we are removing
   let p15 = 0;
   let p25 = 0;
@@ -257,6 +256,7 @@ const calculatePValues = (pixels: Pixel[]) => {
   // console.log('-----------------');
 
   // ---
+  // console.log(`p values: p15:${p15}, p25:${p25}, p35:${p35}, p40:${p40}, `);
   return { p15, p25, p35, p40 };
   // return { p15: p15_naive, p25: p25_naive, p35: p35_naive, p40: p40_naive };
 };
@@ -277,3 +277,41 @@ const calculateResidualBa = (
     ).toFixed(0)
   );
 };
+
+const calculateResidualBaTarget = (pixel: Pixel) => {
+  const { sit_raster, forest_type } = pixel;
+  if (sit_raster === 1) {
+    if (forest_type === 'mixed_conifer') {
+      return 125;
+    }
+    if (forest_type === 'pine') {
+      return 100;
+    }
+    // forest_type === other?
+  }
+  if (sit_raster === 2) {
+    if (forest_type === 'mixed_conifer') {
+      return 100;
+    }
+    if (forest_type === 'pine') {
+      return 75;
+    }
+    // forest_type === other?
+  }
+  if (sit_raster === 3) {
+    if (forest_type === 'mixed_conifer' || forest_type === 'pine') {
+      return 75;
+    }
+    // forest_type === other?
+  }
+  if (sit_raster === 4 || sit_raster === 5) {
+    if (forest_type === 'mixed_conifer' || forest_type === 'pine') {
+      return 50;
+    }
+    // forest_type === other?
+  }
+  // sit_raster = 0, 6, 7?
+  return 100;
+  // throw new Error(`unhandled site class ${sit_raster} and forest type ${forest_type}`);
+};
+// tslint:disable-next-line: max-file-line-count

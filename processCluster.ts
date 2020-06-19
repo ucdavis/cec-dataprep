@@ -41,12 +41,12 @@ export const processCluster = async (
     try {
       switch (treatmentName) {
         case 'clearcut':
-          pixels = processClearcut(pixels, centerOfBiomassSum);
+          pixels = processClearcut(pixels, centerOfBiomassSum, 'clearcut');
           break;
         case 'commercialThin':
           pixels = processCommercialThin(pixels, centerOfBiomassSum);
           break;
-        case 'commericalThinChipTreeRemoval':
+        case 'commercialThinChipTreeRemoval':
           pixels = processCommericalThinChipTreeRemoval(pixels, centerOfBiomassSum);
           break;
         case 'timberSalvage':
@@ -56,7 +56,7 @@ export const processCluster = async (
           pixels = processTimberSalvageChipTreeRemoval(pixels, centerOfBiomassSum);
           break;
         case 'selection':
-          pixels = processSelection(pixels, centerOfBiomassSum);
+          pixels = processSelection(pixels, centerOfBiomassSum, 'selection');
           break;
         case 'selectionChipTreeRemoval':
           pixels = processSelectionChipTreeRemoval(pixels, centerOfBiomassSum);
@@ -73,25 +73,24 @@ export const processCluster = async (
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);
       }
+      if (centerOfBiomassSum.biomassSum < 1) {
+        throw new Error(`No useable biomass found in cluster under ${treatmentName}.`);
+      }
     } catch (err) {
       reject(err);
       return;
     }
-    if (centerOfBiomassSum.biomassSum === 0) {
-      reject('No useable biomass found in cluster under this treatment.');
-    }
 
     const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
     const centerOfBiomassLng = centerOfBiomassSum.lng / centerOfBiomassSum.biomassSum;
-    console.log('centerOfBiomass:');
-    console.log(
-      `lat: ${centerOfBiomassLat}, lng: ${centerOfBiomassLng}, sum: ${centerOfBiomassSum.biomassSum}`
-    );
+    // console.log(
+    // `${treatmentName}: lat: ${centerOfBiomassLat}, lng: ${centerOfBiomassLng}, sum: ${centerOfBiomassSum.biomassSum}`
+    // );
 
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
     };
-    console.log('running osrm...');
+    // console.log('running osrm...');
     await osrm.nearest(options, async (err, response) => {
       const landing = {
         latitude: response.waypoints[0].location[1],
@@ -157,7 +156,8 @@ export const processCluster = async (
         cluster_no: pixels[0].cluster_no,
         county: pixels[0].county,
         sit_raster: pixels[0].sit_raster,
-        land_use: pixels[0].land_use
+        land_use: pixels[0].land_use,
+        forest_type: pixels[0].forest_type
       };
 
       // https://ucdavis.app.box.com/file/553138812702
@@ -202,7 +202,6 @@ export const processCluster = async (
 
         ...pixelSummation
       };
-
       resolve(output);
     });
   });

@@ -4,6 +4,7 @@ import OSRM from 'osrm';
 import { performance } from 'perf_hooks';
 import pg from 'pg';
 import { Cluster } from './models/cluster';
+import { Pixel } from './models/pixel';
 import { Treatment } from './models/shared';
 import { TreatedCluster } from './models/treatedcluster';
 import { processCluster } from './processCluster';
@@ -12,7 +13,7 @@ const PG_DECIMAL_OID = 1700;
 pg.types.setTypeParser(PG_DECIMAL_OID, parseFloat);
 dotenv.config();
 
-const main = async () => {
+const processAllTreatments = async () => {
   const t0 = performance.now();
   console.log('connecting to db', process.env.DB_HOST);
   // https://knexjs.org/
@@ -27,50 +28,45 @@ const main = async () => {
   });
   try {
     const osrm = new OSRM('./data/california-latest.osrm');
-    const treatment: Treatment[] = await db
-      .table('treatments')
-      .orderByRaw('RANDOM()')
-      .limit(1);
-    const treatmentLandUse = treatment[0].land_use.split(',');
-    // console.log(`treatment ${treatment[0].name} allows ${treatment[0].land_use}`);
+    const treatments: Treatment[] = await db.table('treatments');
+    const results: TreatedCluster[] = [];
+
     const clusters: Cluster[] = await db
       .table('clusters')
       .select('*')
-      .whereIn('land_use', treatmentLandUse) // only pull clusters viable for this treatment type
       // tslint:disable-next-line: space-before-function-paren
       .whereNotExists(function() {
         this.select('*')
           .from('treatedclusters')
-          .whereRaw(`clusters.id = cluster_no and treatmentid = ${treatment[0].id}`);
+          .whereRaw(`clusters.id = cluster_no`);
       })
       .orderByRaw('RANDOM()')
       .limit(1);
-    if (clusters.length === 0) {
-      throw new Error('No clusters left to process.');
-    }
-    const clusterId = clusters[0]?.id;
-    console.log('cluster id: ' + clusterId + ', treatment: ' + treatment[0].name);
-    // console.log(`cluster ${clusterId} is ${clusterLandUse}`);
-    const pixelsInCluster = await db.table('pixels').where({ cluster_no: clusterId });
-    const outputs: TreatedCluster = await processCluster(
-      pixelsInCluster,
-      treatment[0].id,
-      treatment[0].name,
-      osrm,
-      db
-    ).catch(err => {
-      console.log('ERROR IN CATCH:');
-      console.log(err);
-      throw new Error(err);
-    });
-
-    console.log('updating db...');
-    // console.log(outputs);
-
-    const results: TreatedCluster = await db('treatedclusters').insert(outputs);
+    const clusterId = clusters[0].id;
+    const pixelsInCluster: Pixel[] = await db.table('pixels').where({ cluster_no: clusterId });
+    await Promise.all(
+      treatments.map(async (treatment: Treatment) => {
+        const outputs = await processCluster(
+          pixelsInCluster,
+          treatment.id,
+          treatment.name,
+          osrm,
+          db
+        )
+          .then(res => {
+            console.log(`pushing results of ${clusterId}, ${treatment.name}`);
+            results.push(res);
+          })
+          .catch(err => {
+            console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err.message}`);
+          });
+      })
+    );
+    console.log('inserting into db...');
+    await db('treatedclusters').insert(results);
   } catch (err) {
     console.log('------------\n');
-    console.log(err);
+    console.log(err.message);
     console.log('/n');
   } finally {
     console.log('destroying pg...');
@@ -80,4 +76,4 @@ const main = async () => {
   }
 };
 
-main();
+processAllTreatments();

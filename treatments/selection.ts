@@ -12,8 +12,8 @@ export const processSelection = (
   if (treatmentName === 'selection' && pixels[0].land_use === 'Forest') {
     throw new Error('selection cannot be performed on forest land');
   }
-  console.log('selection: processing pixels');
   const p = calculatePValues(pixels);
+  // console.log('selection: processing pixels with p value: ' + p);
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = selection(pixel, p);
@@ -33,9 +33,9 @@ export const processSelectionChipTreeRemoval = (
   if (pixels[0].land_use === 'Forest') {
     throw new Error('selection with small tree removal cannot be performed on forest land');
   }
-  console.log('selection chip tree removal: processing pixels');
-
   const p = calculatePValues(pixels);
+  // console.log('selection chip tree removal: processing pixels with p value: ' + p);
+
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = selectionChipTreeRemoval(pixel, p);
@@ -58,6 +58,7 @@ const selection = (pixel: Pixel, p: number): Pixel => {
     county: pixel.county,
     land_use: pixel.land_use,
     sit_raster: pixel.sit_raster,
+    forest_type: pixel.forest_type,
     cluster1: pixel.cluster1,
     cluster2: pixel.cluster2,
     x: pixel.x,

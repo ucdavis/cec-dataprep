@@ -3,6 +3,7 @@ export interface PixelVariables {
   county: string;
   land_use: string;
   sit_raster: number;
+  forest_type: string;
 
   ba_0: number;
   ba_15: number;
@@ -83,6 +84,7 @@ export class PixelVariablesClass implements PixelVariables {
   county = '';
   land_use = '';
   sit_raster = 0;
+  forest_type = '';
   ba_0 = 0;
   ba_2 = 0;
   ba_7 = 0;
