@@ -182,3 +182,24 @@ create table clusters
 (
   id integer
 );
+
+create table treatments
+(
+  id       serial not null
+    constraint treatments_pk
+      primary key,
+  name     varchar(32),
+  land_use text
+);
+
+insert into treatments values
+(1,'clearcut','Private'),
+  (2,'commercialThin','Private'),
+  (3,'commercialThinChipTreeRemoval','Private,Forest'),
+  (4,'timberSalvage','Private,Forest'),
+  (5,'timberSalvageChipTreeRemoval','Private,Forest'),
+  (6,'selection','Private'),
+  (7,'selectionChipTreeRemoval','Private'),
+  (8,'tenPercentGroupSelection','Private,Forest'),
+  (9,'twentyPercentGroupSelection','Private'),
+  (10,'biomassSalvage','Private,Forest')
