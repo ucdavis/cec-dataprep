@@ -177,6 +177,12 @@ create table pixels
   vol_7       double precision,
 );
 
+CREATE INDEX pixels_cluster_no
+on pixels (cluster_no);
+
+CREATE INDEX pixels_location
+ON pixels (x, y);
+
 -- cluster table of unique cluster ids
 create table clusters
 (
