@@ -27,7 +27,7 @@ const processAllTreatments = async () => {
     },
   });
 
-  db.transaction(async (txn) => {
+  await db.transaction(async (txn) => {
     try {
       const osrm = new OSRM(process.env.OSRM_FILE || './data/california-latest.osrm');
       const treatments: Treatment[] = await txn.table('treatments');
@@ -64,20 +64,22 @@ const processAllTreatments = async () => {
       );
       console.log('inserting into db...');
       await txn.table('treatedclusters').insert(results);
-      txn.commit();
     } catch (err) {
       console.log('------------\n');
       console.log(err.message);
       console.log('/n');
-      txn.rollback();
+      throw err; // rethrowing the error will cause the closing transaction to rollback
     } finally {
-      console.log('destroying pg...');
-      txn.destroy(); // TODO: needed?
-      db.destroy();
       const t1 = performance.now();
       console.log('Running took ' + (t1 - t0) + ' milliseconds.');
     }
   });
+
+  process.exit(0);
 };
 
-processAllTreatments();
+processAllTreatments()
+  .then(() => {
+    console.log('All done, existing');
+  })
+  .catch(console.error);
