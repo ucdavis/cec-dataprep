@@ -13,19 +13,8 @@ const PG_DECIMAL_OID = 1700;
 pg.types.setTypeParser(PG_DECIMAL_OID, parseFloat);
 dotenv.config();
 
-const processAllTreatments = async () => {
+const processAllTreatments = async (db: knex) => {
   const t0 = performance.now();
-  console.log('connecting to db', process.env.DB_HOST);
-  // https://knexjs.org/
-  const db = knex({
-    client: 'pg',
-    connection: {
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME || 'plumas-kmeans',
-    },
-  });
 
   await db.transaction(async (txn) => {
     try {
@@ -74,11 +63,46 @@ const processAllTreatments = async () => {
       console.log('Running took ' + (t1 - t0) + ' milliseconds.');
     }
   });
+};
 
+// process nClusters in a synchronous loop
+const processClusters = async (nClusters: number) => {
+  const t0 = performance.now();
+
+  console.log('connecting to db', process.env.DB_HOST);
+  // https://knexjs.org/
+  const db = knex({
+    client: 'pg',
+    connection: {
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME || 'plumas-kmeans',
+    },
+  });
+
+
+  console.log(`About to process ${nClusters} clusters`);
+
+  for (let i = 0; i < nClusters; i++) {
+    try {
+      await processAllTreatments(db);
+    } catch (err) {
+      // TODO: log treatment error here instead of catching earlier
+      console.error(err);
+    }
+  }
+
+  const t1 = performance.now();
+  console.log(`Running ${nClusters} clusters took ${(t1 - t0)} milliseconds.`);
+
+  // all done
   process.exit(0);
 };
 
-processAllTreatments()
+const numClustersToRun = parseInt(process.env.NUM_CLUSTERS || '1', 10) || 1;
+
+processClusters(numClustersToRun)
   .then(() => {
     console.log('All done, existing');
   })
