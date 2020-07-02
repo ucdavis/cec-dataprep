@@ -94,3 +94,17 @@ select
   sum(vol_7    )   as vol_7
   from pixels where cluster_no =31337
 group by cluster_no, county, land_use, sit_raster, forest_type
+
+-- copy from CSV import into pixels, no dupes
+INSERT INTO pixels
+  (county, ba_0, ba_15, ba_2, ba_25, ba_35, ba_40, ba_7, basa_as, basa_ra, basa_wi, bmcwn_0, bmcwn_15, bmcwn_2, bmcwn_25, bmcwn_35, bmcwn_40, bmcwn_7, bmfol_0, bmfol_15, bmfol_2, bmfol_25, bmfol_35, bmfol_40, bmfol_7, bmstm_0, bmstm_15, bmstm_2, bmstm_25, bmstm_35, bmstm_40, bmstm_7, dbmcn_0, dbmcn_15, dbmcn_2, dbmcn_25, dbmcn_35, dbmcn_40, dbmcn_7, dbmsm_0, dbmsm_15, dbmsm_2, dbmsm_25, dbmsm_35, dbmsm_40, dbmsm_7, sng_0, sng_15, sng_2, sng_25, sng_35, sng_40, sng_7, tpa_0, tpa_15, tpa_2, tpa_25, tpa_35, tpa_40, tpa_7, vmsg_0, vmsg_15, vmsg_2, vmsg_25, vmsg_35, vmsg_40, vmsg_7, vol_15, vol_2, vol_25, vol_35, vol_40, vol_7, sit_raster, cluster1, cluster2, land_use, x, y, cluster_no, forest_type)
+select county_name, ba_0, ba_15, ba_2, ba_25, ba_35, ba_40, ba_7, basa_as, basa_ra, basa_wi, bmcwn_0, bmcwn_15, bmcwn_2, bmcwn_25,
+  bmcwn_35, bmcwn_40, bmcwn_7, bmfol_0, bmfol_15, bmfol_2, bmfol_25, bmfol_35, bmfol_40, bmfol_7, bmstm_0, bmstm_15,
+  bmstm_2, bmstm_25, bmstm_35, bmstm_40, bmstm_7, dbmcn_0, dbmcn_15, dbmcn_2, dbmcn_25, dbmcn_35, dbmcn_40, dbmcn_7, dbmsm_0,
+  dbmsm_15, dbmsm_2, dbmsm_25, dbmsm_35, dbmsm_40, dbmsm_7, sng_0, sng_15, sng_2, sng_25, sng_35, sng_40, sng_7, tpa_0, tpa_15,
+  tpa_2, tpa_25, tpa_35, tpa_40, tpa_7, vmsg_0, vmsg_15, vmsg_2, vmsg_25, vmsg_35, vmsg_40, vmsg_7, vol_15, vol_2,
+  vol_25, vol_35, vol_40, vol_7, sit_raster, cluster1, cluster2, land_use, x, y, cluster_no, forest_type
+from csvpixels
+where not exists ( select *
+from pixels
+where pixels.cluster_no = csvpixels.cluster_no );
