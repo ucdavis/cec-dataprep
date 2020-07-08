@@ -1,11 +1,17 @@
 import { findNearest, getBoundsOfDistance, getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import { CenterOfBiomassSum } from 'models/shared';
-import OSRM = require('osrm');
+import OSRM from 'osrm';
 import pg from 'pg';
 import { Pixel, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
-import { sumBiomass, sumPixel } from './pixelCalculations';
+import {
+  convertClusterUnits,
+  metersToFeetConstant,
+  pixelsToAcreConstant,
+  sumBiomass,
+  sumPixel
+} from './pixelCalculations';
 import { processBiomassSalvage } from './treatments/biomassSalvage';
 import { processClearcut } from './treatments/clearcut';
 import {
@@ -30,9 +36,6 @@ export const processCluster = async (
   db: knex
 ): Promise<TreatedCluster> => {
   return new Promise(async (resolve, reject) => {
-    const metersToFeetConstant = 3.28084;
-    const metersToAcresConstant = 0.00024711;
-    const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant;
     const centerOfBiomassSum: CenterOfBiomassSum = {
       lat: 0,
       lng: 0,
@@ -90,7 +93,7 @@ export const processCluster = async (
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
     };
-    // console.log('running osrm...');
+    console.log(`running osrm for treatment ${treatmentName}...`);
     await osrm.nearest(options, async (err, response) => {
       const landing = {
         latitude: response.waypoints[0].location[1],
@@ -105,7 +108,7 @@ export const processCluster = async (
         500
       );
       const closestPixelsToLanding: Pixel[] = await db
-        .table('pixels')
+        .table('butte_pixels')
         .whereBetween('y', [bounds[0].latitude, bounds[1].latitude])
         .andWhereBetween('x', [bounds[0].longitude, bounds[1].longitude]);
       if (closestPixelsToLanding.length === 0 || !closestPixelsToLanding[0]) {
@@ -127,7 +130,7 @@ export const processCluster = async (
         500
       );
       const closestPixelsToCenterOfBiomass: Pixel[] = await db
-        .table('pixels')
+        .table('butte_pixels')
         .whereBetween('y', [
           boundsOnCenterOfBiomass[0].latitude,
           boundsOnCenterOfBiomass[1].latitude
@@ -166,6 +169,8 @@ export const processCluster = async (
       let totalNumTrips = 0;
 
       pixels.forEach((p, i) => {
+        // pixel summation is the sum of each pixel
+        // and each pixel is in tons/acre, trees/acre, etc
         pixelSummation = sumPixel(pixelSummation, p);
         // get distance between pixel and landing site
         let distance = getPreciseDistance(landing, {
@@ -188,6 +193,11 @@ export const processCluster = async (
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
         100;
 
+      // convert from summation of (biomass/acre) to total per acre
+      const clusterBiomassData = convertClusterUnits(pixelSummation);
+      console.log('BIOMASS DATA:');
+      console.log(JSON.stringify(clusterBiomassData));
+
       const output: TreatedCluster = {
         treatmentid: treatmentId,
         landing_lng: landing.longitude,
@@ -199,8 +209,9 @@ export const processCluster = async (
         slope: averageSlope,
         area,
         mean_yarding: meanYardingDistance,
+        year: 2016,
 
-        ...pixelSummation
+        ...clusterBiomassData
       };
       resolve(output);
     });

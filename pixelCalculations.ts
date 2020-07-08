@@ -135,11 +135,84 @@ export const sumPixel = (pixelSummation: PixelVariables, p: Pixel) => {
   return pixelSum;
 };
 
+// https://ucdavis.app.box.com/file/670071894786
+// all F3 variables are in per acre, and then we sum them to get an intermediate sum of per acre variables
+// before we store the final results, we have to convert into total per cluster
+export const convertClusterUnits = (pixelSummation: PixelVariables) => {
+  const pixelSum: PixelVariables = {
+    ...pixelSummation,
+    bmcwn_2: pixelSummation.bmcwn_2 * pixelsToAcreConstant,
+    bmcwn_7: pixelSummation.bmcwn_7 * pixelsToAcreConstant,
+    bmcwn_15: pixelSummation.bmcwn_15 * pixelsToAcreConstant,
+    bmcwn_25: pixelSummation.bmcwn_25 * pixelsToAcreConstant,
+    bmcwn_35: pixelSummation.bmcwn_35 * pixelsToAcreConstant,
+    bmcwn_40: pixelSummation.bmcwn_40 * pixelsToAcreConstant,
 
-    //
-    basa_as: pixelSummation.basa_as + p.basa_as,
-    basa_ra: pixelSummation.basa_ra + p.basa_ra,
-    basa_wi: pixelSummation.basa_wi + p.basa_wi
+    bmfol_2: pixelSummation.bmfol_2 * pixelsToAcreConstant,
+    bmfol_7: pixelSummation.bmfol_7 * pixelsToAcreConstant,
+    bmfol_15: pixelSummation.bmfol_15 * pixelsToAcreConstant,
+    bmfol_25: pixelSummation.bmfol_25 * pixelsToAcreConstant,
+    bmfol_35: pixelSummation.bmfol_35 * pixelsToAcreConstant,
+    bmfol_40: pixelSummation.bmfol_40 * pixelsToAcreConstant,
+
+    bmstm_2: pixelSummation.bmstm_2 * pixelsToAcreConstant,
+    bmstm_7: pixelSummation.bmstm_7 * pixelsToAcreConstant,
+    bmstm_15: pixelSummation.bmstm_15 * pixelsToAcreConstant,
+    bmstm_25: pixelSummation.bmstm_25 * pixelsToAcreConstant,
+    bmstm_35: pixelSummation.bmstm_35 * pixelsToAcreConstant,
+    bmstm_40: pixelSummation.bmstm_40 * pixelsToAcreConstant,
+
+    // get # of trees per pixel
+    tpa_15: pixelSummation.tpa_15 * pixelsToAcreConstant,
+    tpa_2: pixelSummation.tpa_2 * pixelsToAcreConstant,
+    tpa_25: pixelSummation.tpa_25 * pixelsToAcreConstant,
+    tpa_35: pixelSummation.tpa_35 * pixelsToAcreConstant,
+    tpa_40: pixelSummation.tpa_40 * pixelsToAcreConstant,
+    tpa_7: pixelSummation.tpa_7 * pixelsToAcreConstant,
+    // dead biomass
+    dbmsm_2: pixelSummation.dbmsm_2 * pixelsToAcreConstant,
+    dbmsm_7: pixelSummation.dbmsm_7 * pixelsToAcreConstant,
+    dbmsm_15: pixelSummation.dbmsm_15 * pixelsToAcreConstant,
+    dbmsm_25: pixelSummation.dbmsm_25 * pixelsToAcreConstant,
+    dbmsm_35: pixelSummation.dbmsm_35 * pixelsToAcreConstant,
+    dbmsm_40: pixelSummation.dbmsm_40 * pixelsToAcreConstant,
+
+    dbmcn_2: pixelSummation.dbmcn_2 * pixelsToAcreConstant,
+    dbmcn_7: pixelSummation.dbmcn_7 * pixelsToAcreConstant,
+    dbmcn_15: pixelSummation.dbmcn_15 * pixelsToAcreConstant,
+    dbmcn_25: pixelSummation.dbmcn_25 * pixelsToAcreConstant,
+    dbmcn_35: pixelSummation.dbmcn_35 * pixelsToAcreConstant,
+    dbmcn_40: pixelSummation.dbmcn_40 * pixelsToAcreConstant,
+
+    sng_2: pixelSummation.sng_2 * pixelsToAcreConstant,
+    sng_7: pixelSummation.sng_7 * pixelsToAcreConstant,
+    sng_15: pixelSummation.sng_15 * pixelsToAcreConstant,
+    sng_25: pixelSummation.sng_25 * pixelsToAcreConstant,
+    sng_35: pixelSummation.sng_35 * pixelsToAcreConstant,
+    sng_40: pixelSummation.sng_40 * pixelsToAcreConstant,
+
+    // volume
+    // F3 not giving us vol_0
+    vol_2: pixelSummation.vol_2 * pixelsToAcreConstant,
+    vol_7: pixelSummation.vol_7 * pixelsToAcreConstant,
+    vol_15: pixelSummation.vol_15 * pixelsToAcreConstant,
+    vol_25: pixelSummation.vol_25 * pixelsToAcreConstant,
+    vol_35: pixelSummation.vol_35 * pixelsToAcreConstant,
+    vol_40: pixelSummation.vol_40 * pixelsToAcreConstant,
+
+    vmsg_2: pixelSummation.vmsg_2 * pixelsToAcreConstant,
+    vmsg_7: pixelSummation.vmsg_7 * pixelsToAcreConstant,
+    vmsg_15: pixelSummation.vmsg_15 * pixelsToAcreConstant,
+    vmsg_25: pixelSummation.vmsg_25 * pixelsToAcreConstant,
+    vmsg_35: pixelSummation.vmsg_35 * pixelsToAcreConstant,
+    vmsg_40: pixelSummation.vmsg_40 * pixelsToAcreConstant,
+    // basal area
+    ba_2: pixelSummation.ba_2 * pixelsToAcreConstant,
+    ba_7: pixelSummation.ba_7 * pixelsToAcreConstant,
+    ba_15: pixelSummation.ba_15 * pixelsToAcreConstant,
+    ba_25: pixelSummation.ba_25 * pixelsToAcreConstant,
+    ba_35: pixelSummation.ba_35 * pixelsToAcreConstant,
+    ba_40: pixelSummation.ba_40 * pixelsToAcreConstant
   };
   return pixelSum;
 };
