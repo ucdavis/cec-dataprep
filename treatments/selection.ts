@@ -84,11 +84,7 @@ const selection = (pixel: Pixel, p: number): Pixel => {
     ba_15: (p / 100) * pixel.ba_15,
     ba_25: (p / 100) * pixel.ba_25,
     ba_35: (p / 100) * pixel.ba_35,
-    ba_40: (p / 100) * pixel.ba_40,
-
-    basa_as: pixel.basa_as,
-    basa_ra: pixel.basa_ra,
-    basa_wi: pixel.basa_wi
+    ba_40: (p / 100) * pixel.ba_40
   };
   return treatedPixel;
 };
@@ -105,11 +101,6 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number): Pixel => {
   treatedPixel = {
     ...treatedPixel,
     // biomass removed
-    bmstm_0: c0 * pixel.bmstm_0,
-    bmcwn_0: c0 * pixel.bmcwn_0,
-    dbmsm_0: c0 * pixel.dbmsm_0,
-    dbmcn_0: c0 * pixel.dbmcn_0,
-
     bmstm_2: c2 * pixel.bmstm_2,
     bmcwn_2: c2 * pixel.bmcwn_2,
     dbmsm_2: c2 * pixel.dbmsm_2,
@@ -121,9 +112,6 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number): Pixel => {
     dbmcn_7: c7 * pixel.dbmcn_7,
 
     // tpa removed
-    tpa_0: c0 * pixel.tpa_0,
-    sng_0: c0 * pixel.sng_0,
-
     tpa_2: c2 * pixel.tpa_2,
     sng_2: c2 * pixel.sng_2,
 
@@ -132,13 +120,11 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number): Pixel => {
 
     // volume removed
     // vol_0: c0 * pixel.vol_0,
-    vmsg_0: c0 * pixel.vmsg_0,
     vol_2: c2 * pixel.vol_2,
     vmsg_2: c2 * pixel.vmsg_2,
     vol_7: c7 * pixel.vol_7,
     vmsg_7: c7 * pixel.vmsg_7,
 
-    ba_0: c0 * pixel.ba_0,
     ba_2: c2 * pixel.ba_2,
     ba_7: c7 * pixel.ba_7
   };

@@ -12,7 +12,7 @@ export const processClearcut = (
   if (treatmentName === 'clearcut' && pixels[0].land_use === 'Forest') {
     throw new Error('clearcut cannot be performed on forest land');
   }
-  // console.log('clearcut: processing pixels');
+  console.log('clearcut: processing pixels');
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
     const treatedPixel = clearcut(pixel);
@@ -27,7 +27,10 @@ export const processClearcut = (
 // For smaller size classes, cut at the following proportions for both live and dead:
 // 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
 const clearcut = (pixel: Pixel): Pixel => {
-  const treatedPixel: Pixel = {
+  let treatedPixel = new PixelClass();
+
+  treatedPixel = {
+    ...treatedPixel,
     cluster_no: pixel.cluster_no,
     elevation: pixel.elevation,
     county: pixel.county,
@@ -39,7 +42,6 @@ const clearcut = (pixel: Pixel): Pixel => {
     y: pixel.y,
     forest_type: pixel.forest_type,
 
-    bmfol_0: 0,
     bmfol_2: 0,
     bmfol_7: 0,
     bmfol_15: 0,
@@ -48,11 +50,6 @@ const clearcut = (pixel: Pixel): Pixel => {
     bmfol_40: 0,
 
     // biomass removed
-    bmstm_0: 0.3 * pixel.bmstm_0,
-    bmcwn_0: 0.3 * pixel.bmcwn_0,
-    dbmsm_0: 0.3 * pixel.dbmsm_0,
-    dbmcn_0: 0.3 * pixel.dbmcn_0,
-
     bmstm_2: 0.6 * pixel.bmstm_2,
     bmcwn_2: 0.6 * pixel.bmcwn_2,
     dbmsm_2: 0.6 * pixel.dbmsm_2,
@@ -84,9 +81,6 @@ const clearcut = (pixel: Pixel): Pixel => {
     dbmsm_40: pixel.dbmsm_40,
 
     // tpa removed
-    tpa_0: 0.3 * pixel.tpa_0,
-    sng_0: 0.3 * pixel.sng_0,
-
     tpa_2: 0.6 * pixel.tpa_2,
     sng_2: 0.6 * pixel.sng_2,
 
@@ -103,8 +97,6 @@ const clearcut = (pixel: Pixel): Pixel => {
     sng_40: pixel.sng_40,
 
     // volume removed
-    // vol_0: 0.3 * pixel.vol_0,
-    vmsg_0: 0.3 * pixel.vmsg_0,
     vol_2: 0.6 * pixel.vol_2,
     vmsg_2: 0.6 * pixel.vmsg_2,
     vol_7: 0.9 * pixel.vol_7,
@@ -121,17 +113,12 @@ const clearcut = (pixel: Pixel): Pixel => {
     vmsg_40: pixel.vmsg_40,
 
     // basal area
-    ba_0: 0.3 * pixel.ba_0,
     ba_2: 0.6 * pixel.ba_2,
     ba_7: 0.9 * pixel.ba_7,
     ba_15: pixel.ba_15,
     ba_25: pixel.ba_25,
     ba_35: pixel.ba_35,
-    ba_40: pixel.ba_40,
-
-    basa_as: pixel.basa_as,
-    basa_ra: pixel.basa_ra,
-    basa_wi: pixel.basa_wi
+    ba_40: pixel.ba_40
   };
   return treatedPixel;
 };
