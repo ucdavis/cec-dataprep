@@ -105,10 +105,11 @@ export const processCluster = async (
 
       const bounds = getBoundsOfDistance(
         { latitude: landing.latitude, longitude: landing.longitude },
-        500
+        1000
       );
       const closestPixelsToLanding: Pixel[] = await db
         .table('butte_pixels')
+        .select('elevation', 'x', 'y')
         .whereBetween('y', [bounds[0].latitude, bounds[1].latitude])
         .andWhereBetween('x', [bounds[0].longitude, bounds[1].longitude]);
       if (closestPixelsToLanding.length === 0 || !closestPixelsToLanding[0]) {
@@ -127,10 +128,11 @@ export const processCluster = async (
 
       const boundsOnCenterOfBiomass = getBoundsOfDistance(
         { latitude: landing.latitude, longitude: landing.longitude },
-        500
+        1000
       );
       const closestPixelsToCenterOfBiomass: Pixel[] = await db
         .table('butte_pixels')
+        .select('elevation', 'x', 'y')
         .whereBetween('y', [
           boundsOnCenterOfBiomass[0].latitude,
           boundsOnCenterOfBiomass[1].latitude
