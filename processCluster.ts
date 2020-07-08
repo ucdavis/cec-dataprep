@@ -197,8 +197,8 @@ export const processCluster = async (
 
       // convert from summation of (biomass/acre) to total per acre
       const clusterBiomassData = convertClusterUnits(pixelSummation);
-      console.log('BIOMASS DATA:');
-      console.log(JSON.stringify(clusterBiomassData));
+      // console.log('BIOMASS DATA:');
+      // console.log(JSON.stringify(clusterBiomassData));
 
       const output: TreatedCluster = {
         treatmentid: treatmentId,
@@ -211,7 +211,7 @@ export const processCluster = async (
         slope: averageSlope,
         area,
         mean_yarding: meanYardingDistance,
-        year: 2016,
+        year: 2016, // TODO: update when pixel data actually has years
 
         ...clusterBiomassData
       };
