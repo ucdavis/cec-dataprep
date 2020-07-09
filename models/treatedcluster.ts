@@ -3,6 +3,7 @@ import { PixelVariables } from './pixel';
 export interface TreatedCluster extends PixelVariables {
   cluster_no: number;
   treatmentid: number;
+  year: number;
   landing_lat: number;
   landing_lng: number;
   landing_elevation: number;
@@ -14,5 +15,4 @@ export interface TreatedCluster extends PixelVariables {
   mean_yarding: number;
   county: string;
   land_use: string;
-  year: number;
 }
