@@ -16,7 +16,7 @@ dotenv.config();
 const processAllTreatments = async (db: knex) => {
   const t0 = performance.now();
 
-  await db.transaction(async (txn) => {
+  await db.transaction(async txn => {
     try {
       const osrm = new OSRM(process.env.OSRM_FILE || './data/california-latest.osrm');
       const treatments: Treatment[] = await txn.table('treatments');
@@ -26,8 +26,10 @@ const processAllTreatments = async (db: knex) => {
         .table('clusters')
         .select('*')
         // tslint:disable-next-line: space-before-function-paren
-        .whereNotExists(function () {
-          this.select('*').from('treatedclusters').whereRaw(`clusters.id = cluster_no`);
+        .whereNotExists(function() {
+          this.select('*')
+            .from('treatedclusters')
+            .whereRaw(`clusters.id = cluster_no`);
         })
         .orderByRaw('RANDOM()')
         .limit(1);
@@ -42,12 +44,12 @@ const processAllTreatments = async (db: knex) => {
             osrm,
             txn
           )
-            .then((res) => {
+            .then(res => {
               console.log(`pushing results of ${clusterId}, ${treatment.name}`);
               results.push(res);
             })
-            .catch((err) => {
-              console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err.message}`);
+            .catch(err => {
+              console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err}`);
             });
         })
       );
@@ -77,10 +79,9 @@ const processClusters = async (nClusters: number) => {
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
       password: process.env.DB_PASS,
-      database: process.env.DB_NAME || 'plumas-kmeans',
-    },
+      database: process.env.DB_NAME || 'plumas-kmeans'
+    }
   });
-
 
   console.log(`About to process ${nClusters} clusters`);
 
@@ -94,7 +95,7 @@ const processClusters = async (nClusters: number) => {
   }
 
   const t1 = performance.now();
-  console.log(`Running ${nClusters} clusters took ${(t1 - t0)} milliseconds.`);
+  console.log(`Running ${nClusters} clusters took ${t1 - t0} milliseconds.`);
 
   // all done
   process.exit(0);
