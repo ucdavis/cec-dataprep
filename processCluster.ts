@@ -108,7 +108,7 @@ export const processCluster = async (
         1000
       );
       const closestPixelsToLanding: Pixel[] = await db
-        .table('butte_pixels')
+        .table('pixels')
         .select('elevation', 'x', 'y')
         .whereBetween('y', [bounds[0].latitude, bounds[1].latitude])
         .andWhereBetween('x', [bounds[0].longitude, bounds[1].longitude]);
@@ -131,7 +131,7 @@ export const processCluster = async (
         1000
       );
       const closestPixelsToCenterOfBiomass: Pixel[] = await db
-        .table('butte_pixels')
+        .table('pixels')
         .select('elevation', 'x', 'y')
         .whereBetween('y', [
           boundsOnCenterOfBiomass[0].latitude,
