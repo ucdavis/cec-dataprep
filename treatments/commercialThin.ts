@@ -1,4 +1,4 @@
-import { Pixel, PixelClass } from '../models/pixel';
+import { Pixel, PixelClass, PixelVariables } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
 import { calculateCenterOfBiomass, getPixelSum } from '../pixelCalculations';
 
@@ -20,7 +20,6 @@ export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: Cente
     calculateCenterOfBiomass(centerOfBiomassSum, treatedPixel);
     return treatedPixel;
   });
-  const treatedCluster = getPixelSum(treatedPixels);
   return treatedPixels;
 };
 
@@ -155,24 +154,26 @@ const calculatePValues = (pixels: Pixel[]) => {
   // residual_ba is determined by the site class and forest type
   // it represents the BA that will remain in the forest after we remove biomass
   // a lower site class = more productive forest = higher residual BA target
-  const residual_ba = calculateResidualBaTarget(pixels[0]); // ft^2/ac
+  const residual_ba = calculateResidualBaTarget(pixelSum); // ft^2/ac
 
   // get BA for cluster, since pixelSum is the sum of each pixel we must correct units by * n_pixels
-  const ba_2_cluster = pixelSum.ba_2 / pixels.length;
-  const ba_7_cluster = pixelSum.ba_7 / pixels.length;
   const ba_15_cluster = pixelSum.ba_15 / pixels.length;
   const ba_25_cluster = pixelSum.ba_25 / pixels.length;
   const ba_35_cluster = pixelSum.ba_35 / pixels.length;
   const ba_40_cluster = pixelSum.ba_40 / pixels.length;
 
-  const initial_ba =
-    ba_2_cluster + ba_7_cluster + ba_15_cluster + ba_25_cluster + ba_35_cluster + ba_40_cluster;
+  const initial_ba = ba_15_cluster + ba_25_cluster + ba_35_cluster + ba_40_cluster;
 
   // this is how much ba we will remove, since we are leaving the cluster with ba = residual_ba
   const ba_removed = initial_ba - residual_ba;
 
+  if (initial_ba < residual_ba) {
+    // if we can't remove any ba, do nothing
+    // this will produce an error when we do the test at the end, and no result will be pushed
+    // p15, p25, p35, p40 = 0
+  }
   // if we can just take from the smallest size class (15)
-  if (ba_removed < ba_15_cluster) {
+  else if (ba_removed < ba_15_cluster) {
     p15 = ba_removed / ba_15_cluster;
     // p25, p35, p40 = 0
   } else if (ba_removed < ba_15_cluster + ba_25_cluster) {
@@ -199,9 +200,7 @@ const calculatePValues = (pixels: Pixel[]) => {
     (1 - p15) * ba_15_cluster +
       (1 - p25) * ba_25_cluster +
       (1 - p35) * ba_35_cluster +
-      (1 - p40) * ba_40_cluster +
-      ba_2_cluster +
-      ba_7_cluster
+      (1 - p40) * ba_40_cluster
   );
 
   // ---
@@ -213,10 +212,9 @@ const calculatePValues = (pixels: Pixel[]) => {
     throw new Error('residual_ba !== residual_ba_test');
   }
   return { p15, p25, p35, p40 };
-  // return { p15: p15_naive, p25: p25_naive, p35: p35_naive, p40: p40_naive };
 };
 
-const calculateResidualBaTarget = (pixel: Pixel) => {
+const calculateResidualBaTarget = (pixel: PixelVariables) => {
   const { sit_raster, forest_type } = pixel;
   if (sit_raster === 1) {
     if (forest_type === 'mixed_conifer') {
