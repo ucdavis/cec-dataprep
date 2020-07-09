@@ -49,7 +49,7 @@ const processAllTreatments = async (db: knex) => {
               results.push(res);
             })
             .catch(err => {
-              console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err.message}`);
+              console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err}`);
             });
         })
       );

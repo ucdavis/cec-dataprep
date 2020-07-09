@@ -205,10 +205,10 @@ const calculatePValues = (pixels: Pixel[]) => {
   );
 
   // ---
-  console.log(`p values: p15:${p15}, p25:${p25}, p35:${p35}, p40:${p40}, `);
-  console.log(
-    `initial_ba: ${initial_ba} residual_ba: ${residual_ba}, residual_ba_test: ${residual_ba_test}`
-  );
+  // console.log(`p values: p15:${p15}, p25:${p25}, p35:${p35}, p40:${p40}, `);
+  // console.log(
+  //   `initial_ba: ${initial_ba} residual_ba: ${residual_ba}, residual_ba_test: ${residual_ba_test}`
+  // );
   if (residual_ba !== residual_ba_test) {
     throw new Error('residual_ba !== residual_ba_test');
   }
