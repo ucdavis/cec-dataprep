@@ -166,7 +166,7 @@ create table pixels
   vol_25      double precision,
   vol_35      double precision,
   vol_40      double precision,
-  vol_7       double precision,
+  vol_7       double precision
 );
 
 CREATE INDEX pixels_cluster_no
