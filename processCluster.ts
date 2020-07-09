@@ -33,7 +33,7 @@ export const processCluster = async (
   treatmentId: number,
   treatmentName: string,
   osrm: OSRM,
-  db: knex
+  txn: knex.Transaction
 ): Promise<TreatedCluster> => {
   return new Promise(async (resolve, reject) => {
     const centerOfBiomassSum: CenterOfBiomassSum = {
@@ -107,7 +107,7 @@ export const processCluster = async (
         { latitude: landing.latitude, longitude: landing.longitude },
         1000
       );
-      const closestPixelsToLanding: Pixel[] = await db
+      const closestPixelsToLanding: Pixel[] = await txn
         .table('pixels')
         .select('elevation', 'x', 'y')
         .whereBetween('y', [bounds[0].latitude, bounds[1].latitude])
@@ -130,7 +130,7 @@ export const processCluster = async (
         { latitude: landing.latitude, longitude: landing.longitude },
         1000
       );
-      const closestPixelsToCenterOfBiomass: Pixel[] = await db
+      const closestPixelsToCenterOfBiomass: Pixel[] = await txn
         .table('pixels')
         .select('elevation', 'x', 'y')
         .whereBetween('y', [

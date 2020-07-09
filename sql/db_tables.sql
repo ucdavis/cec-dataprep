@@ -90,6 +90,9 @@ create table treatedclusters
   vol_7             double precision
 );
 
+CREATE INDEX treatedclusters_cluster_no
+on treatedclusters (cluster_no);
+
 -- pixels
 create table pixels
 (
@@ -177,11 +180,24 @@ create table pixels
   vol_7       double precision,
 );
 
+CREATE INDEX pixels_cluster_no
+on pixels (cluster_no);
+
+CREATE INDEX pixels_location
+ON pixels (x, y);
+
 -- cluster table of unique cluster ids
 create table clusters
 (
   id integer
 );
+
+create unique index clusters_id_uindex
+	on clusters (id);
+
+alter table clusters
+	add constraint clusters_pk
+		primary key (id);
 
 create table treatments
 (
