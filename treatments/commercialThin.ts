@@ -1,6 +1,6 @@
-import { Pixel, PixelClass, PixelVariablesClass } from '../models/pixel';
+import { Pixel, PixelClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, sumPixel } from '../pixelCalculations';
+import { calculateCenterOfBiomass, getPixelSum } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
@@ -20,6 +20,7 @@ export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: Cente
     calculateCenterOfBiomass(centerOfBiomassSum, treatedPixel);
     return treatedPixel;
   });
+  const treatedCluster = getPixelSum(treatedPixels);
   return treatedPixels;
 };
 
@@ -68,27 +69,27 @@ const commercialThin = (
     x: pixel.x,
     y: pixel.y,
 
-    bmcwn_15: (p15 / 100) * pixel.bmcwn_15,
-    bmcwn_25: (p25 / 100) * pixel.bmcwn_25,
-    bmcwn_35: (p35 / 100) * pixel.bmcwn_35,
-    bmcwn_40: (p40 / 100) * pixel.bmcwn_40,
+    bmcwn_15: p15 * pixel.bmcwn_15,
+    bmcwn_25: p25 * pixel.bmcwn_25,
+    bmcwn_35: p35 * pixel.bmcwn_35,
+    bmcwn_40: p40 * pixel.bmcwn_40,
 
     // tpa removed
-    tpa_15: (p15 / 100) * pixel.tpa_15,
-    tpa_25: (p25 / 100) * pixel.tpa_25,
-    tpa_35: (p35 / 100) * pixel.tpa_35,
-    tpa_40: (p40 / 100) * pixel.tpa_40,
+    tpa_15: p15 * pixel.tpa_15,
+    tpa_25: p25 * pixel.tpa_25,
+    tpa_35: p35 * pixel.tpa_35,
+    tpa_40: p40 * pixel.tpa_40,
 
-    vol_15: (p15 / 100) * pixel.vol_15,
-    vol_25: (p25 / 100) * pixel.vol_25,
-    vol_35: (p35 / 100) * pixel.vol_35,
-    vol_40: (p40 / 100) * pixel.vol_40,
+    vol_15: p15 * pixel.vol_15,
+    vol_25: p25 * pixel.vol_25,
+    vol_35: p35 * pixel.vol_35,
+    vol_40: p40 * pixel.vol_40,
 
     // basal area
-    ba_15: (p15 / 100) * pixel.ba_15, // is this right?
-    ba_25: (p25 / 100) * pixel.ba_25,
-    ba_35: (p35 / 100) * pixel.ba_35,
-    ba_40: (p40 / 100) * pixel.ba_40
+    ba_15: p15 * pixel.ba_15, // is this right?
+    ba_25: p25 * pixel.ba_25,
+    ba_35: p35 * pixel.ba_35,
+    ba_40: p40 * pixel.ba_40
   };
   return treatedPixel;
 };
@@ -143,8 +144,7 @@ const commericalThinChipTreeRemoval = (
 // https://ucdavis.app.box.com/file/686906426849
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
-  let pixelSum = new PixelVariablesClass();
-  pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
+  const pixelSum = getPixelSum(pixels);
 
   // these p values represent the percentage of each size class we are removing
   let p15 = 0;

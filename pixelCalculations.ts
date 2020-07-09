@@ -1,5 +1,5 @@
-import { Pixel, PixelVariables } from 'models/pixel';
-import { CenterOfBiomassSum } from 'models/shared';
+import { Pixel, PixelVariables, PixelVariablesClass } from './models/pixel';
+import { CenterOfBiomassSum } from './models/shared';
 export const metersToFeetConstant = 3.28084;
 const metersToAcresConstant = 0.00024711;
 export const pixelsToAcreConstant = 30 * 30 * metersToAcresConstant; // ~0.22 acres, area of one pixel
@@ -54,6 +54,26 @@ export const sumBiomass = (pixel: Pixel) => {
     pixel.dbmcn_35 +
     pixel.dbmcn_40
   );
+};
+
+export const getPixelSum = (pixels: Pixel[]) => {
+  let pixelSum = new PixelVariablesClass();
+  pixelSum = {
+    ...pixelSum,
+    cluster_no: pixels[0].cluster_no,
+    county: pixels[0].county,
+    land_use: pixels[0].land_use,
+    sit_raster: mode(pixels.map(p => p.sit_raster)),
+    forest_type: mode(pixels.map(p => p.forest_type))
+  };
+  pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
+  // console.log('-------------------------');
+  // console.log(JSON.stringify(pixelSum));
+  // console.log('-------------------------');
+  // console.log(JSON.stringify(convertClusterUnits(pixelSum)));
+  // console.log('-------------------------');
+
+  return pixelSum;
 };
 
 export const sumPixel = (pixelSummation: PixelVariables, p: Pixel) => {
@@ -226,3 +246,18 @@ export const calculateCenterOfBiomass = (
   centerOfBiomassSum.lng += treatedPixel.x * biomassInPixel;
   centerOfBiomassSum.biomassSum += biomassInPixel;
 };
+
+// https://medium.com/@nhuynh/finding-mode-javascript-ffb40af2708f
+function mode(arr: any[]) {
+  return arr.reduce(
+    (current, num) => {
+      const freq = num in current.numMap ? ++current.numMap[num] : (current.numMap[num] = 1);
+      if (freq > current.modeFreq && freq > 1) {
+        current.modeFreq = freq;
+        current.mode = num;
+      }
+      return current;
+    },
+    { mode: null, modeFreq: 0, numMap: {} }
+  ).mode;
+}
