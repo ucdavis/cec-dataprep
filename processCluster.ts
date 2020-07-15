@@ -8,6 +8,7 @@ import { TreatedCluster } from './models/treatedcluster';
 import {
   convertClusterUnits,
   metersToFeetConstant,
+  mode,
   pixelsToAcreConstant,
   sumBiomass,
   sumPixel
@@ -160,9 +161,9 @@ export const processCluster = async (
         ...pixelSummation,
         cluster_no: pixels[0].cluster_no,
         county: pixels[0].county,
-        sit_raster: pixels[0].sit_raster,
         land_use: pixels[0].land_use,
-        forest_type: pixels[0].forest_type
+        sit_raster: mode(pixels.map(p => p.sit_raster)), // get most common site class
+        forest_type: mode(pixels.map(p => p.forest_type)) // and forest type
       };
 
       // https://ucdavis.app.box.com/file/553138812702

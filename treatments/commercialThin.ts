@@ -209,7 +209,7 @@ const calculatePValues = (pixels: Pixel[]) => {
   //   `initial_ba: ${initial_ba} residual_ba: ${residual_ba}, residual_ba_test: ${residual_ba_test}`
   // );
   if (residual_ba !== residual_ba_test) {
-    throw new Error('residual_ba !== residual_ba_test');
+    throw new Error(`residual_ba: ${residual_ba} !== residual_ba_test: ${residual_ba_test}`);
   }
   return { p15, p25, p35, p40 };
 };
@@ -246,8 +246,6 @@ const calculateResidualBaTarget = (pixel: PixelVariables) => {
     }
     // forest_type === other?
   }
-  // sit_raster = 0, 6, 7?
-  return 100;
-  // throw new Error(`unhandled site class ${sit_raster} and forest type ${forest_type}`);
+  throw new Error(`unhandled site class ${sit_raster} and forest type ${forest_type}`);
 };
 // tslint:disable-next-line: max-file-line-count
