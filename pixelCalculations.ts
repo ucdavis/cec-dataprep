@@ -67,11 +67,6 @@ export const getPixelSum = (pixels: Pixel[]) => {
     forest_type: mode(pixels.map(p => p.forest_type))
   };
   pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
-  // console.log('-------------------------');
-  // console.log(JSON.stringify(pixelSum));
-  // console.log('-------------------------');
-  // console.log(JSON.stringify(convertClusterUnits(pixelSum)));
-  // console.log('-------------------------');
 
   return pixelSum;
 };
@@ -248,7 +243,7 @@ export const calculateCenterOfBiomass = (
 };
 
 // https://medium.com/@nhuynh/finding-mode-javascript-ffb40af2708f
-function mode(arr: any[]) {
+export function mode(arr: any[]) {
   return arr.reduce(
     (current, num) => {
       const freq = num in current.numMap ? ++current.numMap[num] : (current.numMap[num] = 1);
