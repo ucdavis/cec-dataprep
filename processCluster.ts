@@ -94,7 +94,7 @@ export const processCluster = async (
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
     };
-    console.log(`running osrm for treatment ${treatmentName}...`);
+    // console.log(`running osrm for treatment ${treatmentName}...`);
     await osrm.nearest(options, async (err, response) => {
       const landing = {
         latitude: response.waypoints[0].location[1],
@@ -197,7 +197,7 @@ export const processCluster = async (
         100;
 
       // convert from summation of (biomass/acre) to total per acre
-      const clusterBiomassData = convertClusterUnits(pixelSummation);
+      const clusterBiomassData = convertClusterUnits(pixelSummation, pixels.length);
       // console.log('BIOMASS DATA:');
       // console.log(JSON.stringify(clusterBiomassData));
 
