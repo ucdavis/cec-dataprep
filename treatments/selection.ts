@@ -1,9 +1,10 @@
 import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, sumPixel } from '../pixelCalculations';
+import { calculateCenterOfBiomass, getPixelSum } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
+// https://ucdavis.app.box.com/file/689378449650
 export const processSelection = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum,
@@ -12,11 +13,11 @@ export const processSelection = (
   if (treatmentName === 'selection' && pixels[0].land_use === 'Forest') {
     throw new Error('selection cannot be performed on forest land');
   }
-  const p = calculatePValues(pixels);
+  const { p, p_large } = calculatePValues(pixels);
   // console.log('selection: processing pixels with p value: ' + p);
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
-    const treatedPixel = selection(pixel, p);
+    const treatedPixel = selection(pixel, p, p_large);
     // this will update centerOfBiomassSum
     calculateCenterOfBiomass(centerOfBiomassSum, treatedPixel);
     return treatedPixel;
@@ -33,12 +34,12 @@ export const processSelectionChipTreeRemoval = (
   if (pixels[0].land_use === 'Forest') {
     throw new Error('selection with small tree removal cannot be performed on forest land');
   }
-  const p = calculatePValues(pixels);
+  const { p, p_large } = calculatePValues(pixels);
   // console.log('selection chip tree removal: processing pixels with p value: ' + p);
 
   const treatedPixels = pixels.map(pixel => {
     // treat pixel
-    const treatedPixel = selectionChipTreeRemoval(pixel, p);
+    const treatedPixel = selectionChipTreeRemoval(pixel, p, p_large);
     // this will update centerOfBiomassSum
     calculateCenterOfBiomass(centerOfBiomassSum, treatedPixel);
     return treatedPixel;
@@ -49,7 +50,9 @@ export const processSelectionChipTreeRemoval = (
 // All live and dead trees over 10 inches cut.
 // For smaller size classes, cut at the following proportions for both live and dead:
 // 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
-const selection = (pixel: Pixel, p: number): Pixel => {
+const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
+  // if p_large is 0, then it means the condition to set it was not met, and we should not use it
+  const p_large_or_small = !!p_large ? p_large : p;
   let treatedPixel = new PixelClass();
   treatedPixel = {
     ...treatedPixel,
@@ -64,40 +67,39 @@ const selection = (pixel: Pixel, p: number): Pixel => {
     x: pixel.x,
     y: pixel.y,
 
-    bmcwn_15: (p / 100) * pixel.bmcwn_15,
-    bmcwn_25: (p / 100) * pixel.bmcwn_25,
-    bmcwn_35: (p / 100) * pixel.bmcwn_35,
-    bmcwn_40: (p / 100) * pixel.bmcwn_40,
+    bmcwn_15: p * pixel.bmcwn_15,
+    bmcwn_25: p_large_or_small * pixel.bmcwn_25,
+    bmcwn_35: p_large_or_small * pixel.bmcwn_35,
+    bmcwn_40: p_large_or_small * pixel.bmcwn_40,
 
     // tpa removed
-    tpa_15: (p / 100) * pixel.tpa_15,
-    tpa_25: (p / 100) * pixel.tpa_25,
-    tpa_35: (p / 100) * pixel.tpa_35,
-    tpa_40: (p / 100) * pixel.tpa_40,
+    tpa_15: p * pixel.tpa_15,
+    tpa_25: p_large_or_small * pixel.tpa_25,
+    tpa_35: p_large_or_small * pixel.tpa_35,
+    tpa_40: p_large_or_small * pixel.tpa_40,
 
-    vol_15: (p / 100) * pixel.vol_15,
-    vol_25: (p / 100) * pixel.vol_25,
-    vol_35: (p / 100) * pixel.vol_35,
-    vol_40: (p / 100) * pixel.vol_40,
+    vol_15: p * pixel.vol_15,
+    vol_25: p_large_or_small * pixel.vol_25,
+    vol_35: p_large_or_small * pixel.vol_35,
+    vol_40: p_large_or_small * pixel.vol_40,
 
     // basal area
-    ba_15: (p / 100) * pixel.ba_15,
-    ba_25: (p / 100) * pixel.ba_25,
-    ba_35: (p / 100) * pixel.ba_35,
-    ba_40: (p / 100) * pixel.ba_40
+    ba_15: p * pixel.ba_15,
+    ba_25: p * pixel.ba_25,
+    ba_35: p * pixel.ba_35,
+    ba_40: p * pixel.ba_40
   };
   return treatedPixel;
 };
 
 // Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
 // 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
-const selectionChipTreeRemoval = (pixel: Pixel, p: number): Pixel => {
+const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pixel => {
   const isPrivate = pixel.land_use === 'Private';
-  const c0 = 0.2;
   const c2 = isPrivate ? 0.5 : 0.85;
   const c7 = isPrivate ? 0.8 : 0.9;
 
-  let treatedPixel = selection(pixel, p);
+  let treatedPixel = selection(pixel, p, p_large);
   treatedPixel = {
     ...treatedPixel,
     // biomass removed
@@ -119,7 +121,6 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number): Pixel => {
     sng_7: c7 * pixel.sng_7,
 
     // volume removed
-    // vol_0: c0 * pixel.vol_0,
     vol_2: c2 * pixel.vol_2,
     vmsg_2: c2 * pixel.vmsg_2,
     vol_7: c7 * pixel.vol_7,
@@ -131,55 +132,65 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number): Pixel => {
   return treatedPixel;
 };
 
+// https://ucdavis.app.box.com/file/689378449650
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
-  let pixelSum = new PixelVariablesClass();
-  pixels.map(pixel => (pixelSum = sumPixel(pixelSum, pixel)));
-  // average based on the number of pixels in cluster
-  pixelSum.ba_15 = pixelSum.ba_15 / pixels.length;
-  pixelSum.ba_25 = pixelSum.ba_25 / pixels.length;
-  pixelSum.ba_35 = pixelSum.ba_35 / pixels.length;
-  pixelSum.ba_40 = pixelSum.ba_40 / pixels.length;
+  const pixelSum = getPixelSum(pixels);
 
-  pixelSum.bmcwn_15 = pixelSum.bmcwn_15 / pixels.length;
-  pixelSum.bmcwn_25 = pixelSum.bmcwn_25 / pixels.length;
-  pixelSum.bmcwn_35 = pixelSum.bmcwn_35 / pixels.length;
-  pixelSum.bmcwn_40 = pixelSum.bmcwn_40 / pixels.length;
+  // p value represents the percentage we are removing
+  let p = 0;
+  let p_large = 0; // p large will only be > 0 if we should use it
 
-  // residual_BA_target is just 15
+  // residual_ba is determined by the site class
   // it represents the BA that will remain in the forest after we remove biomass
   // a lower site class = more productive forest = higher residual BA target
-  const residualBaTarget = 15; // ft^2/ac
-  // these p values represent the percentage of each size class we are removing
-  let p = 0;
-  let residualBa = calculateResidualBa(pixelSum, p);
-  // console.log(`residualBa: ${residualBa}`);
-  // our goal here is to find p values such that our calculated residual BA = the residual BA target
-  // starting with smaller trees and working our way up
-  while (residualBa !== residualBaTarget && p < 100) {
-    // console.log(`p: ${p}, residualBa: ${residualBa}, residualBaTarget: ${residualBaTarget}`);
-    const percentDifference = Number(
-      (
-        (Math.abs(residualBa - residualBaTarget) / ((residualBa + residualBaTarget) / 2)) *
-        100
-      ).toFixed(0)
-    );
-    // console.log('percent difference: ' + percentDifference);
-    p += percentDifference;
-    if (p > 100) {
-      p -= Math.abs(100 - p);
-    }
-    residualBa = calculateResidualBa(pixelSum, p);
-  }
-  // console.log(`p: ${p}, residualBa: ${residualBa}`);
-  // console.log('-----------------');
+  const residual_ba = calculateResidualBaTarget(pixelSum); // ft^2/ac
+  const residual_large_ba = calculateResidualLargeBaTarget(pixelSum);
 
-  // ---
-  return p;
+  // get BA for cluster, since pixelSum is the sum of each pixel we must correct units by * n_pixels
+  const ba_15_cluster = pixelSum.ba_15 / pixels.length;
+  const ba_25_cluster = pixelSum.ba_25 / pixels.length;
+  const ba_35_cluster = pixelSum.ba_35 / pixels.length;
+  const ba_40_cluster = pixelSum.ba_40 / pixels.length;
+
+  const initial_ba = ba_15_cluster + ba_25_cluster + ba_35_cluster + ba_40_cluster;
+
+  // this is how much ba we will remove, since we are leaving the cluster with ba = residual_ba
+  const ba_removed = initial_ba - residual_ba;
+  if (ba_removed <= 0) {
+    // if initial_ba < residual_ba, we can't remove anything
+    throw new Error(`initial_ba(${initial_ba}) < residual_ba(${residual_ba})`);
+  }
+  p = 1 - residual_ba / initial_ba;
+
+  if ((1 - p) * (ba_25_cluster + ba_35_cluster + ba_40_cluster) < residual_large_ba) {
+    p_large = 1 - residual_large_ba / (ba_25_cluster + ba_35_cluster + ba_40_cluster);
+  }
+
+  return { p, p_large };
 };
 
-const calculateResidualBa = (pixelSum: PixelVariables, p: number) => {
-  return Number(
-    (((100 - p) / 100) * (pixelSum.ba_25 + pixelSum.ba_35 + pixelSum.ba_40)).toFixed(0)
-  );
+const calculateResidualBaTarget = (pixel: PixelVariables) => {
+  // returns ft2/ac
+  const { sit_raster } = pixel;
+  if (sit_raster === 1) {
+    return 100;
+  } else if (sit_raster === 2 || sit_raster === 3) {
+    return 75;
+  } else if (sit_raster === 4 || sit_raster === 5) {
+    return 50;
+  } else {
+    throw new Error(`sit_raster is ${sit_raster}, and must be 1-5`);
+  }
+};
+
+const calculateResidualLargeBaTarget = (pixel: PixelVariables) => {
+  const { sit_raster } = pixel;
+  if (sit_raster === 1 || sit_raster === 2 || sit_raster === 3) {
+    return 15; // ft2/ac
+  } else if (sit_raster === 4 || sit_raster === 5) {
+    return 12; // ft2/ac
+  } else {
+    throw new Error(`sit_raster is ${sit_raster}, and must be 1-5`);
+  }
 };
