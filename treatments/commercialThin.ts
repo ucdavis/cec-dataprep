@@ -168,32 +168,53 @@ const calculatePValues = (pixels: Pixel[]) => {
   const ba_removed = initial_ba - residual_ba;
 
   if (initial_ba < residual_ba) {
-    // if we can't remove any ba, do nothing
-    // this will produce an error when we do the test at the end, and no result will be pushed
+    // if we can't remove any ba, throw an error
+    throw new Error(`initial ba: ${initial_ba} < residual_ba ${residual_ba}`);
     // p15, p25, p35, p40 = 0
   }
-  // if we can just take from the smallest size class (15)
-  else if (ba_removed < ba_15_cluster) {
+  if (ba_removed < ba_15_cluster && ba_removed < ba_15_cluster + ba_25_cluster) {
+    // if we can just take from the smallest size class (15)
     p15 = ba_removed / ba_15_cluster;
     // p25, p35, p40 = 0
-  } else if (ba_removed < ba_15_cluster + ba_25_cluster) {
-    // if we need size class 15 and 25
+  }
+  if (ba_removed > ba_15_cluster && ba_removed < ba_15_cluster + ba_25_cluster) {
+    // if we need size class 15 and some of 25
     p15 = 1; // take 100% of 15
     p25 = (ba_removed - ba_15_cluster) / ba_25_cluster; // then whatever percentage we need of 25
     // p35, p40 = 0
-  } else if (ba_removed < ba_15_cluster + ba_25_cluster + ba_35_cluster) {
-    // if we need size class 15, 25, and 35
+  }
+  if (ba_removed > ba_15_cluster + ba_25_cluster && pixelSum.land_use === 'Forest') {
+    // if we need all of 15 and 25, but we are on forest land
+    // do not harvest anything over 30
+    p15 = p25 = 1;
+    p35 = p40 = 0;
+  }
+  if (
+    ba_removed > ba_15_cluster + ba_25_cluster &&
+    ba_removed < ba_15_cluster + ba_25_cluster + ba_35_cluster &&
+    pixelSum.land_use === 'Private'
+  ) {
+    // if we need size class 15, 25, and 35, and are on private land
     p15 = 1; // take 100% of 15
     p25 = 1; // take 100% of 25
-    p35 = (ba_removed - ba_15_cluster - ba_25_cluster) / ba_35_cluster; // then whatever percentage we need of 35
+    p35 = // then whatever percentage we need of 35, if we're on private land
+      pixelSum.land_use === 'Private'
+        ? (ba_removed - ba_15_cluster - ba_25_cluster) / ba_35_cluster
+        : 0;
     // p40 = 0
-  } else {
+  }
+  if (
+    ba_removed > ba_15_cluster + ba_25_cluster + ba_35_cluster &&
+    pixelSum.land_use === 'Private'
+  ) {
     // if we need size class 15, 25, 35, 40
     p15 = 1; // take 100% of 15
     p25 = 1; // take 100% of 25
     p35 = 1; // take 100% of 35
-    p40 = (ba_removed - ba_15_cluster - ba_25_cluster - ba_35_cluster) / ba_40_cluster;
-    // then whatever percentage we need of 35
+    p40 = // then whatever percentage we need of 40, if we're on private land
+      pixelSum.land_use === 'Private'
+        ? (ba_removed - ba_15_cluster - ba_25_cluster - ba_35_cluster) / ba_40_cluster
+        : 0;
   }
 
   const residual_ba_test = Math.round(

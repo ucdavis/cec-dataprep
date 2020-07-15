@@ -153,7 +153,7 @@ export const sumPixel = (pixelSummation: PixelVariables, p: Pixel) => {
 // https://ucdavis.app.box.com/file/670071894786
 // all F3 variables are in per acre, and then we sum them to get an intermediate sum of per acre variables
 // before we store the final results, we have to convert into total per cluster
-export const convertClusterUnits = (pixelSummation: PixelVariables) => {
+export const convertClusterUnits = (pixelSummation: PixelVariables, numberOfPixels: number) => {
   const pixelSum: PixelVariables = {
     ...pixelSummation,
     bmcwn_2: pixelSummation.bmcwn_2 * pixelsToAcreConstant,
@@ -177,13 +177,6 @@ export const convertClusterUnits = (pixelSummation: PixelVariables) => {
     bmstm_35: pixelSummation.bmstm_35 * pixelsToAcreConstant,
     bmstm_40: pixelSummation.bmstm_40 * pixelsToAcreConstant,
 
-    // get # of trees per pixel
-    tpa_15: pixelSummation.tpa_15 * pixelsToAcreConstant,
-    tpa_2: pixelSummation.tpa_2 * pixelsToAcreConstant,
-    tpa_25: pixelSummation.tpa_25 * pixelsToAcreConstant,
-    tpa_35: pixelSummation.tpa_35 * pixelsToAcreConstant,
-    tpa_40: pixelSummation.tpa_40 * pixelsToAcreConstant,
-    tpa_7: pixelSummation.tpa_7 * pixelsToAcreConstant,
     // dead biomass
     dbmsm_2: pixelSummation.dbmsm_2 * pixelsToAcreConstant,
     dbmsm_7: pixelSummation.dbmsm_7 * pixelsToAcreConstant,
@@ -199,35 +192,33 @@ export const convertClusterUnits = (pixelSummation: PixelVariables) => {
     dbmcn_35: pixelSummation.dbmcn_35 * pixelsToAcreConstant,
     dbmcn_40: pixelSummation.dbmcn_40 * pixelsToAcreConstant,
 
-    sng_2: pixelSummation.sng_2 * pixelsToAcreConstant,
-    sng_7: pixelSummation.sng_7 * pixelsToAcreConstant,
-    sng_15: pixelSummation.sng_15 * pixelsToAcreConstant,
-    sng_25: pixelSummation.sng_25 * pixelsToAcreConstant,
-    sng_35: pixelSummation.sng_35 * pixelsToAcreConstant,
-    sng_40: pixelSummation.sng_40 * pixelsToAcreConstant,
+    // get # of trees per pixel
+    tpa_15: pixelSummation.tpa_15 / numberOfPixels,
+    tpa_2: pixelSummation.tpa_2 / numberOfPixels,
+    tpa_25: pixelSummation.tpa_25 / numberOfPixels,
+    tpa_35: pixelSummation.tpa_35 / numberOfPixels,
+    tpa_40: pixelSummation.tpa_40 / numberOfPixels,
+    tpa_7: pixelSummation.tpa_7 / numberOfPixels,
+    sng_2: pixelSummation.sng_2 / numberOfPixels,
+    sng_7: pixelSummation.sng_7 / numberOfPixels,
+    sng_15: pixelSummation.sng_15 / numberOfPixels,
+    sng_25: pixelSummation.sng_25 / numberOfPixels,
+    sng_35: pixelSummation.sng_35 / numberOfPixels,
+    sng_40: pixelSummation.sng_40 / numberOfPixels,
 
     // volume
-    // F3 not giving us vol_0
-    vol_2: pixelSummation.vol_2 * pixelsToAcreConstant,
-    vol_7: pixelSummation.vol_7 * pixelsToAcreConstant,
-    vol_15: pixelSummation.vol_15 * pixelsToAcreConstant,
-    vol_25: pixelSummation.vol_25 * pixelsToAcreConstant,
-    vol_35: pixelSummation.vol_35 * pixelsToAcreConstant,
-    vol_40: pixelSummation.vol_40 * pixelsToAcreConstant,
-
-    vmsg_2: pixelSummation.vmsg_2 * pixelsToAcreConstant,
-    vmsg_7: pixelSummation.vmsg_7 * pixelsToAcreConstant,
-    vmsg_15: pixelSummation.vmsg_15 * pixelsToAcreConstant,
-    vmsg_25: pixelSummation.vmsg_25 * pixelsToAcreConstant,
-    vmsg_35: pixelSummation.vmsg_35 * pixelsToAcreConstant,
-    vmsg_40: pixelSummation.vmsg_40 * pixelsToAcreConstant,
-    // basal area
-    ba_2: pixelSummation.ba_2 * pixelsToAcreConstant,
-    ba_7: pixelSummation.ba_7 * pixelsToAcreConstant,
-    ba_15: pixelSummation.ba_15 * pixelsToAcreConstant,
-    ba_25: pixelSummation.ba_25 * pixelsToAcreConstant,
-    ba_35: pixelSummation.ba_35 * pixelsToAcreConstant,
-    ba_40: pixelSummation.ba_40 * pixelsToAcreConstant
+    vol_2: pixelSummation.vol_2 / numberOfPixels,
+    vol_7: pixelSummation.vol_7 / numberOfPixels,
+    vol_15: pixelSummation.vol_15 / numberOfPixels,
+    vol_25: pixelSummation.vol_25 / numberOfPixels,
+    vol_35: pixelSummation.vol_35 / numberOfPixels,
+    vol_40: pixelSummation.vol_40 / numberOfPixels,
+    vmsg_2: pixelSummation.vmsg_2 / numberOfPixels,
+    vmsg_7: pixelSummation.vmsg_7 / numberOfPixels,
+    vmsg_15: pixelSummation.vmsg_15 / numberOfPixels,
+    vmsg_25: pixelSummation.vmsg_25 / numberOfPixels,
+    vmsg_35: pixelSummation.vmsg_35 / numberOfPixels,
+    vmsg_40: pixelSummation.vmsg_40 / numberOfPixels
   };
   return pixelSum;
 };
