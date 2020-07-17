@@ -67,10 +67,17 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
     x: pixel.x,
     y: pixel.y,
 
+    // feedstock removed
     bmcwn_15: p * pixel.bmcwn_15,
     bmcwn_25: p_large_or_small * pixel.bmcwn_25,
     bmcwn_35: p_large_or_small * pixel.bmcwn_35,
     bmcwn_40: p_large_or_small * pixel.bmcwn_40,
+
+    // saw log removed
+    bmstm_15: p * pixel.bmstm_15,
+    bmstm_25: p_large_or_small * pixel.bmstm_25,
+    bmstm_35: p_large_or_small * pixel.bmstm_35,
+    bmstm_40: p_large_or_small * pixel.bmstm_40,
 
     // tpa removed
     tpa_15: p * pixel.tpa_15,
