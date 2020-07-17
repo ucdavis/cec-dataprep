@@ -49,7 +49,7 @@ const clearcut = (pixel: Pixel): Pixel => {
     bmfol_35: 0,
     bmfol_40: 0,
 
-    // biomass removed
+    // feedstock removed
     bmstm_2: 0.6 * pixel.bmstm_2,
     bmcwn_2: 0.6 * pixel.bmcwn_2,
     dbmsm_2: 0.6 * pixel.dbmsm_2,
@@ -65,11 +65,6 @@ const clearcut = (pixel: Pixel): Pixel => {
     bmcwn_35: pixel.bmcwn_35,
     bmcwn_40: pixel.bmcwn_40,
 
-    bmstm_15: 0,
-    bmstm_25: 0,
-    bmstm_35: 0,
-    bmstm_40: 0,
-
     dbmcn_15: pixel.dbmcn_15,
     dbmcn_25: pixel.dbmcn_25,
     dbmcn_35: pixel.dbmcn_35,
@@ -79,6 +74,12 @@ const clearcut = (pixel: Pixel): Pixel => {
     dbmsm_25: pixel.dbmsm_25,
     dbmsm_35: pixel.dbmsm_35,
     dbmsm_40: pixel.dbmsm_40,
+
+    // saw log removed
+    bmstm_15: pixel.bmstm_15,
+    bmstm_25: pixel.bmstm_25,
+    bmstm_35: pixel.bmstm_35,
+    bmstm_40: pixel.bmstm_40,
 
     // tpa removed
     tpa_2: 0.6 * pixel.tpa_2,
