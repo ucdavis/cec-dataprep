@@ -32,11 +32,17 @@ const timberSalvage = (pixel: Pixel) => {
     x: pixel.x,
     y: pixel.y,
 
-    // biomass removed
+    // feedstock removed
     dbmcn_15: pixel.dbmcn_15,
     dbmcn_25: pixel.dbmcn_25,
     dbmcn_35: pixel.dbmcn_35,
     dbmcn_40: pixel.dbmcn_40,
+
+    // saw log removed
+    dbmsm_15: pixel.dbmsm_15,
+    dbmsm_25: pixel.dbmsm_25,
+    dbmsm_35: pixel.dbmsm_35,
+    dbmsm_40: pixel.dbmsm_40,
 
     // tpa removed
     sng_15: pixel.sng_15,
