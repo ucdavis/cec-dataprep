@@ -68,10 +68,17 @@ const commercialThin = (
     x: pixel.x,
     y: pixel.y,
 
+    // feedstock removed
     bmcwn_15: p15 * pixel.bmcwn_15,
     bmcwn_25: p25 * pixel.bmcwn_25,
     bmcwn_35: p35 * pixel.bmcwn_35,
     bmcwn_40: p40 * pixel.bmcwn_40,
+
+    // saw log removed
+    bmstm_15: p15 * pixel.bmstm_15,
+    bmstm_25: p25 * pixel.bmstm_25,
+    bmstm_35: p35 * pixel.bmstm_35,
+    bmstm_40: p40 * pixel.bmstm_40,
 
     // tpa removed
     tpa_15: p15 * pixel.tpa_15,
