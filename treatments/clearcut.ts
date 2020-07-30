@@ -42,12 +42,12 @@ const clearcut = (pixel: Pixel): Pixel => {
     y: pixel.y,
     forest_type: pixel.forest_type,
 
-    bmfol_2: 0,
-    bmfol_7: 0,
-    bmfol_15: 0,
-    bmfol_25: 0,
-    bmfol_35: 0,
-    bmfol_40: 0,
+    bmfol_2: 0.6 * pixel.bmfol_2,
+    bmfol_7: 0.9 * pixel.bmfol_7,
+    bmfol_15: pixel.bmfol_15,
+    bmfol_25: pixel.bmfol_25,
+    bmfol_35: pixel.bmfol_35,
+    bmfol_40: pixel.bmfol_40,
 
     // feedstock removed
     bmstm_2: 0.6 * pixel.bmstm_2,
