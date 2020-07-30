@@ -167,9 +167,8 @@ export const processCluster = async (
       };
 
       // https://ucdavis.app.box.com/file/553138812702
-      const t = 50000; // payload of equipment delivering biomass in lbs
-      let totalYardingDistance = 0;
-      let totalNumTrips = 0;
+      let totalBiomassDistance = 0;
+      let totalBiomass = 0;
 
       pixels.forEach((p, i) => {
         // pixel summation is the sum of each pixel
@@ -182,24 +181,20 @@ export const processCluster = async (
         }); // meters
         distance = distance * metersToFeetConstant; // feet
         const biomass = sumBiomass(p) * 2000; // pounds
-        const numTrips = Math.ceil(biomass / t);
-        totalNumTrips += numTrips;
-        totalYardingDistance += 2 * 1 * distance * numTrips; // feet
+        totalBiomass += biomass;
+        totalBiomassDistance += distance * biomass; // feet
       });
 
-      const meanYardingDistance = totalYardingDistance / totalNumTrips;
+      // when we use this in the back end, multiply meanYardingDistance * SQRT(1+slope^2)
+      // for ground and cable
+      const meanYardingDistance = totalBiomassDistance / totalBiomass;
 
-      // console.log(
-      //   `meanYarding: ${meanYardingDistance}, totalYarding: ${totalYardingDistance}, numTrips: ${totalNumTrips}`
-      // );
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
         100;
 
       // convert from summation of (biomass/acre) to total per acre
       const clusterBiomassData = convertClusterUnits(pixelSummation, pixels.length);
-      // console.log('BIOMASS DATA:');
-      // console.log(JSON.stringify(clusterBiomassData));
 
       const output: TreatedCluster = {
         treatmentid: treatmentId,
