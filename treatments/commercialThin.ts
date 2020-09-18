@@ -59,14 +59,12 @@ const commercialThin = (
     ...treatedPixel,
     cluster_no: pixel.cluster_no,
     elevation: pixel.elevation,
-    county: pixel.county,
+    county_name: pixel.county_name,
     land_use: pixel.land_use,
-    sit_raster: pixel.sit_raster,
+    site_class: pixel.site_class,
     forest_type: pixel.forest_type,
-    cluster1: pixel.cluster1,
-    cluster2: pixel.cluster2,
-    x: pixel.x,
-    y: pixel.y,
+    lng: pixel.lng,
+    lat: pixel.lat,
 
     // feedstock removed
     bmcwn_15: p15 * pixel.bmcwn_15,
@@ -243,7 +241,7 @@ const calculatePValues = (pixels: Pixel[]) => {
 };
 
 const calculateResidualBaTarget = (pixel: PixelVariables) => {
-  const { sit_raster, forest_type } = pixel;
+  const { site_class: sit_raster, forest_type } = pixel;
   if (sit_raster === 1) {
     if (forest_type === 'mixed_conifer') {
       return 125;

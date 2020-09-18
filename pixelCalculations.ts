@@ -61,9 +61,9 @@ export const getPixelSum = (pixels: Pixel[]) => {
   pixelSum = {
     ...pixelSum,
     cluster_no: pixels[0].cluster_no,
-    county: pixels[0].county,
+    county_name: pixels[0].county_name,
     land_use: pixels[0].land_use,
-    sit_raster: mode(pixels.map(p => p.sit_raster)),
+    site_class: mode(pixels.map(p => p.site_class)),
     forest_type: mode(pixels.map(p => p.forest_type))
   };
   pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
@@ -228,8 +228,8 @@ export const calculateCenterOfBiomass = (
   treatedPixel: Pixel
 ) => {
   const biomassInPixel = sumBiomass(treatedPixel); // excludes 35, 40 size classes
-  centerOfBiomassSum.lat += treatedPixel.y * biomassInPixel;
-  centerOfBiomassSum.lng += treatedPixel.x * biomassInPixel;
+  centerOfBiomassSum.lat += treatedPixel.lat * biomassInPixel;
+  centerOfBiomassSum.lng += treatedPixel.lng * biomassInPixel;
   centerOfBiomassSum.biomassSum += biomassInPixel;
 };
 

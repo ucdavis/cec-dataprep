@@ -1,8 +1,8 @@
 export interface PixelVariables {
   cluster_no: number;
-  county: string;
+  county_name: string;
   land_use: string;
-  sit_raster: number;
+  site_class: number;
   forest_type: string;
 
   ba_15: number;
@@ -69,9 +69,9 @@ export interface PixelVariables {
 
 export class PixelVariablesClass implements PixelVariables {
   cluster_no = 0;
-  county = '';
+  county_name = '';
   land_use = '';
-  sit_raster = 0;
+  site_class = 0;
   forest_type = '';
   ba_2 = 0;
   ba_7 = 0;
@@ -137,44 +137,16 @@ export class PixelVariablesClass implements PixelVariables {
 
 export interface Pixel extends PixelVariables {
   elevation: number;
-  cluster1: number;
-  cluster2: number;
-  x: number;
-  y: number;
-  bmcwn_0: number;
-  bmfol_0: number;
-  bmstm_0: number;
-  dbmcn_0: number;
-  dbmsm_0: number;
-  ba_0: number;
-  vmsg_0: number;
-  sng_0: number;
-  tpa_0: number;
-  basa_as: number;
-  basa_ra: number;
-  basa_wi: number;
+  lat: number;
+  lng: number;
 }
 
 export class PixelClass extends PixelVariablesClass implements Pixel {
-  sit_raster = 0;
+  site_class = 0;
   elevation = 0;
-  county = '';
+  county_name = '';
   land_use = 'Private';
-  cluster1 = 0;
-  cluster2 = 0;
-  x = 0;
-  y = 0;
+  lat = 0;
+  lng = 0;
   cluster_no = 0;
-  bmcwn_0 = 0;
-  bmfol_0 = 0;
-  bmstm_0 = 0;
-  dbmcn_0 = 0;
-  dbmsm_0 = 0;
-  ba_0 = 0;
-  vmsg_0 = 0;
-  sng_0 = 0;
-  tpa_0 = 0;
-  basa_as = 0;
-  basa_ra = 0;
-  basa_wi = 0;
 }
