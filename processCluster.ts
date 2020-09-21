@@ -120,7 +120,7 @@ export const processCluster = async (
       const nearestPixel: any = findNearest(
         { latitude: landing.latitude, longitude: landing.longitude },
         closestPixelsToLanding.map(pixel => {
-          return { latitude: pixel.y, longitude: pixel.x, elevation: pixel.elevation };
+          return { latitude: pixel.lat, longitude: pixel.lng, elevation: pixel.elevation };
         })
       );
       let landingElevation = nearestPixel.elevation;
@@ -149,7 +149,7 @@ export const processCluster = async (
       const nearestPixelTocenterOfBiomass: any = findNearest(
         { latitude: centerOfBiomassLat, longitude: centerOfBiomassLng },
         closestPixelsToCenterOfBiomass.map(pixel => {
-          return { latitude: pixel.y, longitude: pixel.x, elevation: pixel.elevation };
+          return { latitude: pixel.lat, longitude: pixel.lng, elevation: pixel.elevation };
         })
       );
       const centerOfBiomassElevation =
@@ -160,9 +160,9 @@ export const processCluster = async (
       pixelSummation = {
         ...pixelSummation,
         cluster_no: pixels[0].cluster_no,
-        county: pixels[0].county,
+        county_name: pixels[0].county_name,
         land_use: pixels[0].land_use,
-        sit_raster: mode(pixels.map(p => p.sit_raster)), // get most common site class
+        site_class: mode(pixels.map(p => p.site_class)), // get most common site class
         forest_type: mode(pixels.map(p => p.forest_type)) // and forest type
       };
 
@@ -176,8 +176,8 @@ export const processCluster = async (
         pixelSummation = sumPixel(pixelSummation, p);
         // get distance between pixel and landing site
         let distance = getPreciseDistance(landing, {
-          latitude: p.y,
-          longitude: p.x
+          latitude: p.lat,
+          longitude: p.lng
         }); // meters
         distance = distance * metersToFeetConstant; // feet
         const biomass = sumBiomass(p) * 2000; // pounds

@@ -61,9 +61,9 @@ export const getPixelSum = (pixels: Pixel[]) => {
   pixelSum = {
     ...pixelSum,
     cluster_no: pixels[0].cluster_no,
-    county: pixels[0].county,
+    county_name: pixels[0].county_name,
     land_use: pixels[0].land_use,
-    sit_raster: mode(pixels.map(p => p.sit_raster)),
+    site_class: mode(pixels.map(p => p.site_class)),
     forest_type: mode(pixels.map(p => p.forest_type))
   };
   pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
@@ -156,41 +156,41 @@ export const sumPixel = (pixelSummation: PixelVariables, p: Pixel) => {
 export const convertClusterUnits = (pixelSummation: PixelVariables, numberOfPixels: number) => {
   const pixelSum: PixelVariables = {
     ...pixelSummation,
-    bmcwn_2: pixelSummation.bmcwn_2 * pixelsToAcreConstant,
-    bmcwn_7: pixelSummation.bmcwn_7 * pixelsToAcreConstant,
-    bmcwn_15: pixelSummation.bmcwn_15 * pixelsToAcreConstant,
-    bmcwn_25: pixelSummation.bmcwn_25 * pixelsToAcreConstant,
-    bmcwn_35: pixelSummation.bmcwn_35 * pixelsToAcreConstant,
-    bmcwn_40: pixelSummation.bmcwn_40 * pixelsToAcreConstant,
+    bmcwn_2: pixelSummation.bmcwn_2 / numberOfPixels,
+    bmcwn_7: pixelSummation.bmcwn_7 / numberOfPixels,
+    bmcwn_15: pixelSummation.bmcwn_15 / numberOfPixels,
+    bmcwn_25: pixelSummation.bmcwn_25 / numberOfPixels,
+    bmcwn_35: pixelSummation.bmcwn_35 / numberOfPixels,
+    bmcwn_40: pixelSummation.bmcwn_40 / numberOfPixels,
 
-    bmfol_2: pixelSummation.bmfol_2 * pixelsToAcreConstant,
-    bmfol_7: pixelSummation.bmfol_7 * pixelsToAcreConstant,
-    bmfol_15: pixelSummation.bmfol_15 * pixelsToAcreConstant,
-    bmfol_25: pixelSummation.bmfol_25 * pixelsToAcreConstant,
-    bmfol_35: pixelSummation.bmfol_35 * pixelsToAcreConstant,
-    bmfol_40: pixelSummation.bmfol_40 * pixelsToAcreConstant,
+    bmfol_2: pixelSummation.bmfol_2 / numberOfPixels,
+    bmfol_7: pixelSummation.bmfol_7 / numberOfPixels,
+    bmfol_15: pixelSummation.bmfol_15 / numberOfPixels,
+    bmfol_25: pixelSummation.bmfol_25 / numberOfPixels,
+    bmfol_35: pixelSummation.bmfol_35 / numberOfPixels,
+    bmfol_40: pixelSummation.bmfol_40 / numberOfPixels,
 
-    bmstm_2: pixelSummation.bmstm_2 * pixelsToAcreConstant,
-    bmstm_7: pixelSummation.bmstm_7 * pixelsToAcreConstant,
-    bmstm_15: pixelSummation.bmstm_15 * pixelsToAcreConstant,
-    bmstm_25: pixelSummation.bmstm_25 * pixelsToAcreConstant,
-    bmstm_35: pixelSummation.bmstm_35 * pixelsToAcreConstant,
-    bmstm_40: pixelSummation.bmstm_40 * pixelsToAcreConstant,
+    bmstm_2: pixelSummation.bmstm_2 / numberOfPixels,
+    bmstm_7: pixelSummation.bmstm_7 / numberOfPixels,
+    bmstm_15: pixelSummation.bmstm_15 / numberOfPixels,
+    bmstm_25: pixelSummation.bmstm_25 / numberOfPixels,
+    bmstm_35: pixelSummation.bmstm_35 / numberOfPixels,
+    bmstm_40: pixelSummation.bmstm_40 / numberOfPixels,
 
     // dead biomass
-    dbmsm_2: pixelSummation.dbmsm_2 * pixelsToAcreConstant,
-    dbmsm_7: pixelSummation.dbmsm_7 * pixelsToAcreConstant,
-    dbmsm_15: pixelSummation.dbmsm_15 * pixelsToAcreConstant,
-    dbmsm_25: pixelSummation.dbmsm_25 * pixelsToAcreConstant,
-    dbmsm_35: pixelSummation.dbmsm_35 * pixelsToAcreConstant,
-    dbmsm_40: pixelSummation.dbmsm_40 * pixelsToAcreConstant,
+    dbmsm_2: pixelSummation.dbmsm_2 / numberOfPixels,
+    dbmsm_7: pixelSummation.dbmsm_7 / numberOfPixels,
+    dbmsm_15: pixelSummation.dbmsm_15 / numberOfPixels,
+    dbmsm_25: pixelSummation.dbmsm_25 / numberOfPixels,
+    dbmsm_35: pixelSummation.dbmsm_35 / numberOfPixels,
+    dbmsm_40: pixelSummation.dbmsm_40 / numberOfPixels,
 
-    dbmcn_2: pixelSummation.dbmcn_2 * pixelsToAcreConstant,
-    dbmcn_7: pixelSummation.dbmcn_7 * pixelsToAcreConstant,
-    dbmcn_15: pixelSummation.dbmcn_15 * pixelsToAcreConstant,
-    dbmcn_25: pixelSummation.dbmcn_25 * pixelsToAcreConstant,
-    dbmcn_35: pixelSummation.dbmcn_35 * pixelsToAcreConstant,
-    dbmcn_40: pixelSummation.dbmcn_40 * pixelsToAcreConstant,
+    dbmcn_2: pixelSummation.dbmcn_2 / numberOfPixels,
+    dbmcn_7: pixelSummation.dbmcn_7 / numberOfPixels,
+    dbmcn_15: pixelSummation.dbmcn_15 / numberOfPixels,
+    dbmcn_25: pixelSummation.dbmcn_25 / numberOfPixels,
+    dbmcn_35: pixelSummation.dbmcn_35 / numberOfPixels,
+    dbmcn_40: pixelSummation.dbmcn_40 / numberOfPixels,
 
     // get # of trees per pixel
     tpa_15: pixelSummation.tpa_15 / numberOfPixels,
@@ -228,8 +228,8 @@ export const calculateCenterOfBiomass = (
   treatedPixel: Pixel
 ) => {
   const biomassInPixel = sumBiomass(treatedPixel); // excludes 35, 40 size classes
-  centerOfBiomassSum.lat += treatedPixel.y * biomassInPixel;
-  centerOfBiomassSum.lng += treatedPixel.x * biomassInPixel;
+  centerOfBiomassSum.lat += treatedPixel.lat * biomassInPixel;
+  centerOfBiomassSum.lng += treatedPixel.lng * biomassInPixel;
   centerOfBiomassSum.biomassSum += biomassInPixel;
 };
 

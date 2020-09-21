@@ -58,14 +58,12 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
     ...treatedPixel,
     cluster_no: pixel.cluster_no,
     elevation: pixel.elevation,
-    county: pixel.county,
+    county_name: pixel.county_name,
     land_use: pixel.land_use,
-    sit_raster: pixel.sit_raster,
+    site_class: pixel.site_class,
     forest_type: pixel.forest_type,
-    cluster1: pixel.cluster1,
-    cluster2: pixel.cluster2,
-    x: pixel.x,
-    y: pixel.y,
+    lat: pixel.lat,
+    lng: pixel.lng,
 
     // feedstock removed
     bmcwn_15: p * pixel.bmcwn_15,
@@ -179,7 +177,7 @@ const calculatePValues = (pixels: Pixel[]) => {
 
 const calculateResidualBaTarget = (pixel: PixelVariables) => {
   // returns ft2/ac
-  const { sit_raster } = pixel;
+  const { site_class: sit_raster } = pixel;
   if (sit_raster === 1) {
     return 100;
   } else if (sit_raster === 2 || sit_raster === 3) {
@@ -192,7 +190,7 @@ const calculateResidualBaTarget = (pixel: PixelVariables) => {
 };
 
 const calculateResidualLargeBaTarget = (pixel: PixelVariables) => {
-  const { sit_raster } = pixel;
+  const { site_class: sit_raster } = pixel;
   if (sit_raster === 1 || sit_raster === 2 || sit_raster === 3) {
     return 15; // ft2/ac
   } else if (sit_raster === 4 || sit_raster === 5) {

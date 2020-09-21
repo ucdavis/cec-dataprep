@@ -23,14 +23,12 @@ const timberSalvage = (pixel: Pixel) => {
     ...treatedPixel,
     cluster_no: pixel.cluster_no,
     elevation: pixel.elevation,
-    county: pixel.county,
+    county_name: pixel.county_name,
     land_use: pixel.land_use,
-    sit_raster: pixel.sit_raster,
+    site_class: pixel.site_class,
     forest_type: pixel.forest_type,
-    cluster1: pixel.cluster1,
-    cluster2: pixel.cluster2,
-    x: pixel.x,
-    y: pixel.y,
+    lng: pixel.lng,
+    lat: pixel.lat,
 
     // feedstock removed
     dbmcn_15: pixel.dbmcn_15,
