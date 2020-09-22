@@ -196,7 +196,7 @@ insert into treatments values
   (10,'biomassSalvage','Private,Forest')
   
 -- csv import structure
-create table csvpixels
+create table if not exists csvpixels
 (
 	elevation double precision,
 	county_name text,
@@ -260,10 +260,10 @@ create table csvpixels
 	vol_35 double precision,
 	vol_40 double precision,
 	vol_7 double precision,
-	fl_sit bigint,
+	site_class bigint,
 	land_use text,
-	lat double precision,
 	lng double precision,
+	lat double precision,
 	cluster_no bigint,
 	reg_d text
 );
