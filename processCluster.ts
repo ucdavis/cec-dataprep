@@ -110,9 +110,9 @@ export const processCluster = async (
       );
       const closestPixelsToLanding: Pixel[] = await txn
         .table('pixels')
-        .select('elevation', 'x', 'y')
-        .whereBetween('y', [bounds[0].latitude, bounds[1].latitude])
-        .andWhereBetween('x', [bounds[0].longitude, bounds[1].longitude]);
+        .select('elevation', 'lng', 'lat')
+        .whereBetween('lat', [bounds[0].latitude, bounds[1].latitude])
+        .andWhereBetween('lng', [bounds[0].longitude, bounds[1].longitude]);
       if (closestPixelsToLanding.length === 0 || !closestPixelsToLanding[0]) {
         reject('No elevation for landing site found.');
         return;
@@ -133,12 +133,12 @@ export const processCluster = async (
       );
       const closestPixelsToCenterOfBiomass: Pixel[] = await txn
         .table('pixels')
-        .select('elevation', 'x', 'y')
-        .whereBetween('y', [
+        .select('elevation', 'lng', 'lat')
+        .whereBetween('lat', [
           boundsOnCenterOfBiomass[0].latitude,
           boundsOnCenterOfBiomass[1].latitude
         ])
-        .andWhereBetween('x', [
+        .andWhereBetween('lng', [
           boundsOnCenterOfBiomass[0].longitude,
           boundsOnCenterOfBiomass[1].longitude
         ]);
