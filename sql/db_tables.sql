@@ -159,7 +159,7 @@ CREATE INDEX pixels_cluster_no
 on pixels (cluster_no);
 
 CREATE INDEX pixels_location
-ON pixels (x, y);
+ON pixels (lat, lng);
 
 -- cluster table of unique cluster ids
 create table clusters
