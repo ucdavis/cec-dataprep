@@ -1,5 +1,7 @@
 -- populate clusters
-insert into clusters select distinct cluster_no from pixels as id;
+insert into clusters (id)
+select distinct cluster_no from pixels
+where not exists(select * from clusters where id = cluster_no);
 
 -- find most common value in cluster (useful for forest type, sit_raster)
 select distinct on (cluster_no) cluster_no as id, most_freq_value as forest_type
