@@ -87,6 +87,7 @@ const processClusters = async (nClusters: number) => {
 
   for (let i = 0; i < nClusters; i++) {
     try {
+      console.log(`processing cluster {i} of {nClusters}`);
       await processAllTreatments(db);
     } catch (err) {
       // TODO: log treatment error here instead of catching earlier
