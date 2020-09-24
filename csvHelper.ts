@@ -1,7 +1,7 @@
+import stringify from 'csv-stringify';
 import es from 'event-stream';
 import fs from 'fs';
 import Knex from 'knex';
-import stringify from 'csv-stringify';
 
 // Creates the pixels table and inserts the contents of the filePath into that table
 export const importCsv = async (db: Knex, filePath: string) => {
@@ -19,9 +19,9 @@ export const exportCsv = async (db: Knex, filePath: string) => {
     // write header
     writeStream.write('header header header\n');
 
-		const stringifier = stringify({ delimiter: ',' });
+    const stringifier = stringify({ delimiter: ',' });
 
-		db.table('treatedclusters')
+    db.table('treatedclusters')
       .stream((stream) => stream.pipe(stringifier).pipe(writeStream))
       .then(() => {
         console.log('end, closing stream');
