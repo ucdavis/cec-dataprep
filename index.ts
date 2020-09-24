@@ -89,7 +89,7 @@ const processClusters = async () => {
   await setupTreated(db);
 
   // import csv w/ in-memory db
-  await importCsv(db, './data/sierra_small.csv');
+  await importCsv(db, process.env.PIXEL_FILE || './data/sierra_small.csv');
 
   // loop through the data and process every cluster
   // TODO: change to a while loop so we process every row
@@ -102,7 +102,7 @@ const processClusters = async () => {
   }
 
   // spit out into another csv of treated pixels
-  await exportCsv(db, './data/sierra_out.csv');
+  await exportCsv(db, process.env.TREATED_OUT_FILE || './data/sierra_out.csv');
 
   const t1 = performance.now();
   console.log(`Running took ${t1 - t0} milliseconds.`);
