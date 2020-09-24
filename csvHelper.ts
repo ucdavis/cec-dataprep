@@ -11,6 +11,23 @@ export const importCsv = async (db: Knex, filePath: string) => {
   await db.table('pixels').count();
 };
 
+export const exportCsv = async (db: Knex, filePath: string) => {
+  return new Promise((resolve, reject) => {
+    const writeStream = fs.createWriteStream(filePath);
+
+    // write header
+    writeStream.write('header header header\n');
+
+    db.table('treatedclusters')
+      .stream((stream) => stream.pipe(writeStream))
+      .then(() => {
+        console.log('end, closing stream');
+        writeStream.end();
+        resolve();
+      });
+  });
+};
+
 const insertFileContents = async (db: Knex, filePath: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     const s = fs
