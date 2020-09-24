@@ -20,15 +20,18 @@
     "@ucdavis/frcs": "^1.0.6",
     "body-parser": "^1.18.3",
     "dotenv": "^6.2.0",
+    "event-stream": "^4.0.1",
     "fs": "0.0.1-security",
     "geolib": "^3.3.1",
     "knex": "^0.16.3",
     "osrm": "^5.22.0",
     "pg": "^7.17.1",
-    "ps": "^1.0.0"
+    "ps": "^1.0.0",
+    "sqlite3": "^5.0.0"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.0",
+    "@types/event-stream": "^3.3.34",
     "@types/geolib": "^2.0.23",
     "@types/knex": "^0.15.2",
     "@types/node": "^10.12.21",
