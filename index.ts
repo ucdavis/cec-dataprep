@@ -78,13 +78,6 @@ const processClusters = async () => {
     useNullAsDefault: true,
   });
 
-  // const db = knex({
-  //   client: 'sqlite3',
-  //   connection: {
-  //     filename: './dev.sqlite3',
-  //   },
-  // });
-
   // setup treatments structure
   await setupTreated(db);
 
@@ -93,7 +86,7 @@ const processClusters = async () => {
 
   // loop through the data and process every cluster
   // TODO: change to a while loop so we process every row
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 500; i++) {
     try {
       await processAllTreatments(db);
     } catch (err) {

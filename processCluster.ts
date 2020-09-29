@@ -3,6 +3,7 @@ import knex from 'knex';
 import { CenterOfBiomassSum } from 'models/shared';
 import OSRM from 'osrm';
 import pg from 'pg';
+import { getElevation } from './elevation';
 import { Pixel, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import {
@@ -104,56 +105,17 @@ export const processCluster = async (
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
       centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding * metersToFeetConstant; // feet
 
-      const bounds = getBoundsOfDistance(
-        { latitude: landing.latitude, longitude: landing.longitude },
-        1000
-      );
-      const closestPixelsToLanding: Pixel[] = await txn
-        .table('pixels')
-        .select('elevation', 'lng', 'lat')
-        .whereBetween('lat', [bounds[0].latitude, bounds[1].latitude])
-        .andWhereBetween('lng', [bounds[0].longitude, bounds[1].longitude]);
-      if (closestPixelsToLanding.length === 0 || !closestPixelsToLanding[0]) {
-        reject('No elevation for landing site found.');
-        return;
-      }
-      const nearestPixel: any = findNearest(
-        { latitude: landing.latitude, longitude: landing.longitude },
-        closestPixelsToLanding.map(pixel => {
-          return { latitude: pixel.lat, longitude: pixel.lng, elevation: pixel.elevation };
-        })
-      );
-      let landingElevation = nearestPixel.elevation;
-      landingElevation = landingElevation * metersToFeetConstant; // put landing elevation in feet
+      // get landing elevation
+      const landingElevation = await getElevation(landing.latitude, landing.longitude);
+
       const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
+
+      const centerOfBiomassElevation = await getElevation(centerOfBiomassLat, centerOfBiomassLng);
 
       const boundsOnCenterOfBiomass = getBoundsOfDistance(
         { latitude: landing.latitude, longitude: landing.longitude },
         1000
       );
-      const closestPixelsToCenterOfBiomass: Pixel[] = await txn
-        .table('pixels')
-        .select('elevation', 'lng', 'lat')
-        .whereBetween('lat', [
-          boundsOnCenterOfBiomass[0].latitude,
-          boundsOnCenterOfBiomass[1].latitude
-        ])
-        .andWhereBetween('lng', [
-          boundsOnCenterOfBiomass[0].longitude,
-          boundsOnCenterOfBiomass[1].longitude
-        ]);
-      if (closestPixelsToCenterOfBiomass.length === 0 || !closestPixelsToCenterOfBiomass[0]) {
-        reject('No elevation for center of biomass found.');
-        return;
-      }
-      const nearestPixelTocenterOfBiomass: any = findNearest(
-        { latitude: centerOfBiomassLat, longitude: centerOfBiomassLng },
-        closestPixelsToCenterOfBiomass.map(pixel => {
-          return { latitude: pixel.lat, longitude: pixel.lng, elevation: pixel.elevation };
-        })
-      );
-      const centerOfBiomassElevation =
-        nearestPixelTocenterOfBiomass.elevation * metersToFeetConstant;
 
       // initialize sum with important variables, 0 everything else
       let pixelSummation = new PixelVariablesClass();
