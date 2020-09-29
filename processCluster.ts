@@ -1,4 +1,4 @@
-import { findNearest, getBoundsOfDistance, getPreciseDistance } from 'geolib';
+import { getPreciseDistance } from 'geolib';
 import knex from 'knex';
 import { CenterOfBiomassSum } from 'models/shared';
 import OSRM from 'osrm';
@@ -106,16 +106,13 @@ export const processCluster = async (
       centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding * metersToFeetConstant; // feet
 
       // get landing elevation
-      const landingElevation = await getElevation(landing.latitude, landing.longitude);
+      const landingElevationInMeters = await getElevation(landing.latitude, landing.longitude);
+      const landingElevation = landingElevationInMeters * metersToFeetConstant;
 
       const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
 
-      const centerOfBiomassElevation = await getElevation(centerOfBiomassLat, centerOfBiomassLng);
-
-      const boundsOnCenterOfBiomass = getBoundsOfDistance(
-        { latitude: landing.latitude, longitude: landing.longitude },
-        1000
-      );
+      const centerOfBiomassElevationInMeters = await getElevation(centerOfBiomassLat, centerOfBiomassLng);
+      const centerOfBiomassElevation = centerOfBiomassElevationInMeters * metersToFeetConstant;
 
       // initialize sum with important variables, 0 everything else
       let pixelSummation = new PixelVariablesClass();
