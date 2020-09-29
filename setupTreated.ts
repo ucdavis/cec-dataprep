@@ -112,7 +112,4 @@ create table if not exists treatedclusters
 	vol_40 double precision,
 	vol_7 double precision
 );
-
-create index treatedclusters_cluster_no
-	on treatedclusters (cluster_no);
 `;

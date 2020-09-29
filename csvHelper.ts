@@ -6,6 +6,7 @@ import Knex from 'knex';
 // Creates the pixels table and inserts the contents of the filePath into that table
 export const importCsv = async (db: Knex, filePath: string) => {
   await db.raw(createStatement);
+  await db.raw(createIndexStatement);
 
   await insertFileContents(db, filePath);
 
@@ -61,6 +62,10 @@ const insertFileContents = async (db: Knex, filePath: string): Promise<void> => 
       );
   });
 };
+
+const createIndexStatement = `
+CREATE INDEX pixels_cluster_no on pixels (cluster_no);
+`;
 
 const createStatement = `
 create table if not exists pixels
