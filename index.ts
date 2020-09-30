@@ -1,111 +1,104 @@
 import dotenv from 'dotenv';
-import knex from 'knex';
 import OSRM from 'osrm';
 
 import { performance } from 'perf_hooks';
 
-import { exportCsv, importCsv } from './csvHelper';
+import { exportToCsv, importFromCsv } from './csvHelper';
 import { processCluster } from './processCluster';
-import { setupTreated } from './setupTreated';
 
 import { Pixel } from './models/pixel';
 import { Treatment } from './models/shared';
 import { TreatedCluster } from './models/treatedcluster';
 
+const treatments: Treatment[] = [
+  { id: 1, name: 'clearcut', land_use: 'Private' },
+  { id: 2, name: 'commercialThin', land_use: 'Private' },
+  { id: 3, name: 'commercialThinChipTreeRemoval', land_use: 'Private,Forest' },
+  { id: 4, name: 'timberSalvage', land_use: 'Private,Forest' },
+  { id: 5, name: 'timberSalvageChipTreeRemoval', land_use: 'Private,Forest' },
+  { id: 6, name: 'selection', land_use: 'Private' },
+  { id: 7, name: 'selectionChipTreeRemoval', land_use: 'Private' },
+  { id: 8, name: 'tenPercentGroupSelection', land_use: 'Private,Forest' },
+  { id: 9, name: 'twentyPercentGroupSelection', land_use: 'Private' },
+  { id: 10, name: 'biomassSalvage', land_use: 'Private,Forest' },
+];
+
 dotenv.config();
 
-const processAllTreatments = async (db: knex) => {
+const processAllTreatments = async (clusterId: number, pixels: Pixel[]) => {
   const t0 = performance.now();
 
-  await db.transaction(async txn => {
-    try {
-      const osrm = new OSRM(process.env.OSRM_FILE || './data/california-latest.osrm');
-      // TODO: why do we grab treatments every time? we should only need it once
-      const treatments: Treatment[] = await txn.table('treatments');
-      const results: TreatedCluster[] = [];
+  try {
+    const osrm = new OSRM(process.env.OSRM_FILE || './data/california-latest.osrm');
+    // TODO: why do we grab treatments every time? we should only need it once
+    const results: TreatedCluster[] = [];
 
-      // grab a random pixel and use it to choose the clusterId to use
-      const clusters: Pixel[] = await txn
-        .table('pixels')
-        .select('cluster_no')
-        .orderByRaw('RANDOM()')
-        .limit(1);
+    await Promise.all(
+      treatments.map(async (treatment: Treatment) => {
+        await processCluster(pixels, treatment.id, treatment.name, osrm)
+          .then((res) => {
+            console.log(`pushing results of ${clusterId}, ${treatment.name}`);
+            results.push(res);
+          })
+          .catch((err) => {
+            console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err}`);
+          });
+      })
+    );
 
-      const clusterId = clusters[0].cluster_no;
-      const pixelsInCluster: Pixel[] = await txn.table('pixels').where({ cluster_no: clusterId });
-      await Promise.all(
-        treatments.map(async (treatment: Treatment) => {
-          const outputs = await processCluster(
-            pixelsInCluster,
-            treatment.id,
-            treatment.name,
-            osrm,
-            txn
-          )
-            .then(res => {
-              console.log(`pushing results of ${clusterId}, ${treatment.name}`);
-              results.push(res);
-            })
-            .catch(err => {
-              console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err}`);
-            });
-        })
-      );
-      console.log('inserting into db...');
-      // insert into the db and remove from the pixels table
-      await txn.table('treatedclusters').insert(results);
-      await txn.raw(`delete from pixels where cluster_no = ${clusterId}`);
-    } catch (err) {
-      console.log('------------\n');
-      console.log(err.message);
-      console.log('/n');
-      throw err; // rethrowing the error will cause the closing transaction to rollback
-    } finally {
-      const t1 = performance.now();
-      console.log('Running took ' + (t1 - t0) + ' milliseconds.');
-    }
-  });
+    // success, return the treated cluster results
+    return results;
+  } catch (err) {
+    // TODO: should we catch:?
+    console.log('------------\n');
+    console.log(err.message);
+    console.log('/n');
+  } finally {
+    const t1 = performance.now();
+    console.log('Running took ' + (t1 - t0) + ' milliseconds.');
+  }
 };
 
-// read from the csv file and process clusters in a synchronous loop
-const processClusters = async () => {
+const processClustersInMemory = async () => {
+  const treatedClusters: TreatedCluster[] = [];
+  const errorClusters: string[] = [];
+
   const t0 = performance.now();
 
-  // https://knexjs.org/
-  const db = knex({
-    client: 'sqlite3',
-    connection: ':memory:',
-    useNullAsDefault: true,
-  });
+  const clusters = await importFromCsv(process.env.PIXEL_FILE || './data/sierra_small.csv');
 
-  // setup treatments structure
-  await setupTreated(db);
+  for (const clusterNo in clusters) {
+    if (Object.prototype.hasOwnProperty.call(clusters, clusterNo)) {
+      const pixelsInCluster = clusters[clusterNo];
 
-  // import csv w/ in-memory db
-  await importCsv(db, process.env.PIXEL_FILE || './data/sierra_small.csv');
+      if (pixelsInCluster.length > 0) {
+        console.log(`${clusterNo} has ${pixelsInCluster.length} pixels, processing now`);
 
-  // loop through the data and process every cluster
-  // TODO: change to a while loop so we process every row
-  for (let i = 0; i < 500; i++) {
-    try {
-      await processAllTreatments(db);
-    } catch (err) {
-      console.error(err);
+        const result = await processAllTreatments(pixelsInCluster[0].cluster_no, pixelsInCluster);
+
+        if (result && result.length > 0) {
+          treatedClusters.push(...result);
+        } else {
+          errorClusters.push(clusterNo);
+        }
+      }
     }
   }
 
-  // spit out into another csv of treated pixels
-  await exportCsv(db, process.env.TREATED_OUT_FILE || './data/sierra_out.csv');
+  console.log('all done processing clusters, writing output files');
+
+  await exportToCsv(treatedClusters, process.env.PIXEL_FILE || './data/results.csv');
+
+  if (errorClusters.length > 0) {
+    console.log('the following clusters could not be processed' + errorClusters.join(','));
+  } else {
+    console.log('yay, all clusters ran successfully!');
+  }
 
   const t1 = performance.now();
-  console.log(`Running took ${t1 - t0} milliseconds.`);
-
-  // all done
-  process.exit(0);
+  console.log(`Running in memory took ${t1 - t0} milliseconds.`);
 };
 
-processClusters()
-  .then(() => {
-    console.log('All done, existing');
-  })
+processClustersInMemory()
+  .then(() => console.log('all done with processing run'))
   .catch(console.error);

@@ -19,7 +19,7 @@
     "@rauschma/stringio": "^1.4.0",
     "@ucdavis/frcs": "^1.0.6",
     "body-parser": "^1.18.3",
-    "csv-stringify": "^5.5.1",
+    "csv-parser": "^2.3.3",
     "dotenv": "^6.2.0",
     "event-stream": "^4.0.1",
     "fs": "0.0.1-security",
