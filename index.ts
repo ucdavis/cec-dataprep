@@ -87,7 +87,7 @@ const processClustersInMemory = async () => {
 
   console.log('all done processing clusters, writing output files');
 
-  await exportToCsv(treatedClusters, process.env.PIXEL_FILE || './data/results.csv');
+  await exportToCsv(treatedClusters, process.env.TREATED_OUT_FILE || './data/results.csv');
 
   if (errorClusters.length > 0) {
     console.log('the following clusters could not be processed' + errorClusters.join(','));
