@@ -3,7 +3,7 @@ import OSRM from 'osrm';
 
 import { performance } from 'perf_hooks';
 
-import { exportToCsv, processPixelsCsv } from './csvHelper';
+import { exportToCsv, getCsvWriteStream, processPixelsCsv } from './csvHelper';
 import { processCluster } from './processCluster';
 
 import { Pixel } from './models/pixel';
@@ -60,25 +60,34 @@ const processAllTreatments = async (clusterId: number, pixels: Pixel[]) => {
 };
 
 const processClustersStreaming = async () => {
-  const promises: Promise<TreatedCluster[] | undefined>[] = [];
-  await processPixelsCsv(process.env.PIXEL_FILE || './data/butte-pixels-sorted.csv', (cluster, pixels) => {
-    console.log(`there are ${pixels.length} pixels in cluster ${cluster}, processing now`);
+  // open our output csv for writing
+  const outputCsvActions = getCsvWriteStream(process.env.TREATED_OUT_FILE || './data/results.csv');
 
-    promises.push(processAllTreatments(cluster, pixels));
-  });
+  const promises: Promise<void>[] = [];
 
-  const results = await Promise.all(promises);
+  // process the csv and get a callback each time a new cluster is read
+  await processPixelsCsv(
+    process.env.PIXEL_FILE || './data/butte-pixels-sorted.csv',
+    (cluster, pixels) => {
+      console.log(`there are ${pixels.length} pixels in cluster ${cluster}, processing now`);
 
-  // flatten and throw away clusters that couldn't process
-  const flatResults: TreatedCluster[] = [];
+      // process the treatements for this cluster and write the results to the csv
+      promises.push(
+        processAllTreatments(cluster, pixels).then((treated) => {
+          if (treated) {
+            outputCsvActions.writeTreatedClusters(treated);
+          }
 
-  results.forEach((r) => {
-    if (r !== undefined) {
-      flatResults.push(...r);
+          return;
+        })
+      );
     }
-  });
+  );
 
-  await exportToCsv(flatResults, process.env.TREATED_OUT_FILE || './data/results.csv');
+  // once we are done with all processing and writing our results
+  await Promise.all(promises);
+
+  outputCsvActions.closeCsv();
 };
 
 processClustersStreaming()
