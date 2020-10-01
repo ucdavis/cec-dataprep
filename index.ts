@@ -3,7 +3,7 @@ import OSRM from 'osrm';
 
 import { performance } from 'perf_hooks';
 
-import { exportToCsv, importFromCsv } from './csvHelper';
+import { exportToCsv, processPixelsCsv } from './csvHelper';
 import { processCluster } from './processCluster';
 
 import { Pixel } from './models/pixel';
@@ -49,7 +49,7 @@ const processAllTreatments = async (clusterId: number, pixels: Pixel[]) => {
     // success, return the treated cluster results
     return results;
   } catch (err) {
-    // TODO: should we catch:?
+    // TODO: what should we do with clusters which don't process at all?  Currently they are just returned undefined
     console.log('------------\n');
     console.log(err.message);
     console.log('/n');
@@ -59,46 +59,28 @@ const processAllTreatments = async (clusterId: number, pixels: Pixel[]) => {
   }
 };
 
-const processClustersInMemory = async () => {
-  const treatedClusters: TreatedCluster[] = [];
-  const errorClusters: string[] = [];
+const processClustersStreaming = async () => {
+  const promises: Promise<TreatedCluster[] | undefined>[] = [];
+  await processPixelsCsv(process.env.PIXEL_FILE || './data/butte-pixels-sorted.csv', (cluster, pixels) => {
+    console.log(`there are ${pixels.length} pixels in cluster ${cluster}, processing now`);
 
-  const t0 = performance.now();
+    promises.push(processAllTreatments(cluster, pixels));
+  });
 
-  const clusters = await importFromCsv(process.env.PIXEL_FILE || './data/sierra_small.csv');
+  const results = await Promise.all(promises);
 
-  for (const clusterNo in clusters) {
-    if (Object.prototype.hasOwnProperty.call(clusters, clusterNo)) {
-      const pixelsInCluster = clusters[clusterNo];
+  // flatten and throw away clusters that couldn't process
+  const flatResults: TreatedCluster[] = [];
 
-      if (pixelsInCluster.length > 0) {
-        console.log(`${clusterNo} has ${pixelsInCluster.length} pixels, processing now`);
-
-        const result = await processAllTreatments(pixelsInCluster[0].cluster_no, pixelsInCluster);
-
-        if (result && result.length > 0) {
-          treatedClusters.push(...result);
-        } else {
-          errorClusters.push(clusterNo);
-        }
-      }
+  results.forEach((r) => {
+    if (r !== undefined) {
+      flatResults.push(...r);
     }
-  }
+  });
 
-  console.log('all done processing clusters, writing output files');
-
-  await exportToCsv(treatedClusters, process.env.TREATED_OUT_FILE || './data/results.csv');
-
-  if (errorClusters.length > 0) {
-    console.log('the following clusters could not be processed' + errorClusters.join(','));
-  } else {
-    console.log('yay, all clusters ran successfully!');
-  }
-
-  const t1 = performance.now();
-  console.log(`Running in memory took ${t1 - t0} milliseconds.`);
+  await exportToCsv(flatResults, process.env.TREATED_OUT_FILE || './data/results.csv');
 };
 
-processClustersInMemory()
+processClustersStreaming()
   .then(() => console.log('all done with processing run'))
   .catch(console.error);

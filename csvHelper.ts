@@ -7,6 +7,62 @@ interface ClusterMap {
   [cluster: string]: Pixel[];
 }
 
+// read the csv can call `cb` whenever a new cluster is ready
+export const processPixelsCsv = (
+  filePath: string,
+  clusterReady: (cluster: number, pixels: Pixel[]) => void
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    let currentCluster = -1;
+    let currentPixels: Pixel[] = [];
+
+    fs.createReadStream(filePath)
+      .pipe(
+        csv({
+          mapHeaders: ({ header, index }) => {
+            if (header === 'reg_d') {
+              return 'forest_type';
+            } else if (header === '') {
+              // sometimes we get a blank first column, remove that data
+              return null;
+            }
+
+            return header;
+          },
+          mapValues: ({ header, index, value }) => {
+            // we want to convert numeric values to their proper format
+            const floatValue = Number.parseFloat(value);
+            return isNaN(floatValue) ? value : floatValue;
+          },
+        })
+      )
+      .on('data', (data: Pixel) => {
+        if (currentCluster === -1) {
+          console.log('reading csv file -- first line of data for reference', data);
+        }
+        if (data.cluster_no === currentCluster) {
+          // we are still in the current cluster, let's add to the pixels list
+          currentPixels.push(data);
+        } else {
+          // we are in a new cluster, so callback that the previous cluster
+          if (currentPixels.length > 0) {
+            // wait for the cluster callback to completed before we go on
+            clusterReady(currentCluster, currentPixels);
+          }
+
+          // and then update for the next cluster
+          currentCluster = data.cluster_no;
+          currentPixels = [data];
+        }
+      })
+      .on('error', reject)
+      .on('end', () => {
+        console.log('done reading file');
+        resolve();
+      });
+  });
+};
+
 // Creates the pixels table and inserts the contents of the filePath into that table
 export const importFromCsv = (filePath: string): Promise<ClusterMap> => {
   return new Promise<ClusterMap>((resolve, reject) => {
