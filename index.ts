@@ -25,12 +25,10 @@ const treatments: Treatment[] = [
 
 dotenv.config();
 
-const processAllTreatments = async (clusterId: number, pixels: Pixel[]) => {
+const processAllTreatments = async (clusterId: number, pixels: Pixel[], osrm: OSRM) => {
   const t0 = performance.now();
 
   try {
-    const osrm = new OSRM(process.env.OSRM_FILE || './data/california-latest.osrm');
-    // TODO: why do we grab treatments every time? we should only need it once
     const results: TreatedCluster[] = [];
 
     await Promise.all(
@@ -60,20 +58,23 @@ const processAllTreatments = async (clusterId: number, pixels: Pixel[]) => {
 };
 
 const processClustersStreaming = async () => {
+  // get our ORSM instance we will use for all cluster processing
+  const osrm = new OSRM(process.env.OSRM_FILE || './data/california-latest.osrm');
+
   // open our output csv for writing
-  const outputCsvActions = getCsvWriteStream(process.env.TREATED_OUT_FILE || './data/results.csv');
+  const outputCsvActions = getCsvWriteStream(process.env.TREATED_OUT_FILE || './data/results-dev.csv');
 
   const promises: Promise<void>[] = [];
 
   // process the csv and get a callback each time a new cluster is read
   await processPixelsCsv(
-    process.env.PIXEL_FILE || './data/butte-pixels-sorted.csv',
+    process.env.PIXEL_FILE || './data/butte-small.csv',
     (cluster, pixels) => {
       console.log(`there are ${pixels.length} pixels in cluster ${cluster}, processing now`);
 
       // process the treatements for this cluster and write the results to the csv
       promises.push(
-        processAllTreatments(cluster, pixels).then((treated) => {
+        processAllTreatments(cluster, pixels, osrm).then((treated) => {
           if (treated) {
             outputCsvActions.writeTreatedClusters(treated);
           }
