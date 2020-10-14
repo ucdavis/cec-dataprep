@@ -1,8 +1,8 @@
-import { findNearest, getBoundsOfDistance, getPreciseDistance } from 'geolib';
-import knex from 'knex';
+import { getPreciseDistance } from 'geolib';
 import { CenterOfBiomassSum } from 'models/shared';
 import OSRM from 'osrm';
 import pg from 'pg';
+import { getElevation } from './elevation';
 import { Pixel, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
 import {
@@ -11,19 +11,19 @@ import {
   mode,
   pixelsToAcreConstant,
   sumBiomass,
-  sumPixel
+  sumPixel,
 } from './pixelCalculations';
 import { processBiomassSalvage } from './treatments/biomassSalvage';
 import { processClearcut } from './treatments/clearcut';
 import {
   processCommercialThin,
-  processCommericalThinChipTreeRemoval
+  processCommericalThinChipTreeRemoval,
 } from './treatments/commercialThin';
 import { processGroupSelection } from './treatments/groupSelection';
 import { processSelection, processSelectionChipTreeRemoval } from './treatments/selection';
 import {
   processTimberSalvage,
-  processTimberSalvageChipTreeRemoval
+  processTimberSalvageChipTreeRemoval,
 } from './treatments/timberSalvage';
 
 const PG_DECIMAL_OID = 1700;
@@ -33,14 +33,13 @@ export const processCluster = async (
   pixels: Pixel[],
   treatmentId: number,
   treatmentName: string,
-  osrm: OSRM,
-  txn: knex.Transaction
+  osrm: OSRM
 ): Promise<TreatedCluster> => {
   return new Promise(async (resolve, reject) => {
     const centerOfBiomassSum: CenterOfBiomassSum = {
       lat: 0,
       lng: 0,
-      biomassSum: 0
+      biomassSum: 0,
     };
     try {
       switch (treatmentName) {
@@ -92,68 +91,29 @@ export const processCluster = async (
     // );
 
     const options: OSRM.NearestOptions = {
-      coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
+      coordinates: [[centerOfBiomassLng, centerOfBiomassLat]],
     };
     // console.log(`running osrm for treatment ${treatmentName}...`);
     await osrm.nearest(options, async (err, response) => {
       const landing = {
         latitude: response.waypoints[0].location[1],
-        longitude: response.waypoints[0].location[0]
+        longitude: response.waypoints[0].location[0],
       };
       // get distance between pixel and landing site
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
       centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding * metersToFeetConstant; // feet
 
-      const bounds = getBoundsOfDistance(
-        { latitude: landing.latitude, longitude: landing.longitude },
-        1000
-      );
-      const closestPixelsToLanding: Pixel[] = await txn
-        .table('pixels')
-        .select('elevation', 'lng', 'lat')
-        .whereBetween('lat', [bounds[0].latitude, bounds[1].latitude])
-        .andWhereBetween('lng', [bounds[0].longitude, bounds[1].longitude]);
-      if (closestPixelsToLanding.length === 0 || !closestPixelsToLanding[0]) {
-        reject('No elevation for landing site found.');
-        return;
-      }
-      const nearestPixel: any = findNearest(
-        { latitude: landing.latitude, longitude: landing.longitude },
-        closestPixelsToLanding.map(pixel => {
-          return { latitude: pixel.lat, longitude: pixel.lng, elevation: pixel.elevation };
-        })
-      );
-      let landingElevation = nearestPixel.elevation;
-      landingElevation = landingElevation * metersToFeetConstant; // put landing elevation in feet
+      // get landing elevation
+      const landingElevationInMeters = await getElevation(landing.latitude, landing.longitude);
+      const landingElevation = landingElevationInMeters * metersToFeetConstant;
+
       const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
 
-      const boundsOnCenterOfBiomass = getBoundsOfDistance(
-        { latitude: landing.latitude, longitude: landing.longitude },
-        1000
+      const centerOfBiomassElevationInMeters = await getElevation(
+        centerOfBiomassLat,
+        centerOfBiomassLng
       );
-      const closestPixelsToCenterOfBiomass: Pixel[] = await txn
-        .table('pixels')
-        .select('elevation', 'lng', 'lat')
-        .whereBetween('lat', [
-          boundsOnCenterOfBiomass[0].latitude,
-          boundsOnCenterOfBiomass[1].latitude
-        ])
-        .andWhereBetween('lng', [
-          boundsOnCenterOfBiomass[0].longitude,
-          boundsOnCenterOfBiomass[1].longitude
-        ]);
-      if (closestPixelsToCenterOfBiomass.length === 0 || !closestPixelsToCenterOfBiomass[0]) {
-        reject('No elevation for center of biomass found.');
-        return;
-      }
-      const nearestPixelTocenterOfBiomass: any = findNearest(
-        { latitude: centerOfBiomassLat, longitude: centerOfBiomassLng },
-        closestPixelsToCenterOfBiomass.map(pixel => {
-          return { latitude: pixel.lat, longitude: pixel.lng, elevation: pixel.elevation };
-        })
-      );
-      const centerOfBiomassElevation =
-        nearestPixelTocenterOfBiomass.elevation * metersToFeetConstant;
+      const centerOfBiomassElevation = centerOfBiomassElevationInMeters * metersToFeetConstant;
 
       // initialize sum with important variables, 0 everything else
       let pixelSummation = new PixelVariablesClass();
@@ -162,8 +122,8 @@ export const processCluster = async (
         cluster_no: pixels[0].cluster_no,
         county_name: pixels[0].county_name,
         land_use: pixels[0].land_use,
-        site_class: mode(pixels.map(p => p.site_class)), // get most common site class
-        forest_type: mode(pixels.map(p => p.forest_type)) // and forest type
+        site_class: mode(pixels.map((p) => p.site_class)), // get most common site class
+        forest_type: mode(pixels.map((p) => p.forest_type)), // and forest type
       };
 
       // https://ucdavis.app.box.com/file/553138812702
@@ -177,7 +137,7 @@ export const processCluster = async (
         // get distance between pixel and landing site
         let distance = getPreciseDistance(landing, {
           latitude: p.lat,
-          longitude: p.lng
+          longitude: p.lng,
         }); // meters
         distance = distance * metersToFeetConstant; // feet
         const biomass = sumBiomass(p) * 2000; // pounds
@@ -209,7 +169,7 @@ export const processCluster = async (
         mean_yarding: meanYardingDistance,
         year: 2016, // TODO: update when pixel data actually has years
 
-        ...clusterBiomassData
+        ...clusterBiomassData,
       };
       resolve(output);
     });
