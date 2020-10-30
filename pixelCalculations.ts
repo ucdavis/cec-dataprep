@@ -64,7 +64,8 @@ export const getPixelSum = (pixels: Pixel[]) => {
     county_name: pixels[0].county_name,
     land_use: pixels[0].land_use,
     site_class: mode(pixels.map(p => p.site_class)),
-    forest_type: mode(pixels.map(p => p.forest_type))
+    forest_type: mode(pixels.map(p => p.forest_type)),
+    haz_class: mode(pixels.map(p => p.haz_class))
   };
   pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
 

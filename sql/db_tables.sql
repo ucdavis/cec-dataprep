@@ -1,7 +1,7 @@
 -- aggregrated pixel data, processed with treatment equations
 create table treatedclusters
 (
-  cluster_no        integer,
+  cluster_no        text,
   treatmentid       integer,
   year              integer,
   landing_lat       double precision,
@@ -17,6 +17,7 @@ create table treatedclusters
   county_name            text,
   land_use          text,
   forest_type       text,
+  haz_class         integer,
   ba_15             double precision,
   ba_2              double precision,
   ba_25             double precision,
@@ -85,7 +86,7 @@ on treatedclusters (cluster_no);
 -- pixels
 create table pixels
 (
-  cluster_no  integer,
+  cluster_no  text,
   lat           double precision,
   lng           double precision,
   site_class  integer,

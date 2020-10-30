@@ -28,8 +28,7 @@
     "node-hgt": "^1.2.3",
     "osrm": "^5.22.0",
     "pg": "^7.17.1",
-    "ps": "^1.0.0",
-    "sqlite3": "^5.0.0"
+    "ps": "^1.0.0"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.0",

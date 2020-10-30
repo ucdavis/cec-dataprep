@@ -62,6 +62,8 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
     land_use: pixel.land_use,
     site_class: pixel.site_class,
     forest_type: pixel.forest_type,
+    haz_class: pixel.haz_class,
+
     lat: pixel.lat,
     lng: pixel.lng,
 
