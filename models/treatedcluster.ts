@@ -1,7 +1,7 @@
 import { PixelVariables } from './pixel';
 
 export interface TreatedCluster extends PixelVariables {
-  cluster_no: number;
+  cluster_no: string;
   treatmentid: number;
   year: number;
   landing_lat: number;

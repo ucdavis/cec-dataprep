@@ -10,10 +10,10 @@ interface ClusterMap {
 // read the csv can call `cb` whenever a new cluster is ready
 export const processPixelsCsv = (
   filePath: string,
-  clusterReady: (cluster: number, pixels: Pixel[]) => void
+  clusterReady: (cluster: string, pixels: Pixel[]) => void
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
-    let currentCluster = -1;
+    let currentCluster = '';
     let currentPixels: Pixel[] = [];
 
     fs.createReadStream(filePath)
@@ -33,11 +33,11 @@ export const processPixelsCsv = (
             // we want to convert numeric values to their proper format
             const floatValue = Number.parseFloat(value);
             return isNaN(floatValue) ? value : floatValue;
-          },
+          }
         })
       )
       .on('data', (data: Pixel) => {
-        if (currentCluster === -1) {
+        if (currentCluster === '') {
           console.log('reading csv file -- first line of data for reference', data);
         }
         if (data.cluster_no === currentCluster) {
@@ -75,7 +75,7 @@ export const importFromCsv = (filePath: string): Promise<ClusterMap> => {
             // we want to convert numeric values to their proper format
             const floatValue = Number.parseFloat(value);
             return isNaN(floatValue) ? value : floatValue;
-          },
+          }
         })
       )
       .on('data', (data: Pixel) => {
@@ -99,7 +99,7 @@ export const getCsvWriteStream = (
 ): { writeTreatedClusters: (treatedClusters: TreatedCluster[]) => void; closeCsv: () => void } => {
   // tslint:disable-next-line:max-line-length
   const header =
-    'cluster_no, treatmentid, year, landing_lat, landing_lng, landing_elevation, center_lat, center_lng, center_elevation, slope, area, mean_yarding, site_class, county_name, land_use, forest_type, ba_15, ba_2, ba_25, ba_35, ba_40, ba_7, bmcwn_15, bmcwn_2, bmcwn_25, bmcwn_35, bmcwn_40, bmcwn_7, bmfol_15, bmfol_2, bmfol_25, bmfol_35, bmfol_40, bmfol_7, bmstm_15, bmstm_2, bmstm_25, bmstm_35, bmstm_40, bmstm_7, dbmcn_15, dbmcn_2, dbmcn_25, dbmcn_35, dbmcn_40, dbmcn_7, dbmsm_15, dbmsm_2, dbmsm_25, dbmsm_35, dbmsm_40, dbmsm_7, sng_15, sng_2, sng_25, sng_35, sng_40, sng_7, tpa_15, tpa_2, tpa_25, tpa_35, tpa_40, tpa_7, vmsg_15, vmsg_2, vmsg_25, vmsg_35, vmsg_40, vmsg_7, vol_15, vol_2, vol_25, vol_35, vol_40, vol_7';
+    'cluster_no, treatmentid, year, landing_lat, landing_lng, landing_elevation, center_lat, center_lng, center_elevation, slope, area, mean_yarding, site_class, county_name, land_use, forest_type, haz_class, ba_15, ba_2, ba_25, ba_35, ba_40, ba_7, bmcwn_15, bmcwn_2, bmcwn_25, bmcwn_35, bmcwn_40, bmcwn_7, bmfol_15, bmfol_2, bmfol_25, bmfol_35, bmfol_40, bmfol_7, bmstm_15, bmstm_2, bmstm_25, bmstm_35, bmstm_40, bmstm_7, dbmcn_15, dbmcn_2, dbmcn_25, dbmcn_35, dbmcn_40, dbmcn_7, dbmsm_15, dbmsm_2, dbmsm_25, dbmsm_35, dbmsm_40, dbmsm_7, sng_15, sng_2, sng_25, sng_35, sng_40, sng_7, tpa_15, tpa_2, tpa_25, tpa_35, tpa_40, tpa_7, vmsg_15, vmsg_2, vmsg_25, vmsg_35, vmsg_40, vmsg_7, vol_15, vol_2, vol_25, vol_35, vol_40, vol_7';
 
   const headerSplit = header.split(',');
 
@@ -132,7 +132,7 @@ export const getCsvWriteStream = (
 
   return {
     writeTreatedClusters,
-    closeCsv,
+    closeCsv
   };
 };
 

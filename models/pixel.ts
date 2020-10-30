@@ -1,9 +1,10 @@
 export interface PixelVariables {
-  cluster_no: number;
+  cluster_no: string;
   county_name: string;
   land_use: string;
   site_class: number;
   forest_type: string;
+  haz_class: number;
 
   ba_15: number;
   ba_2: number;
@@ -68,11 +69,12 @@ export interface PixelVariables {
 }
 
 export class PixelVariablesClass implements PixelVariables {
-  cluster_no = 0;
+  cluster_no = '';
   county_name = '';
   land_use = '';
   site_class = 0;
   forest_type = '';
+  haz_class = 0;
   ba_2 = 0;
   ba_7 = 0;
   ba_15 = 0;
@@ -148,5 +150,6 @@ export class PixelClass extends PixelVariablesClass implements Pixel {
   land_use = 'Private';
   lat = 0;
   lng = 0;
-  cluster_no = 0;
+  cluster_no = '';
+  haz_class = 0;
 }

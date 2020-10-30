@@ -39,6 +39,7 @@ const clearcut = (pixel: Pixel): Pixel => {
     lat: pixel.lat,
     lng: pixel.lng,
     forest_type: pixel.forest_type,
+    haz_class: pixel.haz_class,
 
     bmfol_2: 0.6 * pixel.bmfol_2,
     bmfol_7: 0.9 * pixel.bmfol_7,
