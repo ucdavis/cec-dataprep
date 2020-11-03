@@ -255,3 +255,70 @@ select cluster_no,
     vol_40           ,
     vol_7             from treatedclusters where year = 2016;
 
+
+-- calculate percentage of biomass in different hazard zones 
+with total as
+    (select sum(
+bmcwn_15+
+bmcwn_2 +
+bmcwn_25+
+bmcwn_35+
+bmcwn_40+
+bmcwn_7 +
+bmfol_15+
+bmfol_2 +
+bmfol_25+
+bmfol_35+
+bmfol_40+
+bmfol_7 +
+bmstm_15+
+bmstm_2 +
+bmstm_25+
+bmstm_35+
+bmstm_40+
+bmstm_7 +
+dbmcn_15+
+dbmcn_2 +
+dbmcn_25+
+dbmcn_35+
+dbmcn_40+
+dbmcn_7 +
+dbmsm_15+
+dbmsm_2 +
+dbmsm_25+
+dbmsm_35+
+dbmsm_40+
+dbmsm_7 ) as total_biomass from treatedclusters),
+ grouped_haz_class as (
+select haz_class, sum(
+bmcwn_15+
+bmcwn_2 +
+bmcwn_25+
+bmcwn_35+
+bmcwn_40+
+bmcwn_7 +
+bmfol_15+
+bmfol_2 +
+bmfol_25+
+bmfol_35+
+bmfol_40+
+bmfol_7 +
+bmstm_15+
+bmstm_2 +
+bmstm_25+
+bmstm_35+
+bmstm_40+
+bmstm_7 +
+dbmcn_15+
+dbmcn_2 +
+dbmcn_25+
+dbmcn_35+
+dbmcn_40+
+dbmcn_7 +
+dbmsm_15+
+dbmsm_2 +
+dbmsm_25+
+dbmsm_35+
+dbmsm_40+
+dbmsm_7 ) as available_biomass from treatedclusters group by haz_class)
+     select haz_class, available_biomass, total_biomass, (available_biomass * 100) / total_biomass as percent from total, grouped_haz_class
