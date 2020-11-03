@@ -25,10 +25,10 @@
     "fs": "0.0.1-security",
     "geolib": "^3.3.1",
     "knex": "^0.16.3",
-    "node-hgt": "^1.2.3",
     "osrm": "^5.22.0",
     "pg": "^7.17.1",
-    "ps": "^1.0.0"
+    "ps": "^1.0.0",
+    "srtm-elevation": "^1.1.0"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.0",
