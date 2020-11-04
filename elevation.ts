@@ -1,4 +1,4 @@
-import { TileSet } from 'node-hgt';
+import { TileSet } from 'srtm-elevation';
 
 // TODO: preload dataset w/ california hgt data
 const tileset = new TileSet(process.env.HGT_FILES || './data/');
