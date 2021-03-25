@@ -1,206 +1,23 @@
 -- aggregrated pixel data, processed with treatment equations
 create table treatedclusters
 (
-  cluster_no        text,
-  treatmentid       integer,
-  year              integer,
-  landing_lat       double precision,
-  landing_lng       double precision,
-  landing_elevation double precision,
-  center_lat        double precision,
-  center_lng        double precision,
-  center_elevation  double precision,
-  slope             double precision,
-  area              double precision,
-  mean_yarding      double precision,
-  site_class        integer,
-  county_name            text,
-  land_use          text,
-  forest_type       text,
-  haz_class         integer,
-  ba_15             double precision,
-  ba_2              double precision,
-  ba_25             double precision,
-  ba_35             double precision,
-  ba_40             double precision,
-  ba_7              double precision,
-  bmcwn_15          double precision,
-  bmcwn_2           double precision,
-  bmcwn_25          double precision,
-  bmcwn_35          double precision,
-  bmcwn_40          double precision,
-  bmcwn_7           double precision,
-  bmfol_15          double precision,
-  bmfol_2           double precision,
-  bmfol_25          double precision,
-  bmfol_35          double precision,
-  bmfol_40          double precision,
-  bmfol_7           double precision,
-  bmstm_15          double precision,
-  bmstm_2           double precision,
-  bmstm_25          double precision,
-  bmstm_35          double precision,
-  bmstm_40          double precision,
-  bmstm_7           double precision,
-  dbmcn_15          double precision,
-  dbmcn_2           double precision,
-  dbmcn_25          double precision,
-  dbmcn_35          double precision,
-  dbmcn_40          double precision,
-  dbmcn_7           double precision,
-  dbmsm_15          double precision,
-  dbmsm_2           double precision,
-  dbmsm_25          double precision,
-  dbmsm_35          double precision,
-  dbmsm_40          double precision,
-  dbmsm_7           double precision,
-  sng_15            double precision,
-  sng_2             double precision,
-  sng_25            double precision,
-  sng_35            double precision,
-  sng_40            double precision,
-  sng_7             double precision,
-  tpa_15            double precision,
-  tpa_2             double precision,
-  tpa_25            double precision,
-  tpa_35            double precision,
-  tpa_40            double precision,
-  tpa_7             double precision,
-  vmsg_15           double precision,
-  vmsg_2            double precision,
-  vmsg_25           double precision,
-  vmsg_35           double precision,
-  vmsg_40           double precision,
-  vmsg_7            double precision,
-  vol_15            double precision,
-  vol_2             double precision,
-  vol_25            double precision,
-  vol_35            double precision,
-  vol_40            double precision,
-  vol_7             double precision
-);
-
-CREATE INDEX treatedclusters_cluster_no
-on treatedclusters (cluster_no);
-
--- pixels
-create table pixels
-(
-  cluster_no  text,
-  lat           double precision,
-  lng           double precision,
-  site_class  integer,
-  land_use    text,
-  forest_type text,
-  county_name      text,
-  elevation   double precision,
-  ba_15       double precision,
-  ba_2        double precision,
-  ba_25       double precision,
-  ba_35       double precision,
-  ba_40       double precision,
-  ba_7        double precision,
-  bmcwn_15    double precision,
-  bmcwn_2     double precision,
-  bmcwn_25    double precision,
-  bmcwn_35    double precision,
-  bmcwn_40    double precision,
-  bmcwn_7     double precision,
-  bmfol_15    double precision,
-  bmfol_2     double precision,
-  bmfol_25    double precision,
-  bmfol_35    double precision,
-  bmfol_40    double precision,
-  bmfol_7     double precision,
-  bmstm_15    double precision,
-  bmstm_2     double precision,
-  bmstm_25    double precision,
-  bmstm_35    double precision,
-  bmstm_40    double precision,
-  bmstm_7     double precision,
-  dbmcn_15    double precision,
-  dbmcn_2     double precision,
-  dbmcn_25    double precision,
-  dbmcn_35    double precision,
-  dbmcn_40    double precision,
-  dbmcn_7     double precision,
-  dbmsm_15    double precision,
-  dbmsm_2     double precision,
-  dbmsm_25    double precision,
-  dbmsm_35    double precision,
-  dbmsm_40    double precision,
-  dbmsm_7     double precision,
-  sng_15      double precision,
-  sng_2       double precision,
-  sng_25      double precision,
-  sng_35      double precision,
-  sng_40      double precision,
-  sng_7       double precision,
-  tpa_15      double precision,
-  tpa_2       double precision,
-  tpa_25      double precision,
-  tpa_35      double precision,
-  tpa_40      double precision,
-  tpa_7       double precision,
-  vmsg_15     double precision,
-  vmsg_2      double precision,
-  vmsg_25     double precision,
-  vmsg_35     double precision,
-  vmsg_40     double precision,
-  vmsg_7      double precision,
-  vol_15      double precision,
-  vol_2       double precision,
-  vol_25      double precision,
-  vol_35      double precision,
-  vol_40      double precision,
-  vol_7       double precision
-);
-
-CREATE INDEX pixels_cluster_no
-on pixels (cluster_no);
-
-CREATE INDEX pixels_location
-ON pixels (lat, lng);
-
--- cluster table of unique cluster ids
-create table clusters
-(
-  id integer
-);
-
-create unique index clusters_id_uindex
-	on clusters (id);
-
-alter table clusters
-	add constraint clusters_pk
-		primary key (id);
-
-create table treatments
-(
-  id       serial not null
-    constraint treatments_pk
-      primary key,
-  name     varchar(32),
-  land_use text
-);
-
-insert into treatments values
-(1,'clearcut','Private'),
-  (2,'commercialThin','Private'),
-  (3,'commercialThinChipTreeRemoval','Private,Forest'),
-  (4,'timberSalvage','Private,Forest'),
-  (5,'timberSalvageChipTreeRemoval','Private,Forest'),
-  (6,'selection','Private'),
-  (7,'selectionChipTreeRemoval','Private'),
-  (8,'tenPercentGroupSelection','Private,Forest'),
-  (9,'twentyPercentGroupSelection','Private'),
-  (10,'biomassSalvage','Private,Forest')
-  
--- csv import structure
-create table csvpixels
-(
-	elevation double precision,
+	cluster_no varchar(80),
+	treatmentid integer,
+	year integer,
+	landing_lat double precision,
+	landing_lng double precision,
+	landing_elevation double precision,
+	center_lat double precision,
+	center_lng double precision,
+	center_elevation double precision,
+	slope double precision,
+	area double precision,
+	mean_yarding double precision,
+	site_class integer,
 	county_name text,
+	land_use text,
+	forest_type text,
+	haz_class integer,
 	ba_15 double precision,
 	ba_2 double precision,
 	ba_25 double precision,
@@ -260,11 +77,44 @@ create table csvpixels
 	vol_25 double precision,
 	vol_35 double precision,
 	vol_40 double precision,
-	vol_7 double precision,
-	fl_sit bigint,
-	land_use text,
-	lat double precision,
-	lng double precision,
-	cluster_no bigint,
-	reg_d text
+	vol_7 double precision
 );
+
+create index idx_find_clusters
+	on treatedclusters (year, treatmentid, center_lat, center_lng, cluster_no);
+
+
+-- cluster table of unique cluster ids
+create table clusters
+(
+  id integer
+);
+
+create unique index clusters_id_uindex
+	on clusters (id);
+
+alter table clusters
+	add constraint clusters_pk
+		primary key (id);
+
+create table treatments
+(
+  id       serial not null
+    constraint treatments_pk
+      primary key,
+  name     varchar(32),
+  land_use text
+);
+
+insert into treatments values
+(1,'clearcut','Private'),
+  (2,'commercialThin','Private'),
+  (3,'commercialThinChipTreeRemoval','Private,Forest'),
+  (4,'timberSalvage','Private,Forest'),
+  (5,'timberSalvageChipTreeRemoval','Private,Forest'),
+  (6,'selection','Private'),
+  (7,'selectionChipTreeRemoval','Private'),
+  (8,'tenPercentGroupSelection','Private,Forest'),
+  (9,'twentyPercentGroupSelection','Private'),
+  (10,'biomassSalvage','Private,Forest')
+  
