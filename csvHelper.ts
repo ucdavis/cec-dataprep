@@ -22,6 +22,8 @@ export const processPixelsCsv = (
           mapHeaders: ({ header, index }) => {
             if (header === 'reg_d') {
               return 'forest_type';
+            } else if (header === 'fl_sit') {
+              return 'site_class'; 
             } else if (header === '') {
               // sometimes we get a blank first column, remove that data
               return null;
@@ -33,7 +35,7 @@ export const processPixelsCsv = (
             // we want to convert numeric values to their proper format
             const floatValue = Number.parseFloat(value);
             return isNaN(floatValue) ? value : floatValue;
-          }
+          },
         })
       )
       .on('data', (data: Pixel) => {
@@ -42,17 +44,17 @@ export const processPixelsCsv = (
         }
         if (data.cluster_no === currentCluster) {
           // we are still in the current cluster, let's add to the pixels list
-          currentPixels.push(data);
+          currentPixels.push({ ...data });
         } else {
           // we are in a new cluster, so callback that the previous cluster
           if (currentPixels.length > 0) {
             // wait for the cluster callback to completed before we go on
-            clusterReady(currentCluster, currentPixels);
+            clusterReady(currentCluster, [...currentPixels]);
           }
 
           // and then update for the next cluster
           currentCluster = data.cluster_no;
-          currentPixels = [data];
+          currentPixels = [{ ...data }];
         }
       })
       .on('error', reject)
@@ -75,7 +77,7 @@ export const importFromCsv = (filePath: string): Promise<ClusterMap> => {
             // we want to convert numeric values to their proper format
             const floatValue = Number.parseFloat(value);
             return isNaN(floatValue) ? value : floatValue;
-          }
+          },
         })
       )
       .on('data', (data: Pixel) => {
@@ -132,7 +134,7 @@ export const getCsvWriteStream = (
 
   return {
     writeTreatedClusters,
-    closeCsv
+    closeCsv,
   };
 };
 
@@ -166,6 +168,6 @@ export const exportToCsv = async (treatedClusters: TreatedCluster[], filePath: s
     }
 
     writeStream.end();
-    resolve();
+    resolve(null);
   });
 };
