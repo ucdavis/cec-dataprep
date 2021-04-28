@@ -23,7 +23,7 @@ export const processPixelsCsv = (
             if (header === 'reg_d') {
               return 'forest_type';
             } else if (header === 'fl_sit') {
-              return 'site_class'; 
+              return 'site_class';
             } else if (header === '') {
               // sometimes we get a blank first column, remove that data
               return null;
