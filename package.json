@@ -28,6 +28,7 @@
     "osrm": "^5.22.0",
     "pg": "^7.17.1",
     "ps": "^1.0.0",
+    "shpjs": "^3.6.3",
     "srtm-elevation": "^1.1.0"
   },
   "devDependencies": {
@@ -38,6 +39,7 @@
     "@types/node": "^10.12.21",
     "@types/osrm": "^5.12.0",
     "@types/pg": "^7.14.1",
+    "@types/shpjs": "^3.4.0",
     "nodemon": "^1.18.9",
     "tslint": "^5.20.1",
     "tslint-eslint-rules": "^5.4.0",
