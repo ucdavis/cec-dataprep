@@ -81,7 +81,7 @@ create table treatedclusters
 );
 
 create index idx_find_clusters
-	on treatedclusters (year, treatmentid, center_lat, center_lng, cluster_no);
+	on treatedclusters (year, treatmentid, center_lat, center_lng, haz_class, land_use, cluster_no);
 
 
 -- cluster table of unique cluster ids
