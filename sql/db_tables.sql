@@ -83,19 +83,40 @@ create table treatedclusters
 create index idx_find_clusters
 	on treatedclusters (year, treatmentid, center_lat, center_lng, haz_class, land_use, cluster_no);
 
-
--- cluster table of unique cluster ids
-create table clusters
+create table "treatedclustersInfo"
 (
-  id integer
+	cluster_no varchar(80),
+	geography json,
+	county_name text
 );
 
-create unique index clusters_id_uindex
-	on clusters (id);
-
-alter table clusters
-	add constraint clusters_pk
-		primary key (id);
+create table substations
+(
+	objectid integer,
+	"Substation" text,
+	"Substation_Name" text,
+	"Alias" text,
+	"Status" text,
+	"Owner" text,
+	"Map_Owner" text,
+	"Map_Part" text,
+	"Engineerin" text,
+	"kV_12_TO_3" boolean,
+	"kV_33_TO_9" boolean,
+	"kV_110_TO_" boolean,
+	"kV_220_To_" boolean,
+	"kV_345_To_" boolean,
+	"kV_500_DC" boolean,
+	"Postal_Cit" text,
+	"County" text,
+	"Zip_Code" integer,
+	"State" text,
+	longitude numeric(1000),
+	latitude numeric(1000),
+	"Creator_Da" numeric(1000),
+	"highest_kV_lower" integer,
+	"highest_kV_upper" integer
+);
 
 create table treatments
 (
