@@ -17,10 +17,7 @@ export const getElevation = (lat: number, lng: number): Promise<number> => {
 
         // All tiles are loaded (or downloaded, if they were not already on disk)
         // and queries can be made synchronous.
-
         const elevation = tileset.getElevation([lat, lng]);
-        console.log(elevation);
-
         resolve(elevation);
       },
       {
