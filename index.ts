@@ -63,14 +63,14 @@ const processClustersStreaming = async () => {
 
   // open our output csv for writing
   const outputCsvActions = getCsvWriteStream(
-    process.env.TREATED_OUT_FILE || './data/results-Butte_sorted_new1.csv'
+    process.env.TREATED_OUT_FILE || './data/Yuba_sorted_processed.csv'
   );
 
   const promises: Promise<void>[] = [];
 
   // process the csv and get a callback each time a new cluster is read
   await processPixelsCsv(
-    process.env.PIXEL_FILE || './data/Butte_sorted_new1.csv',
+    process.env.PIXEL_FILE || './data/Yuba_sorted.csv',
     (cluster, pixels) => {
       console.log(`there are ${pixels.length} pixels in cluster ${cluster}, processing now`);
 
