@@ -124,7 +124,8 @@ export const processCluster = async (
         land_use: pixels[0].land_use,
         site_class: mode(pixels.map(p => p.site_class)), // get most common site class
         forest_type: mode(pixels.map(p => p.forest_type)), // and forest type
-        haz_class: mode(pixels.map(p => p.haz_class))
+        haz_class: mode(pixels.map(p => p.haz_class)),
+        year: pixels[0].year
       };
 
       // https://ucdavis.app.box.com/file/553138812702
@@ -168,7 +169,6 @@ export const processCluster = async (
         slope: averageSlope,
         area,
         mean_yarding: meanYardingDistance,
-        year: 2016, // TODO: update when pixel data actually has years
 
         ...clusterBiomassData
       };
