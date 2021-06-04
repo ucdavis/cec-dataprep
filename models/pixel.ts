@@ -5,6 +5,7 @@ export interface PixelVariables {
   site_class: number;
   forest_type: string;
   haz_class: number;
+  year: number;
 
   ba_15: number;
   ba_2: number;
@@ -75,6 +76,7 @@ export class PixelVariablesClass implements PixelVariables {
   site_class = 0;
   forest_type = '';
   haz_class = 0;
+  year = 0;
   ba_2 = 0;
   ba_7 = 0;
   ba_15 = 0;
