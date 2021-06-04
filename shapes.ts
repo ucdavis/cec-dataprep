@@ -52,14 +52,22 @@ const upload = async (clusterInfo: TreatedClusterInfo[]) => {
   });
 
   console.log('connected to pg');
+  console.log('about to upload ' + clusterInfo.length + ' clusters');
 
-  await db.table('treatedclustersInfo').truncate();
+  try {
+    await db.transaction(async (txn) => {
+      await txn.table('treatedclustersInfo').truncate();
 
-  const result = await db.table('treatedclustersInfo').insert(clusterInfo);
+      // try with batch insert
+      await txn.batchInsert('treatedclustersInfo', clusterInfo);
+    });
+  } catch (error) {
+    console.error(error);
+  }
 
-  console.log('inserted', result);
+  console.log('insert complete');
 };
 
-process('./data/Yuba_cluster.zip')
+process('./data/Sierra_Nevada_shapes.zip')
   .then(upload)
   .then(() => console.log('done'));
