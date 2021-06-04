@@ -45,8 +45,8 @@ const upload = async (clusterInfo: TreatedClusterInfo[]) => {
     connection: {
       host: 'cecdss.postgres.database.azure.com',
       user: 'cec@cecdss',
-      password: 'wSypXRU99AGOUJdPHvI9YB8CwcxpCD9B',
-      database: 'plumas',
+      password: '',
+      database: 'cecdss',
       port: 5432,
     },
   });
