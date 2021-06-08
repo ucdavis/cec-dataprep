@@ -1,6 +1,6 @@
 import { Pixel, PixelClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, isForestLandUse, sumBiomass } from '../pixelCalculations';
+import { calculateCenterOfBiomass, isPrivateLandUse, sumBiomass } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
@@ -9,8 +9,8 @@ export const processClearcut = (
   centerOfBiomassSum: CenterOfBiomassSum,
   treatmentName?: string
 ) => {
-  if (treatmentName === 'clearcut' && isForestLandUse(pixels[0].land_use)) {
-    throw new Error('clearcut cannot be performed on forest land');
+  if (treatmentName === 'clearcut' && !isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('clearcut can only be performed on private land');
   }
   // console.log('clearcut: processing pixels');
   const treatedPixels = pixels.map(pixel => {

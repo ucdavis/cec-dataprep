@@ -10,8 +10,8 @@ export const processSelection = (
   centerOfBiomassSum: CenterOfBiomassSum,
   treatmentName?: string
 ) => {
-  if (treatmentName === 'selection' && isForestLandUse(pixels[0].land_use)) {
-    throw new Error('selection cannot be performed on forest land');
+  if (treatmentName === 'selection' && !isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('selection can only be performed on private land');
   }
   const { p, p_large } = calculatePValues(pixels);
   // console.log('selection: processing pixels with p value: ' + p);
@@ -31,8 +31,8 @@ export const processSelectionChipTreeRemoval = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum
 ) => {
-  if (isForestLandUse(pixels[0].land_use)) {
-    throw new Error('selection with small tree removal cannot be performed on forest land');
+  if (!isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('selection with small tree removal can only be performed on private land');
   }
   const { p, p_large } = calculatePValues(pixels);
   // console.log('selection chip tree removal: processing pixels with p value: ' + p);

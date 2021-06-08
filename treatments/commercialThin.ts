@@ -10,8 +10,8 @@ import {
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
-  if (isForestLandUse(pixels[0].land_use)) {
-    throw new Error('commercial thin cannot be performed on forest land');
+  if (!isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('commercial thin can only be performed on private land');
   }
   // console.log('commercial thin: processing pixels');
   // console.log('calculating p values...');
