@@ -103,8 +103,9 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
 // 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
 const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pixel => {
   const isPrivate = isPrivateLandUse(pixel.land_use);
-  const c2 = isPrivate ? 0.5 : 0.85;
-  const c7 = isPrivate ? 0.8 : 0.9;
+  const isForest = isForestLandUse(pixel.land_use);
+  const c2 = isPrivate ? 0.5 : (isForest ? 0.85 : 1.0);
+  const c7 = isPrivate ? 0.8 : (isForest ? 0.9 : 1.0);
 
   let treatedPixel = selection(pixel, p, p_large);
   treatedPixel = {

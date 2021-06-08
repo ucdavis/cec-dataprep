@@ -115,9 +115,10 @@ const commericalThinChipTreeRemoval = (
   p40: number
 ): Pixel => {
   const isPrivate = isPrivateLandUse(pixel.land_use);
+  const isForest = isForestLandUse(pixel.land_use);
   const c0 = 0.2;
-  const c2 = isPrivate ? 0.5 : 0.85;
-  const c7 = isPrivate ? 0.8 : 0.9;
+  const c2 = isPrivate ? 0.5 : (isForest ? 0.85 : 1.0);
+  const c7 = isPrivate ? 0.8 : (isForest ? 0.9 : 1.0);
 
   let treatedPixel = commercialThin(pixel, p15, p25, p35, p40);
   treatedPixel = {
