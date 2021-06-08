@@ -26,7 +26,7 @@ export const isPrivateLandUse = (land_use: string) => {
 };
 
 export const isForestLandUse = (land_use: string) => {
-  return land_use.toLowerCase() === 'USDA Forest Service';
+  return land_use.toLowerCase() === 'USDA Forest Service'.toLowerCase();
 };
 
 export const sumBiomass = (pixel: Pixel) => {
