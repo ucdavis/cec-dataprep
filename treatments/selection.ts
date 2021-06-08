@@ -1,6 +1,6 @@
 import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, getPixelSum } from '../pixelCalculations';
+import { calculateCenterOfBiomass, getPixelSum, isForestLandUse, isPrivateLandUse } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
@@ -10,7 +10,7 @@ export const processSelection = (
   centerOfBiomassSum: CenterOfBiomassSum,
   treatmentName?: string
 ) => {
-  if (treatmentName === 'selection' && pixels[0].land_use === 'Forest') {
+  if (treatmentName === 'selection' && isForestLandUse(pixels[0].land_use)) {
     throw new Error('selection cannot be performed on forest land');
   }
   const { p, p_large } = calculatePValues(pixels);
@@ -31,7 +31,7 @@ export const processSelectionChipTreeRemoval = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum
 ) => {
-  if (pixels[0].land_use === 'Forest') {
+  if (isForestLandUse(pixels[0].land_use)) {
     throw new Error('selection with small tree removal cannot be performed on forest land');
   }
   const { p, p_large } = calculatePValues(pixels);
@@ -102,7 +102,7 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
 // Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
 // 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
 const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pixel => {
-  const isPrivate = pixel.land_use === 'Private';
+  const isPrivate = isPrivateLandUse(pixel.land_use);
   const c2 = isPrivate ? 0.5 : 0.85;
   const c7 = isPrivate ? 0.8 : 0.9;
 

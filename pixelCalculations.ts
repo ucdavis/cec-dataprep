@@ -21,6 +21,14 @@ export const sumNumberOfTrees = (pixel: Pixel) => {
   );
 };
 
+export const isPrivateLandUse = (land_use: string) => {
+  return land_use.toLowerCase() === 'private';
+};
+
+export const isForestLandUse = (land_use: string) => {
+  return land_use.toLowerCase() === 'USDA Forest Service';
+};
+
 export const sumBiomass = (pixel: Pixel) => {
   return (
     pixel.bmfol_2 +
@@ -63,11 +71,11 @@ export const getPixelSum = (pixels: Pixel[]) => {
     cluster_no: pixels[0].cluster_no,
     county_name: pixels[0].county_name,
     land_use: pixels[0].land_use,
-    site_class: mode(pixels.map(p => p.site_class)),
-    forest_type: mode(pixels.map(p => p.forest_type)),
-    haz_class: mode(pixels.map(p => p.haz_class))
+    site_class: mode(pixels.map((p) => p.site_class)),
+    forest_type: mode(pixels.map((p) => p.forest_type)),
+    haz_class: mode(pixels.map((p) => p.haz_class)),
   };
-  pixels.map(p => (pixelSum = sumPixel(pixelSum, p)));
+  pixels.map((p) => (pixelSum = sumPixel(pixelSum, p)));
 
   return pixelSum;
 };
@@ -146,7 +154,7 @@ export const sumPixel = (pixelSummation: PixelVariables, p: Pixel) => {
     ba_15: pixelSummation.ba_15 + p.ba_15,
     ba_25: pixelSummation.ba_25 + p.ba_25,
     ba_35: pixelSummation.ba_35 + p.ba_35,
-    ba_40: pixelSummation.ba_40 + p.ba_40
+    ba_40: pixelSummation.ba_40 + p.ba_40,
   };
   return pixelSum;
 };
@@ -219,7 +227,7 @@ export const convertClusterUnits = (pixelSummation: PixelVariables, numberOfPixe
     vmsg_15: pixelSummation.vmsg_15 / numberOfPixels,
     vmsg_25: pixelSummation.vmsg_25 / numberOfPixels,
     vmsg_35: pixelSummation.vmsg_35 / numberOfPixels,
-    vmsg_40: pixelSummation.vmsg_40 / numberOfPixels
+    vmsg_40: pixelSummation.vmsg_40 / numberOfPixels,
   };
   return pixelSum;
 };

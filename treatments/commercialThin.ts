@@ -1,11 +1,16 @@
 import { Pixel, PixelClass, PixelVariables } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, getPixelSum } from '../pixelCalculations';
+import {
+  calculateCenterOfBiomass,
+  getPixelSum,
+  isForestLandUse,
+  isPrivateLandUse,
+} from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
-  if (pixels[0].land_use === 'Forest') {
+  if (isForestLandUse(pixels[0].land_use)) {
     throw new Error('commercial thin cannot be performed on forest land');
   }
   // console.log('commercial thin: processing pixels');
@@ -13,7 +18,7 @@ export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: Cente
   const { p15, p25, p35, p40 } = calculatePValues(pixels);
   // console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
   // console.log('treating pixels...');
-  const treatedPixels = pixels.map(pixel => {
+  const treatedPixels = pixels.map((pixel) => {
     // treat pixel
     const treatedPixel = commercialThin(pixel, p15, p25, p35, p40);
     // this will update centerOfBiomassSum
@@ -34,7 +39,7 @@ export const processCommericalThinChipTreeRemoval = (
   const { p15, p25, p35, p40 } = calculatePValues(pixels);
   // console.log(`p15: ${p15} p25:${p25} p35:${p35} p40:${p40}`);
   // console.log('treating pixels...');
-  const treatedPixels = pixels.map(pixel => {
+  const treatedPixels = pixels.map((pixel) => {
     // treat pixel
     const treatedPixel = commericalThinChipTreeRemoval(pixel, p15, p25, p35, p40);
     // this will update centerOfBiomassSum
@@ -95,7 +100,7 @@ const commercialThin = (
     ba_15: p15 * pixel.ba_15, // is this right?
     ba_25: p25 * pixel.ba_25,
     ba_35: p35 * pixel.ba_35,
-    ba_40: p40 * pixel.ba_40
+    ba_40: p40 * pixel.ba_40,
   };
   return treatedPixel;
 };
@@ -109,7 +114,7 @@ const commericalThinChipTreeRemoval = (
   p35: number,
   p40: number
 ): Pixel => {
-  const isPrivate = pixel.land_use === 'Private';
+  const isPrivate = isPrivateLandUse(pixel.land_use);
   const c0 = 0.2;
   const c2 = isPrivate ? 0.5 : 0.85;
   const c7 = isPrivate ? 0.8 : 0.9;
@@ -142,7 +147,7 @@ const commericalThinChipTreeRemoval = (
     vmsg_7: c7 * pixel.vmsg_7,
 
     ba_2: c2 * pixel.ba_2,
-    ba_7: c7 * pixel.ba_7
+    ba_7: c7 * pixel.ba_7,
   };
   return treatedPixel;
 };
@@ -190,7 +195,7 @@ const calculatePValues = (pixels: Pixel[]) => {
     p25 = (ba_removed - ba_15_cluster) / ba_25_cluster; // then whatever percentage we need of 25
     // p35, p40 = 0
   }
-  if (ba_removed > ba_15_cluster + ba_25_cluster && pixelSum.land_use === 'Forest') {
+  if (ba_removed > ba_15_cluster + ba_25_cluster && isForestLandUse(pixelSum.land_use)) {
     // if we need all of 15 and 25, but we are on forest land
     // do not harvest anything over 30
     p15 = p25 = 1;
@@ -199,29 +204,27 @@ const calculatePValues = (pixels: Pixel[]) => {
   if (
     ba_removed > ba_15_cluster + ba_25_cluster &&
     ba_removed < ba_15_cluster + ba_25_cluster + ba_35_cluster &&
-    pixelSum.land_use === 'Private'
+    isPrivateLandUse(pixelSum.land_use)
   ) {
     // if we need size class 15, 25, and 35, and are on private land
     p15 = 1; // take 100% of 15
     p25 = 1; // take 100% of 25
-    p35 = // then whatever percentage we need of 35, if we're on private land
-      pixelSum.land_use === 'Private'
-        ? (ba_removed - ba_15_cluster - ba_25_cluster) / ba_35_cluster
-        : 0;
+    p35 = isPrivateLandUse(pixelSum.land_use) // then whatever percentage we need of 35, if we're on private land
+      ? (ba_removed - ba_15_cluster - ba_25_cluster) / ba_35_cluster
+      : 0;
     // p40 = 0
   }
   if (
     ba_removed > ba_15_cluster + ba_25_cluster + ba_35_cluster &&
-    pixelSum.land_use === 'Private'
+    isPrivateLandUse(pixelSum.land_use)
   ) {
     // if we need size class 15, 25, 35, 40
     p15 = 1; // take 100% of 15
     p25 = 1; // take 100% of 25
     p35 = 1; // take 100% of 35
-    p40 = // then whatever percentage we need of 40, if we're on private land
-      pixelSum.land_use === 'Private'
-        ? (ba_removed - ba_15_cluster - ba_25_cluster - ba_35_cluster) / ba_40_cluster
-        : 0;
+    p40 = isPrivateLandUse(pixelSum.land_use) // then whatever percentage we need of 40, if we're on private land
+      ? (ba_removed - ba_15_cluster - ba_25_cluster - ba_35_cluster) / ba_40_cluster
+      : 0;
   }
 
   const residual_ba_test = Math.round(
