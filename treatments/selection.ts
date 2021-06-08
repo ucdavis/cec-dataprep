@@ -1,6 +1,6 @@
 import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, getPixelSum } from '../pixelCalculations';
+import { calculateCenterOfBiomass, getPixelSum, isForestLandUse, isPrivateLandUse } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
@@ -10,8 +10,8 @@ export const processSelection = (
   centerOfBiomassSum: CenterOfBiomassSum,
   treatmentName?: string
 ) => {
-  if (treatmentName === 'selection' && pixels[0].land_use === 'Forest') {
-    throw new Error('selection cannot be performed on forest land');
+  if (treatmentName === 'selection' && !isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('selection can only be performed on private land');
   }
   const { p, p_large } = calculatePValues(pixels);
   // console.log('selection: processing pixels with p value: ' + p);
@@ -31,8 +31,8 @@ export const processSelectionChipTreeRemoval = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum
 ) => {
-  if (pixels[0].land_use === 'Forest') {
-    throw new Error('selection with small tree removal cannot be performed on forest land');
+  if (!isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('selection with small tree removal can only be performed on private land');
   }
   const { p, p_large } = calculatePValues(pixels);
   // console.log('selection chip tree removal: processing pixels with p value: ' + p);
@@ -102,9 +102,10 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
 // Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
 // 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
 const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pixel => {
-  const isPrivate = pixel.land_use === 'Private';
-  const c2 = isPrivate ? 0.5 : 0.85;
-  const c7 = isPrivate ? 0.8 : 0.9;
+  const isPrivate = isPrivateLandUse(pixel.land_use);
+  const isForest = isForestLandUse(pixel.land_use);
+  const c2 = isPrivate ? 0.5 : (isForest ? 0.85 : 1.0);
+  const c7 = isPrivate ? 0.8 : (isForest ? 0.9 : 1.0);
 
   let treatedPixel = selection(pixel, p, p_large);
   treatedPixel = {

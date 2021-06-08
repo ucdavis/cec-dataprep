@@ -1,6 +1,6 @@
 import { Pixel, PixelClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, sumBiomass } from '../pixelCalculations';
+import { calculateCenterOfBiomass, isForestLandUse, isPrivateLandUse, sumBiomass } from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
@@ -84,9 +84,10 @@ export const processTimberSalvageChipTreeRemoval = (
 const timberSalvageChipTreeRemoval = (pixel: Pixel) => {
   // do basic timber salvage
   let treatedPixel = timberSalvage(pixel);
-  const isPrivate = pixel.land_use === 'Private';
-  const c0 = isPrivate ? 0.3 : 0.2;
-  const c2 = isPrivate ? 0.6 : 0.85;
+  const isPrivate = isPrivateLandUse(pixel.land_use);
+  const isForest = isForestLandUse(pixel.land_use);
+  const c0 = isPrivate ? 0.3 : (isForest ? 0.2 : 1.0);
+  const c2 = isPrivate ? 0.6 : (isForest ? 0.85 : 1.0);
   const c7 = 0.9;
   treatedPixel = {
     ...treatedPixel,

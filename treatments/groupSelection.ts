@@ -1,6 +1,6 @@
 import { Pixel, PixelClass, PixelVariablesClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { sumBiomass, sumPixel } from '../pixelCalculations';
+import { isPrivateLandUse, sumBiomass, sumPixel } from '../pixelCalculations';
 import { processClearcut } from './clearcut';
 import { processSelection } from './selection';
 
@@ -12,8 +12,8 @@ export const processGroupSelection = (
   centerOfBiomassSum: CenterOfBiomassSum,
   percent: number
 ): Pixel[] => {
-  if (percent === 20 && pixels[0].land_use === 'Forest') {
-    throw new Error('20% group selection cannot be performed on forest land');
+  if (percent === 20 && !isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('20% group selection can only be performed on private land');
   }
   // console.log('group selection: processing pixels');
 
