@@ -41,6 +41,7 @@ export const processCluster = async (
       lng: 0,
       biomassSum: 0
     };
+    const year = pixels[0].year;
     try {
       switch (treatmentName) {
         case 'clearcut':
@@ -125,7 +126,7 @@ export const processCluster = async (
         site_class: mode(pixels.map(p => p.site_class)), // get most common site class
         forest_type: mode(pixels.map(p => p.forest_type)), // and forest type
         haz_class: mode(pixels.map(p => p.haz_class)),
-        year: pixels[0].year
+        year: year
       };
 
       // https://ucdavis.app.box.com/file/553138812702
