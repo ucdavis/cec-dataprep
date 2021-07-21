@@ -20,7 +20,8 @@ const treatments: Treatment[] = [
   { id: 7, name: 'selectionChipTreeRemoval', land_use: 'Private' },
   { id: 8, name: 'tenPercentGroupSelection', land_use: 'Private,Forest' },
   { id: 9, name: 'twentyPercentGroupSelection', land_use: 'Private' },
-  { id: 10, name: 'biomassSalvage', land_use: 'Private,Forest' }
+  { id: 10, name: 'biomassSalvage', land_use: 'Private,Forest' },
+  { id: 99, name: 'noTreatment', land_use: 'Private,Forest' }
 ];
 
 dotenv.config();

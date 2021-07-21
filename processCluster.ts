@@ -20,6 +20,7 @@ import {
   processCommericalThinChipTreeRemoval
 } from './treatments/commercialThin';
 import { processGroupSelection } from './treatments/groupSelection';
+import { processNoTreatment } from './treatments/noTreatment';
 import { processSelection, processSelectionChipTreeRemoval } from './treatments/selection';
 import {
   processTimberSalvage,
@@ -73,6 +74,9 @@ export const processCluster = async (
           break;
         case 'biomassSalvage':
           pixels = processBiomassSalvage(pixels, centerOfBiomassSum);
+          break;
+        case 'noTreatment':
+          pixels = processNoTreatment(pixels, centerOfBiomassSum);
           break;
         default:
           throw new Error('Unknown treatment option: ' + treatmentName);
