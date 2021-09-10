@@ -1,6 +1,11 @@
 import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, getPixelSum, isForestLandUse, isPrivateLandUse } from '../pixelCalculations';
+import {
+  calculateCenterOfBiomass,
+  getPixelSum,
+  isForestLandUse,
+  isPrivateLandUse,
+} from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
@@ -15,7 +20,7 @@ export const processSelection = (
   }
   const { p, p_large } = calculatePValues(pixels);
   // console.log('selection: processing pixels with p value: ' + p);
-  const treatedPixels = pixels.map(pixel => {
+  const treatedPixels = pixels.map((pixel) => {
     // treat pixel
     const treatedPixel = selection(pixel, p, p_large);
     // this will update centerOfBiomassSum
@@ -37,7 +42,7 @@ export const processSelectionChipTreeRemoval = (
   const { p, p_large } = calculatePValues(pixels);
   // console.log('selection chip tree removal: processing pixels with p value: ' + p);
 
-  const treatedPixels = pixels.map(pixel => {
+  const treatedPixels = pixels.map((pixel) => {
     // treat pixel
     const treatedPixel = selectionChipTreeRemoval(pixel, p, p_large);
     // this will update centerOfBiomassSum
@@ -94,7 +99,7 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
     ba_15: p * pixel.ba_15,
     ba_25: p * pixel.ba_25,
     ba_35: p * pixel.ba_35,
-    ba_40: p * pixel.ba_40
+    ba_40: p * pixel.ba_40,
   };
   return treatedPixel;
 };
@@ -104,8 +109,8 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
 const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pixel => {
   const isPrivate = isPrivateLandUse(pixel.land_use);
   const isForest = isForestLandUse(pixel.land_use);
-  const c2 = isPrivate ? 0.5 : (isForest ? 0.85 : 1.0);
-  const c7 = isPrivate ? 0.8 : (isForest ? 0.9 : 1.0);
+  const c2 = isPrivate ? 0.5 : isForest ? 0.85 : 1.0;
+  const c7 = isPrivate ? 0.8 : isForest ? 0.9 : 1.0;
 
   let treatedPixel = selection(pixel, p, p_large);
   treatedPixel = {
@@ -135,7 +140,7 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pix
     vmsg_7: c7 * pixel.vmsg_7,
 
     ba_2: c2 * pixel.ba_2,
-    ba_7: c7 * pixel.ba_7
+    ba_7: c7 * pixel.ba_7,
   };
   return treatedPixel;
 };
@@ -171,7 +176,10 @@ const calculatePValues = (pixels: Pixel[]) => {
   }
   p = 1 - residual_ba / initial_ba;
 
-  if ((1 - p) * (ba_25_cluster + ba_35_cluster + ba_40_cluster) < residual_large_ba) {
+  if (
+    residual_large_ba < ba_25_cluster + ba_35_cluster + ba_40_cluster &&
+    (1 - p) * (ba_25_cluster + ba_35_cluster + ba_40_cluster) < residual_large_ba
+  ) {
     p_large = 1 - residual_large_ba / (ba_25_cluster + ba_35_cluster + ba_40_cluster);
   }
 
