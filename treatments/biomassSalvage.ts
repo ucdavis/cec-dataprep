@@ -1,12 +1,16 @@
 import { Pixel, PixelClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, isForestLandUse, isPrivateLandUse, sumBiomass } from '../pixelCalculations';
+import {
+  calculateCenterOfBiomass,
+  isForestLandUse,
+  isPrivateLandUse,
+} from '../pixelCalculations';
 
 // equations from:
 // https://ucdavis.app.box.com/file/593365602124
 export const processBiomassSalvage = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
   // console.log('biomassSalvage: processing pixels');
-  const treatedPixels = pixels.map(pixel => {
+  const treatedPixels = pixels.map((pixel) => {
     // treat pixel
     const treatedPixel = biomassSalvage(pixel);
     // this will update centerOfBiomassSum
@@ -16,12 +20,11 @@ export const processBiomassSalvage = (pixels: Pixel[], centerOfBiomassSum: Cente
   return treatedPixels;
 };
 
-// Remove small trees in the following proportions:
-// 0-1" DBH - 30%, 1-5" DBH - 60%, 5-10" DBH - 90%
+// Remove all dead trees for biomass (die-off salvage)
 const biomassSalvage = (pixel: Pixel): Pixel => {
   const isPrivate = isPrivateLandUse(pixel.land_use);
   const isForest = isForestLandUse(pixel.land_use);
-  const c2 = isPrivate ? 0.6 : (isForest ? 0.85 : 1.0);
+  const c2 = isPrivate ? 0.6 : isForest ? 0.85 : 1.0;
   const c7 = 0.9;
   let treatedPixel = new PixelClass();
 
@@ -86,7 +89,7 @@ const biomassSalvage = (pixel: Pixel): Pixel => {
     ba_15: pixel.ba_15,
     ba_25: pixel.ba_25,
     ba_35: pixel.ba_35,
-    ba_40: pixel.ba_40
+    ba_40: pixel.ba_40,
   };
   return treatedPixel;
 };
