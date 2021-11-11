@@ -1,12 +1,12 @@
 import { Pixel, PixelClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { calculateCenterOfBiomass, isForestLandUse, isPrivateLandUse, sumBiomass } from '../pixelCalculations';
+import { calculateCenterOfBiomass, isForestLandUse, isPrivateLandUse } from '../pixelCalculations';
 
 // equations from:
-// https://ucdavis.app.box.com/file/593365602124
+// https://ucdavis.app.box.com/file/883519288218
 export const processTimberSalvage = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
   // console.log('timberSalvage: processing pixels');
-  const treatedPixels = pixels.map(pixel => {
+  const treatedPixels = pixels.map((pixel) => {
     // treat pixel
     const treatedPixel = timberSalvage(pixel);
     // this will update centerOfBiomassSum
@@ -60,7 +60,7 @@ const timberSalvage = (pixel: Pixel) => {
     ba_15: pixel.ba_15,
     ba_25: pixel.ba_25,
     ba_35: pixel.ba_35,
-    ba_40: pixel.ba_40
+    ba_40: pixel.ba_40,
   };
   return treatedPixel;
 };
@@ -69,7 +69,7 @@ export const processTimberSalvageChipTreeRemoval = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum
 ) => {
-  const treatedPixels = pixels.map(pixel => {
+  const treatedPixels = pixels.map((pixel) => {
     // treat pixel
     const treatedPixel = timberSalvageChipTreeRemoval(pixel);
     // this will update centerOfBiomassSum
@@ -79,15 +79,15 @@ export const processTimberSalvageChipTreeRemoval = (
   return treatedPixels;
 };
 
-// Same as Salvage thin but with the additionalremoval of:
-// 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
+// Same as Salvage thin but with the additional removal of:
+// Private: 1-5" DBH - 60%, 5-10" DBH - 85%
+// 5-10" DBH -90% on both private and forest service lands
 const timberSalvageChipTreeRemoval = (pixel: Pixel) => {
   // do basic timber salvage
   let treatedPixel = timberSalvage(pixel);
   const isPrivate = isPrivateLandUse(pixel.land_use);
   const isForest = isForestLandUse(pixel.land_use);
-  const c0 = isPrivate ? 0.3 : (isForest ? 0.2 : 1.0);
-  const c2 = isPrivate ? 0.6 : (isForest ? 0.85 : 1.0);
+  const c2 = isPrivate ? 0.6 : isForest ? 0.85 : 1.0;
   const c7 = 0.9;
   treatedPixel = {
     ...treatedPixel,
@@ -117,7 +117,7 @@ const timberSalvageChipTreeRemoval = (pixel: Pixel) => {
     vmsg_7: c7 * pixel.vmsg_7,
 
     ba_2: c2 * pixel.ba_2,
-    ba_7: c7 * pixel.ba_7
+    ba_7: c7 * pixel.ba_7,
   };
   return treatedPixel;
 };
