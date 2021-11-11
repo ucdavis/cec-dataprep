@@ -93,9 +93,9 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
 
     // basal area
     ba_15: p * pixel.ba_15,
-    ba_25: p * pixel.ba_25,
-    ba_35: p * pixel.ba_35,
-    ba_40: p * pixel.ba_40,
+    ba_25: p_large_or_small * pixel.ba_25,
+    ba_35: p_large_or_small * pixel.ba_35,
+    ba_40: p_large_or_small * pixel.ba_40,
   };
   return treatedPixel;
 };
