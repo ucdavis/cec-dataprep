@@ -12,15 +12,15 @@ export const processGroupSelection = (
   centerOfBiomassSum: CenterOfBiomassSum,
   percent: number
 ): Pixel[] => {
-  if (percent === 20 && !isPrivateLandUse(pixels[0].land_use)) {
-    throw new Error('20% group selection can only be performed on private land');
+  if (!isPrivateLandUse(pixels[0].land_use)) {
+    throw new Error('group selection can only be performed on private land');
   }
   // console.log('group selection: processing pixels');
 
   // randomly pull 10% or 20% of pixels for clearcut
   let clearcutPixels: Pixel[] = getRandom(pixels, Math.floor(pixels.length * (percent / 100)));
   // the rest are selection
-  let selectionPixels: Pixel[] = pixels.filter(x => !clearcutPixels.includes(x));
+  let selectionPixels: Pixel[] = pixels.filter((x) => !clearcutPixels.includes(x));
 
   clearcutPixels = processClearcut(clearcutPixels, centerOfBiomassSum, 'groupSelection');
   selectionPixels = processSelection(selectionPixels, centerOfBiomassSum, 'groupSelection');
