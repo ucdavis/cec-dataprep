@@ -8,7 +8,7 @@ import {
 } from '../pixelCalculations';
 
 // equations from:
-// https://ucdavis.app.box.com/file/593365602124
+// https://ucdavis.app.box.com/file/883519288218
 export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
   if (!isPrivateLandUse(pixels[0].land_use)) {
     throw new Error('commercial thin can only be performed on private land');
@@ -28,8 +28,7 @@ export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: Cente
   return treatedPixels;
 };
 
-// Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
-// 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
+// Same as Commercial thin but with the additional removal of small trees in the following proportions:
 export const processCommericalThinChipTreeRemoval = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum
@@ -49,9 +48,9 @@ export const processCommericalThinChipTreeRemoval = (
   return treatedPixels;
 };
 
-// All live and dead trees over 10 inches cut.
+// Remove live trees > 10 inches DBH,
+// starting with small ones closest to 10” until a certain residual basal area is reached, which is based on site class
 // For smaller size classes, cut at the following proportions for both live and dead:
-// 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
 const commercialThin = (
   pixel: Pixel,
   p15: number,
@@ -97,7 +96,7 @@ const commercialThin = (
     vol_40: p40 * pixel.vol_40,
 
     // basal area
-    ba_15: p15 * pixel.ba_15, // is this right?
+    ba_15: p15 * pixel.ba_15,
     ba_25: p25 * pixel.ba_25,
     ba_35: p35 * pixel.ba_35,
     ba_40: p40 * pixel.ba_40,
@@ -106,7 +105,8 @@ const commercialThin = (
 };
 
 // Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
-// 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
+// Private: 1-5" DBH - 50%, 5-10" DBH - 80%
+// Private: 1-5" DBH - 85%, 5-10" DBH - 90%
 const commericalThinChipTreeRemoval = (
   pixel: Pixel,
   p15: number,
@@ -116,9 +116,8 @@ const commericalThinChipTreeRemoval = (
 ): Pixel => {
   const isPrivate = isPrivateLandUse(pixel.land_use);
   const isForest = isForestLandUse(pixel.land_use);
-  const c0 = 0.2;
-  const c2 = isPrivate ? 0.5 : (isForest ? 0.85 : 1.0);
-  const c7 = isPrivate ? 0.8 : (isForest ? 0.9 : 1.0);
+  const c2 = isPrivate ? 0.5 : isForest ? 0.85 : 1.0;
+  const c7 = isPrivate ? 0.8 : isForest ? 0.9 : 1.0;
 
   let treatedPixel = commercialThin(pixel, p15, p25, p35, p40);
   treatedPixel = {
@@ -153,7 +152,7 @@ const commericalThinChipTreeRemoval = (
   return treatedPixel;
 };
 
-// https://ucdavis.app.box.com/file/686906426849
+// https://ucdavis.app.box.com/file/883513836273
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
   const pixelSum = getPixelSum(pixels);
@@ -177,20 +176,21 @@ const calculatePValues = (pixels: Pixel[]) => {
 
   const initial_ba = ba_15_cluster + ba_25_cluster + ba_35_cluster + ba_40_cluster;
 
-  // this is how much ba we will remove, since we are leaving the cluster with ba = residual_ba
-  const ba_removed = initial_ba - residual_ba;
-
-  if (initial_ba < residual_ba) {
+  if (initial_ba <= residual_ba) {
     // if we can't remove any ba, throw an error
     throw new Error(`initial ba: ${initial_ba} < residual_ba ${residual_ba}`);
     // p15, p25, p35, p40 = 0
   }
-  if (ba_removed < ba_15_cluster && ba_removed < ba_15_cluster + ba_25_cluster) {
+
+  // this is how much ba we will remove, since we are leaving the cluster with ba = residual_ba
+  const ba_removed = initial_ba - residual_ba;
+
+  if (ba_removed <= ba_15_cluster && ba_removed < ba_15_cluster + ba_25_cluster) {
     // if we can just take from the smallest size class (15)
     p15 = ba_removed / ba_15_cluster;
     // p25, p35, p40 = 0
   }
-  if (ba_removed > ba_15_cluster && ba_removed < ba_15_cluster + ba_25_cluster) {
+  if (ba_removed > ba_15_cluster && ba_removed <= ba_15_cluster + ba_25_cluster) {
     // if we need size class 15 and some of 25
     p15 = 1; // take 100% of 15
     p25 = (ba_removed - ba_15_cluster) / ba_25_cluster; // then whatever percentage we need of 25
@@ -200,19 +200,17 @@ const calculatePValues = (pixels: Pixel[]) => {
     // if we need all of 15 and 25, but we are on forest land
     // do not harvest anything over 30
     p15 = p25 = 1;
-    p35 = p40 = 0;
+    // p35 = p40 = 0;
   }
   if (
     ba_removed > ba_15_cluster + ba_25_cluster &&
-    ba_removed < ba_15_cluster + ba_25_cluster + ba_35_cluster &&
+    ba_removed <= ba_15_cluster + ba_25_cluster + ba_35_cluster &&
     isPrivateLandUse(pixelSum.land_use)
   ) {
     // if we need size class 15, 25, and 35, and are on private land
     p15 = 1; // take 100% of 15
     p25 = 1; // take 100% of 25
-    p35 = isPrivateLandUse(pixelSum.land_use) // then whatever percentage we need of 35, if we're on private land
-      ? (ba_removed - ba_15_cluster - ba_25_cluster) / ba_35_cluster
-      : 0;
+    p35 = (ba_removed - ba_15_cluster - ba_25_cluster) / ba_35_cluster;
     // p40 = 0
   }
   if (
@@ -223,9 +221,7 @@ const calculatePValues = (pixels: Pixel[]) => {
     p15 = 1; // take 100% of 15
     p25 = 1; // take 100% of 25
     p35 = 1; // take 100% of 35
-    p40 = isPrivateLandUse(pixelSum.land_use) // then whatever percentage we need of 40, if we're on private land
-      ? (ba_removed - ba_15_cluster - ba_25_cluster - ba_35_cluster) / ba_40_cluster
-      : 0;
+    p40 = (ba_removed - ba_15_cluster - ba_25_cluster - ba_35_cluster) / ba_40_cluster;
   }
 
   const residual_ba_test = Math.round(
@@ -280,4 +276,3 @@ const calculateResidualBaTarget = (pixel: PixelVariables) => {
   }
   throw new Error(`unhandled site class ${sit_raster} and forest type ${forest_type}`);
 };
-// tslint:disable-next-line: max-file-line-count
