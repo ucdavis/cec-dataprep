@@ -157,6 +157,11 @@ const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
   const pixelSum = getPixelSum(pixels);
 
+  // if not on private land, remove 0% log trees
+  if (!isPrivateLandUse(pixelSum.land_use)) {
+    return { p15: 0, p25: 0, p35: 0, p40: 0 };
+  }
+
   // these p values represent the percentage of each size class we are removing
   let p15 = 0;
   let p25 = 0;
