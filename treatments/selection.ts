@@ -1,14 +1,7 @@
-import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
+import { Pixel, PixelClass, PixelVariables } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import {
-  calculateCenterOfBiomass,
-  getPixelSum,
-  isForestLandUse,
-  isPrivateLandUse,
-} from '../pixelCalculations';
+import { calculateCenterOfBiomass, getPixelSum, isPrivateLandUse } from '../pixelCalculations';
 
-// equations from:
-// https://ucdavis.app.box.com/file/883519288218
 export const processSelection = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum,
@@ -140,7 +133,6 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pix
   return treatedPixel;
 };
 
-// https://ucdavis.app.box.com/file/883839579207
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
   const pixelSum = getPixelSum(pixels);

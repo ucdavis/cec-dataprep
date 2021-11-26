@@ -2,8 +2,6 @@ import { Pixel, PixelClass } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
 import { calculateCenterOfBiomass, isForestLandUse, isPrivateLandUse } from '../pixelCalculations';
 
-// equations from:
-// https://ucdavis.app.box.com/file/883519288218
 export const processTimberSalvage = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
   // console.log('timberSalvage: processing pixels');
   const treatedPixels = pixels.map((pixel) => {

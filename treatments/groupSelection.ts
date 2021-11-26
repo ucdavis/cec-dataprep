@@ -1,11 +1,8 @@
-import { Pixel, PixelClass, PixelVariablesClass } from '../models/pixel';
+import { Pixel } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import { isPrivateLandUse, sumBiomass, sumPixel } from '../pixelCalculations';
+import { isPrivateLandUse } from '../pixelCalculations';
 import { processClearcut } from './clearcut';
 import { processSelection } from './selection';
-
-// equations from:
-// https://ucdavis.app.box.com/file/593365602124
 
 export const processGroupSelection = (
   pixels: Pixel[],

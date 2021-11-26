@@ -7,8 +7,6 @@ import {
   isPrivateLandUse,
 } from '../pixelCalculations';
 
-// equations from:
-// https://ucdavis.app.box.com/file/883519288218
 export const processCommercialThin = (pixels: Pixel[], centerOfBiomassSum: CenterOfBiomassSum) => {
   if (!isPrivateLandUse(pixels[0].land_use)) {
     throw new Error('commercial thin can only be performed on private land');
@@ -152,7 +150,6 @@ const commericalThinChipTreeRemoval = (
   return treatedPixel;
 };
 
-// https://ucdavis.app.box.com/file/883513836273
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
   const pixelSum = getPixelSum(pixels);
