@@ -104,7 +104,7 @@ const commercialThin = (
 
 // Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
 // Private: 1-5" DBH - 50%, 5-10" DBH - 80%
-// Private: 1-5" DBH - 85%, 5-10" DBH - 90%
+// FS: 1-5" DBH - 85%, 5-10" DBH - 90%
 const commericalThinChipTreeRemoval = (
   pixel: Pixel,
   p15: number,
