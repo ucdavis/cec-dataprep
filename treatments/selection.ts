@@ -1,15 +1,7 @@
-import { Pixel, PixelClass, PixelVariables, PixelVariablesClass } from '../models/pixel';
+import { Pixel, PixelClass, PixelVariables } from '../models/pixel';
 import { CenterOfBiomassSum } from '../models/shared';
-import {
-  calculateCenterOfBiomass,
-  getPixelSum,
-  isForestLandUse,
-  isPrivateLandUse,
-} from '../pixelCalculations';
+import { calculateCenterOfBiomass, getPixelSum, isPrivateLandUse } from '../pixelCalculations';
 
-// equations from:
-// https://ucdavis.app.box.com/file/593365602124
-// https://ucdavis.app.box.com/file/689378449650
 export const processSelection = (
   pixels: Pixel[],
   centerOfBiomassSum: CenterOfBiomassSum,
@@ -30,7 +22,7 @@ export const processSelection = (
   return treatedPixels;
 };
 
-// Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
+// Same as Commercial thin but with the additional removal of small trees in the following proportions:
 // 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
 export const processSelectionChipTreeRemoval = (
   pixels: Pixel[],
@@ -52,9 +44,6 @@ export const processSelectionChipTreeRemoval = (
   return treatedPixels;
 };
 
-// All live and dead trees over 10 inches cut.
-// For smaller size classes, cut at the following proportions for both live and dead:
-// 0-1" DBH -30%, 1-5" DBH -60%, 5-10" DBH -90%
 const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
   // if p_large is 0, then it means the condition to set it was not met, and we should not use it
   const p_large_or_small = !!p_large ? p_large : p;
@@ -97,20 +86,19 @@ const selection = (pixel: Pixel, p: number, p_large: number): Pixel => {
 
     // basal area
     ba_15: p * pixel.ba_15,
-    ba_25: p * pixel.ba_25,
-    ba_35: p * pixel.ba_35,
-    ba_40: p * pixel.ba_40,
+    ba_25: p_large_or_small * pixel.ba_25,
+    ba_35: p_large_or_small * pixel.ba_35,
+    ba_40: p_large_or_small * pixel.ba_40,
   };
   return treatedPixel;
 };
 
-// Same as Commercial thin but with the additional removal ofsmall trees in the following proportions:
-// 0-1" DBH -20%, 1-5" DBH -50%, 5-10" DBH -80%
+// Same as Selection thin but with the additional removal of small trees in the following proportions:
+// Private: 1-5" DBH -50%, 5-10" DBH -80%
+// This treatment is not performed on FS land.
 const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pixel => {
-  const isPrivate = isPrivateLandUse(pixel.land_use);
-  const isForest = isForestLandUse(pixel.land_use);
-  const c2 = isPrivate ? 0.5 : isForest ? 0.85 : 1.0;
-  const c7 = isPrivate ? 0.8 : isForest ? 0.9 : 1.0;
+  const c2 = 0.5;
+  const c7 = 0.8;
 
   let treatedPixel = selection(pixel, p, p_large);
   treatedPixel = {
@@ -145,7 +133,6 @@ const selectionChipTreeRemoval = (pixel: Pixel, p: number, p_large: number): Pix
   return treatedPixel;
 };
 
-// https://ucdavis.app.box.com/file/689378449650
 const calculatePValues = (pixels: Pixel[]) => {
   // first get cluster level data
   const pixelSum = getPixelSum(pixels);
@@ -168,12 +155,11 @@ const calculatePValues = (pixels: Pixel[]) => {
 
   const initial_ba = ba_15_cluster + ba_25_cluster + ba_35_cluster + ba_40_cluster;
 
-  // this is how much ba we will remove, since we are leaving the cluster with ba = residual_ba
-  const ba_removed = initial_ba - residual_ba;
-  if (ba_removed <= 0) {
-    // if initial_ba < residual_ba, we can't remove anything
+  if (initial_ba <= residual_ba) {
+    // if we can't remove any ba, throw an error
     throw new Error(`initial_ba(${initial_ba}) < residual_ba(${residual_ba})`);
   }
+
   p = 1 - residual_ba / initial_ba;
 
   if (
