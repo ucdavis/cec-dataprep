@@ -5,7 +5,7 @@ import { TreatedCluster } from 'models/treatedcluster';
 import { performance } from 'perf_hooks';
 import readline from 'readline';
 
-import { exportToCsv, getCsvWriteStream, processPixelsCsv } from './csvHelper';
+import { getCsvWriteStream } from './csvHelper';
 
 dotenv.config();
 
@@ -20,6 +20,8 @@ const interpolateYears = async (
   initialYear: number,
   yearsBetween: number
 ) => {
+  console.log(`interpolating ${county} from ${initialYear} to ${initialYear + yearsBetween}`);
+
   const t0 = performance.now();
 
   // grab yearsBetween number of output files
@@ -27,7 +29,8 @@ const interpolateYears = async (
 
   for (let i = 0; i < yearsBetween; i++) {
     const outputCsvStream = getCsvWriteStream(
-      (process.env.TREATED_OUT_DIRECTORY || './data/') + `${county}_${initialYear + i + 1}.csv`
+      (process.env.TREATED_OUT_DIRECTORY || './data/') +
+        `${county}_testout_${initialYear + i + 1}.csv`
     );
 
     outputFileStreams.push(outputCsvStream);
@@ -59,12 +62,28 @@ const interpolateYears = async (
   }
 
   // put headers into an array for object building later
-  const headers = headerBase.replace(/['"]+/g, '').split(',');
+  const headers = headerBase
+    .replace(/['"]+/g, '')
+    .split(',')
+    .map((h: string) => h.trim());
 
-  // TODO: eventually we just run until we hit the end of the file.
-  for (let index = 0; index < 3; index++) {
+  // run until we hit the end of the file.
+  let linesRead = 0;
+  let fileEnd = false;
+  while (!fileEnd) {
+    linesRead++;
+
+    if (linesRead % 50_000 === 0) {
+      console.log(`processed ${linesRead} lines`);
+    }
+
     const lineBase = await itBase.next();
     const lineFuture = await itFuture.next();
+
+    if (lineBase.done || lineFuture.done) {
+      fileEnd = true;
+      break;
+    }
 
     // get our pixel objects from each line
     const clusterBase = csvLineToTreatedCluster(headers, lineBase.value);
@@ -74,6 +93,8 @@ const interpolateYears = async (
     if (clusterBase.cluster_no !== clusterFuture.cluster_no) {
       throw new Error('cluster numbers do not match');
     }
+
+    // TODO: more checks? perhaps make sure year and county are the same as intended?
 
     // now we need to interpolate the pixel objects
     for (let j = 0; j < yearsBetween; j++) {
@@ -91,6 +112,9 @@ const interpolateYears = async (
 
   // close all the output streams
   outputFileStreams.forEach((o) => o.closeCsv());
+
+  const t1 = performance.now();
+  console.log('Running took ' + (t1 - t0) + ' milliseconds.');
 };
 
 const interpolateCluster = async (
@@ -132,7 +156,13 @@ const csvLineToTreatedCluster = (headers: string[], line: string): TreatedCluste
 };
 
 const initializeAndProcess = async () => {
-  await interpolateYears('./data/Yuba_2016_fake.csv', './data/Yuba_2020_fake.csv', 'Yuba', 2016, 4);
+  await interpolateYears(
+    './data/Tehama_fake_processed_2020.csv',
+    './data/Tehama_fake_processed_2025.csv',
+    'Tehama',
+    2020,
+    4
+  );
 };
 
 initializeAndProcess()
