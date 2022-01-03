@@ -20,7 +20,7 @@ const interpolateYears = async (
   initialYear: number,
   yearsBetween: number
 ) => {
-  console.log(`interpolating ${county} from ${initialYear} to ${initialYear + yearsBetween}`);
+  console.log(`interpolating ${county} from ${initialYear} to ${initialYear + yearsBetween + 1}`);
 
   const t0 = performance.now();
 
@@ -29,8 +29,7 @@ const interpolateYears = async (
 
   for (let i = 0; i < yearsBetween; i++) {
     const outputCsvStream = getCsvWriteStream(
-      (process.env.TREATED_OUT_DIRECTORY || './data/') +
-        `${county}_testout_${initialYear + i + 1}.csv`
+      (process.env.TREATED_OUT_DIRECTORY || './data/') + `${county}_${initialYear + i + 1}.csv`
     );
 
     outputFileStreams.push(outputCsvStream);
@@ -95,6 +94,9 @@ const interpolateYears = async (
     }
 
     // TODO: more checks? perhaps make sure year and county are the same as intended?
+    if (clusterBase.year !== initialYear || clusterFuture.year !== initialYear + yearsBetween + 1) {
+      throw new Error('years do not match');
+    }
 
     // now we need to interpolate the pixel objects
     for (let j = 0; j < yearsBetween; j++) {
@@ -157,8 +159,8 @@ const csvLineToTreatedCluster = (headers: string[], line: string): TreatedCluste
 
 const initializeAndProcess = async () => {
   await interpolateYears(
-    './data/Tehama_fake_processed_2020.csv',
-    './data/Tehama_fake_processed_2025.csv',
+    process.env.TREATED_BASE_FILE || './data/Tehama_fake_processed_2020.csv',
+    process.env.TREATED_FUTURE_FILE || './data/Tehama_fake_processed_2025.csv',
     'Tehama',
     2020,
     4
