@@ -111,8 +111,8 @@ create table substations
 	"County" text,
 	"Zip_Code" integer,
 	"State" text,
-	longitude numeric(1000),
-	latitude numeric(1000),
+	longitude double precision,
+	latitude double precision,
 	"Creator_Da" numeric(1000),
 	"highest_kV_lower" integer,
 	"highest_kV_upper" integer
