@@ -2,7 +2,7 @@
   "extends": ["tslint-eslint-rules"],
   "rules": {
     "arrow-return-shorthand": true,
-    "align": [true, "arguments", "elements", "members", "parameters", "statements"],
+    "align": [false, "arguments", "elements", "members", "parameters", "statements"],
     "callable-types": true,
     "class-name": true,
     "comment-format": [true, "check-space"],
