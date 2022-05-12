@@ -9,6 +9,8 @@ interface TreatedClusterInfo {
   county_name: string;
 }
 
+const cluster_no_property_name = 'DEM360';
+
 const process = (fileName: string): Promise<TreatedClusterInfo[]> => {
   return new Promise((resolve, reject) => {
     const file = fs.readFileSync(fileName);
@@ -17,21 +19,20 @@ const process = (fileName: string): Promise<TreatedClusterInfo[]> => {
 
     shp(file)
       .then((geojson: any) => {
-        // see bellow for whats here this internally call shp.parseZip()
         console.log('processed');
-        // console.log(geojson.features);
 
         const structuredResults: TreatedClusterInfo[] = geojson.features.map((result: any) => ({
-          cluster_no: result.properties.cluster_no,
+          cluster_no: result.properties[cluster_no_property_name],
           geography: {
             type: 'Feature',
-            id: result.properties.cluster_no,
+            id: result.properties[cluster_no_property_name],
             geometry: result.geometry,
           },
           county_name: 'NA',
         }));
 
-        console.log('example row', structuredResults[0]);
+        console.log('total clusters: ' + structuredResults.length);
+        console.log('example rows', structuredResults.slice(3));
 
         resolve(structuredResults);
       })
@@ -43,11 +44,12 @@ const upload = async (clusterInfo: TreatedClusterInfo[]) => {
   const db = knex({
     client: 'pg',
     connection: {
-      host: 'cecdss.postgres.database.azure.com',
-      user: 'cec@cecdss',
+      host: 'cecdssdb.postgres.database.azure.com',
+      user: 'cec',
       password: '',
       database: 'cecdss',
       port: 5432,
+      ssl: true,
     },
   });
 
@@ -60,6 +62,7 @@ const upload = async (clusterInfo: TreatedClusterInfo[]) => {
 
       // try with batch insert
       await txn.batchInsert('treatedclustersInfo', clusterInfo);
+      await txn.commit();
     });
   } catch (error) {
     console.error(error);
@@ -68,6 +71,7 @@ const upload = async (clusterInfo: TreatedClusterInfo[]) => {
   console.log('insert complete');
 };
 
-process('./data/Sierra_Nevada_shapes.zip')
+process('./data/CaliforniaClusters.zip')
+// process('./data/Sierra_Nevada_shapes.zip')
   .then(upload)
   .then(() => console.log('done'));
