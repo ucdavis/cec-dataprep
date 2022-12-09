@@ -18,7 +18,7 @@
   "dependencies": {
     "@rauschma/stringio": "^1.4.0",
     "@ucdavis/frcs": "^1.0.6",
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.20.1",
     "csv-parser": "^2.3.3",
     "dotenv": "^6.2.0",
     "event-stream": "^4.0.1",
