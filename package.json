@@ -16,33 +16,30 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@project-osrm/osrm": "^5.27.1",
     "@rauschma/stringio": "^1.4.0",
-    "@ucdavis/frcs": "^1.0.6",
-    "body-parser": "^1.18.3",
-    "csv-parser": "^2.3.3",
-    "dotenv": "^6.2.0",
+    "@ucdavis/frcs": "^2.0.0",
+    "body-parser": "^1.20.2",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.4.5",
     "event-stream": "^4.0.1",
     "fs": "0.0.1-security",
-    "geolib": "^3.3.1",
-    "knex": "^0.16.3",
-    "osrm": "5.22.0",
-    "pg": "^8.7.3",
+    "geolib": "^3.3.4",
+    "knex": "^3.1.0",
+    "pg": "^8.11.5",
     "ps": "^1.0.0",
-    "shpjs": "^3.6.3",
-    "srtm-elevation": "^2.0.0"
+    "shpjs": "^5.0.1",
+    "srtm-elevation": "^2.1.2"
   },
   "devDependencies": {
-    "@types/dotenv": "^6.1.0",
-    "@types/event-stream": "^3.3.34",
+    "@types/dotenv": "^6.1.1",
+    "@types/event-stream": "^4.0.5",
     "@types/geolib": "^2.0.23",
     "@types/knex": "^0.15.2",
-    "@types/node": "^10.12.21",
-    "@types/osrm": "^5.12.0",
-    "@types/pg": "^8.6.5",
-    "@types/shpjs": "^3.4.0",
-    "nodemon": "^1.18.9",
-    "tslint": "^5.20.1",
-    "tslint-eslint-rules": "^5.4.0",
-    "typescript": "^3.7.1"
+    "@types/node": "^20.12.13",
+    "@types/pg": "^8.11.6",
+    "@types/shpjs": "^3.4.7",
+    "nodemon": "^3.1.2",
+    "typescript": "^5.4.5"
   }
 }
