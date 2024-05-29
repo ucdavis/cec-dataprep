@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import OSRM from 'osrm';
+import OSRM from '@project-osrm/osrm';
 
 import { performance } from 'perf_hooks';
 
@@ -21,7 +21,7 @@ const treatments: Treatment[] = [
   { id: 8, name: 'tenPercentGroupSelection', land_use: 'Private,Forest' },
   { id: 9, name: 'twentyPercentGroupSelection', land_use: 'Private' },
   { id: 10, name: 'biomassSalvage', land_use: 'Private,Forest' },
-  { id: 99, name: 'noTreatment', land_use: 'Private,Forest' }
+  { id: 99, name: 'noTreatment', land_use: 'Private,Forest' },
 ];
 
 dotenv.config();
@@ -35,11 +35,11 @@ const processAllTreatments = async (clusterId: string, pixels: Pixel[], osrm: OS
     await Promise.all(
       treatments.map(async (treatment: Treatment) => {
         await processCluster(pixels, treatment.id, treatment.name, osrm)
-          .then(res => {
+          .then((res) => {
             console.log(`pushing results of ${clusterId}, ${treatment.name}`);
             results.push(res);
           })
-          .catch(err => {
+          .catch((err) => {
             console.log(`cannot push results of ${clusterId}, ${treatment.name}: ${err}`);
           });
       })
@@ -70,23 +70,20 @@ const processClustersStreaming = async () => {
   const promises: Promise<void>[] = [];
 
   // process the csv and get a callback each time a new cluster is read
-  await processPixelsCsv(
-    process.env.PIXEL_FILE || './data/Yuba_sorted.csv',
-    (cluster, pixels) => {
-      console.log(`there are ${pixels.length} pixels in cluster ${cluster}, processing now`);
+  await processPixelsCsv(process.env.PIXEL_FILE || './data/Yuba_sorted.csv', (cluster, pixels) => {
+    console.log(`there are ${pixels.length} pixels in cluster ${cluster}, processing now`);
 
-      // process the treatements for this cluster and write the results to the csv
-      promises.push(
-        processAllTreatments(cluster, pixels, osrm).then(treated => {
-          if (treated) {
-            outputCsvActions.writeTreatedClusters(treated);
-          }
+    // process the treatements for this cluster and write the results to the csv
+    promises.push(
+      processAllTreatments(cluster, pixels, osrm).then((treated) => {
+        if (treated) {
+          outputCsvActions.writeTreatedClusters(treated);
+        }
 
-          return;
-        })
-      );
-    }
-  );
+        return;
+      })
+    );
+  });
 
   // once we are done with all processing and writing our results
   await Promise.all(promises);

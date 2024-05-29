@@ -1,6 +1,6 @@
 import { getPreciseDistance } from 'geolib';
 import { CenterOfBiomassSum } from 'models/shared';
-import OSRM from 'osrm';
+import OSRM from '@project-osrm/osrm';
 import pg from 'pg';
 import { getElevation } from './elevation';
 import { Pixel, PixelVariablesClass } from './models/pixel';
@@ -11,20 +11,20 @@ import {
   mode,
   pixelsToAcreConstant,
   sumBiomass,
-  sumPixel
+  sumPixel,
 } from './pixelCalculations';
 import { processBiomassSalvage } from './treatments/biomassSalvage';
 import { processClearcut } from './treatments/clearcut';
 import {
   processCommercialThin,
-  processCommericalThinChipTreeRemoval
+  processCommericalThinChipTreeRemoval,
 } from './treatments/commercialThin';
 import { processGroupSelection } from './treatments/groupSelection';
 import { processNoTreatment } from './treatments/noTreatment';
 import { processSelection, processSelectionChipTreeRemoval } from './treatments/selection';
 import {
   processTimberSalvage,
-  processTimberSalvageChipTreeRemoval
+  processTimberSalvageChipTreeRemoval,
 } from './treatments/timberSalvage';
 
 const PG_DECIMAL_OID = 1700;
@@ -40,7 +40,7 @@ export const processCluster = async (
     const centerOfBiomassSum: CenterOfBiomassSum = {
       lat: 0,
       lng: 0,
-      biomassSum: 0
+      biomassSum: 0,
     };
     const year = pixels[0].year;
     try {
@@ -96,13 +96,13 @@ export const processCluster = async (
     // );
 
     const options: OSRM.NearestOptions = {
-      coordinates: [[centerOfBiomassLng, centerOfBiomassLat]]
+      coordinates: [[centerOfBiomassLng, centerOfBiomassLat]],
     };
     // console.log(`running osrm for treatment ${treatmentName}...`);
     await osrm.nearest(options, async (err, response) => {
       const landing = {
         latitude: response.waypoints[0].location[1],
-        longitude: response.waypoints[0].location[0]
+        longitude: response.waypoints[0].location[0],
       };
       // get distance between pixel and landing site
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
@@ -127,10 +127,10 @@ export const processCluster = async (
         cluster_no: pixels[0].cluster_no,
         county_name: pixels[0].county_name,
         land_use: pixels[0].land_use,
-        site_class: mode(pixels.map(p => p.site_class)), // get most common site class
-        forest_type: mode(pixels.map(p => p.forest_type)), // and forest type
-        haz_class: mode(pixels.map(p => p.haz_class)),
-        year: year
+        site_class: mode(pixels.map((p) => p.site_class)), // get most common site class
+        forest_type: mode(pixels.map((p) => p.forest_type)), // and forest type
+        haz_class: mode(pixels.map((p) => p.haz_class)),
+        year: year,
       };
 
       // https://ucdavis.app.box.com/file/553138812702
@@ -144,7 +144,7 @@ export const processCluster = async (
         // get distance between pixel and landing site
         let distance = getPreciseDistance(landing, {
           latitude: p.lat,
-          longitude: p.lng
+          longitude: p.lng,
         }); // meters
         distance = distance * metersToFeetConstant; // feet
         const biomass = sumBiomass(p) * 2000; // pounds
@@ -175,7 +175,7 @@ export const processCluster = async (
         area,
         mean_yarding: meanYardingDistance,
 
-        ...clusterBiomassData
+        ...clusterBiomassData,
       };
       resolve(output);
     });
