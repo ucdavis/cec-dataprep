@@ -8,7 +8,6 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "prebuild": "tslint -c tslint.json -p tsconfig.json",
     "build": "tsc",
     "dev": "npm run build && node .",
     "watch": "nodemon --watch . -e ts --exec npm run dev",
