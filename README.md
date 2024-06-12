@@ -31,7 +31,7 @@ HGT_FILES | Elevation info is automatically downloaded here | `./data`
 
 ## Running
 
-Make sure you are using node v10
+Make sure you are using node v16
 
 `npm install`
 
