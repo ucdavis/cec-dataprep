@@ -41,7 +41,7 @@ export const processCluster = async (
     const year = 2016;
 
     const firstCluster = treatedClusters[0]
-    const cluster_ID = firstCluster.DEM360
+    //const cluster_ID = firstCluster.DEM360
     //console.log(firstCluster['Treatment Name'])
 
     const centerOfBiomassLat = firstCluster.Lat;
@@ -65,7 +65,7 @@ export const processCluster = async (
       };
       // get distance between pixel and landing site
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
-      centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding ; // meters
+      centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding *metersToFeetConstant ; // meters to feet conversion
       const mean_yarding = ((0.002*(centerOfBiomassDistanceToLanding**2)+0.044*(centerOfBiomassDistanceToLanding))+137.5815) * metersToFeetConstant; // feet
 
       // get landing elevation
@@ -79,6 +79,12 @@ export const processCluster = async (
         centerOfBiomassLng
       );
       const centerOfBiomassElevation = centerOfBiomassElevationInMeters * metersToFeetConstant;
+      
+      let land_own = "private"
+      if (firstCluster.Land_Ownership !== null && firstCluster.Land_Ownership !== undefined && firstCluster.Land_Ownership !== '') {
+        land_own = firstCluster.Land_Ownership
+      }
+
 
       // get density
       //console.log(firstCluster.Forest_type)
@@ -103,7 +109,7 @@ export const processCluster = async (
         //cluster_ID.stem9Plus_tonsAcre = firstCluster.Stem9Plus_tonsAcre;
         cluster_ID.center_lng = centerOfBiomassLng;
         cluster_ID.center_lat = centerOfBiomassLat;
-        cluster_ID.land_use = firstCluster.Land_Ownership;
+        cluster_ID.land_use = land_own;
         cluster_ID.county_name = firstCluster.County;
         cluster_ID.forest_type = firstCluster.Forest_type;
         cluster_ID.site_class = '0';
