@@ -1,103 +1,62 @@
 import { getPreciseDistance } from 'geolib';
-import { CenterOfBiomassSum } from 'models/shared';
 import OSRM from '@project-osrm/osrm';
 import pg from 'pg';
 import { getElevation } from './elevation';
-import { Pixel, PixelVariablesClass } from './models/pixel';
 import { TreatedCluster } from './models/treatedcluster';
-import {
-  convertClusterUnits,
-  metersToFeetConstant,
-  mode,
-  pixelsToAcreConstant,
-  sumBiomass,
-  sumPixel,
-} from './pixelCalculations';
-import { processBiomassSalvage } from './treatments/biomassSalvage';
-import { processClearcut } from './treatments/clearcut';
-import {
-  processCommercialThin,
-  processCommericalThinChipTreeRemoval,
-} from './treatments/commercialThin';
-import { processGroupSelection } from './treatments/groupSelection';
-import { processNoTreatment } from './treatments/noTreatment';
-import { processSelection, processSelectionChipTreeRemoval } from './treatments/selection';
-import {
-  processTimberSalvage,
-  processTimberSalvageChipTreeRemoval,
-} from './treatments/timberSalvage';
+import fs from 'fs';
+import csv from 'csv-parser';
+
+const metersToFeetConstant = 3.28084;
 
 const PG_DECIMAL_OID = 1700;
 pg.types.setTypeParser(PG_DECIMAL_OID, parseFloat);
 
-export const processCluster = async (
-  pixels: Pixel[],
-  treatmentId: number,
-  treatmentName: string,
-  osrm: OSRM
-): Promise<TreatedCluster> => {
-  return new Promise(async (resolve, reject) => {
-    const centerOfBiomassSum: CenterOfBiomassSum = {
-      lat: 0,
-      lng: 0,
-      biomassSum: 0,
-    };
-    const year = pixels[0].year;
-    try {
-      switch (treatmentName) {
-        case 'clearcut':
-          pixels = processClearcut(pixels, centerOfBiomassSum, 'clearcut');
-          break;
-        case 'commercialThin':
-          pixels = processCommercialThin(pixels, centerOfBiomassSum);
-          break;
-        case 'commercialThinChipTreeRemoval':
-          pixels = processCommericalThinChipTreeRemoval(pixels, centerOfBiomassSum);
-          break;
-        case 'timberSalvage':
-          pixels = processTimberSalvage(pixels, centerOfBiomassSum);
-          break;
-        case 'timberSalvageChipTreeRemoval':
-          pixels = processTimberSalvageChipTreeRemoval(pixels, centerOfBiomassSum);
-          break;
-        case 'selection':
-          pixels = processSelection(pixels, centerOfBiomassSum, 'selection');
-          break;
-        case 'selectionChipTreeRemoval':
-          pixels = processSelectionChipTreeRemoval(pixels, centerOfBiomassSum);
-          break;
-        case 'tenPercentGroupSelection':
-          pixels = processGroupSelection(pixels, centerOfBiomassSum, 10);
-          break;
-        case 'twentyPercentGroupSelection':
-          pixels = processGroupSelection(pixels, centerOfBiomassSum, 20);
-          break;
-        case 'biomassSalvage':
-          pixels = processBiomassSalvage(pixels, centerOfBiomassSum);
-          break;
-        case 'noTreatment':
-          pixels = processNoTreatment(pixels, centerOfBiomassSum);
-          break;
-        default:
-          throw new Error('Unknown treatment option: ' + treatmentName);
-      }
-      if (centerOfBiomassSum.biomassSum < 1) {
-        throw new Error(`No useable biomass found in cluster under ${treatmentName}.`);
-      }
-    } catch (err) {
-      reject(err);
-      return;
-    }
+// read wood density from CSV, create lookup table
+const loadWoodDensity = (filePath: string): Promise<Map<string, number>> => {
+  return new Promise((resolve, reject) => {
+    const woodDensity = new Map<string, number>();
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (row) => {
+        woodDensity.set(row.ForestType, parseFloat(row.Density));
+      })
+      .on('end', () => {
+        resolve(woodDensity);
+      })
+      .on('error', reject);
+  });
+};
 
-    const centerOfBiomassLat = centerOfBiomassSum.lat / centerOfBiomassSum.biomassSum;
-    const centerOfBiomassLng = centerOfBiomassSum.lng / centerOfBiomassSum.biomassSum;
-    // console.log(
-    // `${treatmentName}: lat: ${centerOfBiomassLat}, lng: ${centerOfBiomassLng}, sum: ${centerOfBiomassSum.biomassSum}`
-    // );
+// Load the forest density data (update the file path as needed)
+const woodDensityMapPromise = loadWoodDensity('data/Density_for_Volume.csv');
+
+export const processCluster = async (
+  treatedClusters: TreatedCluster[],
+  osrm: OSRM,
+
+): Promise<TreatedCluster[]> => {
+  const woodDensityMap = await woodDensityMapPromise;
+
+  return new Promise(async (resolve, reject) => {
+    const year = 2016;
+
+    const firstCluster = treatedClusters[0]
+    //const cluster_ID = firstCluster.DEM360
+    //console.log(firstCluster['Treatment Name'])
+
+    const centerOfBiomassLat = firstCluster.Lat;
+    const centerOfBiomassLng = firstCluster.Lon;
+    //console.log(centerOfBiomassLat,centerOfBiomassLng)
+
+    const centerElevationInMeters = await getElevation(centerOfBiomassLat,centerOfBiomassLng);
+    const centerElevation = centerElevationInMeters*metersToFeetConstant;
+    //console.log(centerElevation)
 
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]],
     };
+    //console.log('landing',options)
+
     // console.log(`running osrm for treatment ${treatmentName}...`);
     await osrm.nearest(options, async (err, response) => {
       const landing = {
@@ -106,78 +65,68 @@ export const processCluster = async (
       };
       // get distance between pixel and landing site
       let centerOfBiomassDistanceToLanding = response.waypoints[0].distance;
-      centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding * metersToFeetConstant; // feet
+      centerOfBiomassDistanceToLanding = centerOfBiomassDistanceToLanding *metersToFeetConstant ; // meters to feet conversion
+      const mean_yarding = ((0.002*(centerOfBiomassDistanceToLanding**2)+0.044*(centerOfBiomassDistanceToLanding))+137.5815) * metersToFeetConstant; // feet
 
       // get landing elevation
       const landingElevationInMeters = await getElevation(landing.latitude, landing.longitude);
       const landingElevation = landingElevationInMeters * metersToFeetConstant;
 
-      const area = pixels.length * pixelsToAcreConstant; // pixels are 30m^2, area needs to be in acres
+      const area = 32.024857 ; // pixels are 1.296000e+05m^2 according to the expanse() function in R, area needs to be in acres
 
       const centerOfBiomassElevationInMeters = await getElevation(
         centerOfBiomassLat,
         centerOfBiomassLng
       );
       const centerOfBiomassElevation = centerOfBiomassElevationInMeters * metersToFeetConstant;
+      
+      let land_own = "private"
+      if (firstCluster.Land_Ownership !== null && firstCluster.Land_Ownership !== undefined && firstCluster.Land_Ownership !== '') {
+        land_own = firstCluster.Land_Ownership
+      }
 
-      // initialize sum with important variables, 0 everything else
-      let pixelSummation = new PixelVariablesClass();
-      pixelSummation = {
-        ...pixelSummation,
-        cluster_no: pixels[0].cluster_no,
-        county_name: pixels[0].county_name,
-        land_use: pixels[0].land_use,
-        site_class: mode(pixels.map((p) => p.site_class)), // get most common site class
-        forest_type: mode(pixels.map((p) => p.forest_type)), // and forest type
-        haz_class: mode(pixels.map((p) => p.haz_class)),
-        year: year,
-      };
 
-      // https://ucdavis.app.box.com/file/553138812702
-      let totalBiomassDistance = 0;
-      let totalBiomass = 0;
+      // get density
+      //console.log(firstCluster.Forest_type)
+      const wood_density = woodDensityMap.get(firstCluster.Forest_type) || 589.68; //kg/m^3, 589.68 is the average wood density of all forest types in the USDA raster
+      //console.log(wood_density)
 
-      pixels.forEach((p, i) => {
-        // pixel summation is the sum of each pixel
-        // and each pixel is in tons/acre, trees/acre, etc
-        pixelSummation = sumPixel(pixelSummation, p);
-        // get distance between pixel and landing site
-        let distance = getPreciseDistance(landing, {
-          latitude: p.lat,
-          longitude: p.lng,
-        }); // meters
-        distance = distance * metersToFeetConstant; // feet
-        const biomass = sumBiomass(p) * 2000; // pounds
-        totalBiomass += biomass;
-        totalBiomassDistance += distance * biomass; // feet
-      });
-
-      // when we use this in the back end, multiply meanYardingDistance * SQRT(1+slope^2)
-      // for ground and cable
-      const meanYardingDistance = totalBiomassDistance / totalBiomass;
+      //NEVER READ
+      //const meanYardingDistance = 6 //totalBiomassDistance / totalBiomass;
 
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
         100;
 
-      // convert from summation of (biomass/acre) to total per acre
-      const clusterBiomassData = convertClusterUnits(pixelSummation, pixels.length);
 
-      const output: TreatedCluster = {
-        treatmentid: treatmentId,
-        landing_lng: landing.longitude,
-        landing_lat: landing.latitude,
-        landing_elevation: landingElevation,
-        center_lng: centerOfBiomassLng,
-        center_lat: centerOfBiomassLat,
-        center_elevation: centerOfBiomassElevation,
-        slope: averageSlope,
-        area,
-        mean_yarding: meanYardingDistance,
-
-        ...clusterBiomassData,
-      };
-      resolve(output);
+      //update treated clusters with new data
+      treatedClusters.forEach((cluster_ID) => {
+        cluster_ID.cluster_no = firstCluster.DEM360;
+        cluster_ID.foliage_tonsAcre = firstCluster.Foliage_tonsAcre;
+        //cluster_ID.branch_tonsAcre = firstCluster.Branch_tonsAcre;
+        //cluster_ID.stem4to6_tonsAcre = firstCluster.Stem4to6_tonsAcre;
+        //cluster_ID.stem6to9_tonsAcre = firstCluster.Stem6to9_tonsAcre;
+        //cluster_ID.stem9Plus_tonsAcre = firstCluster.Stem9Plus_tonsAcre;
+        cluster_ID.center_lng = centerOfBiomassLng;
+        cluster_ID.center_lat = centerOfBiomassLat;
+        cluster_ID.land_use = land_own;
+        cluster_ID.county_name = firstCluster.County;
+        cluster_ID.forest_type = firstCluster.Forest_type;
+        cluster_ID.site_class = '0';
+        cluster_ID.haz_class = firstCluster.Hazard_Class;
+        //cluster_ID.treatment = firstCluster['Treatment Name'];
+        cluster_ID.center_elevation = centerElevation;
+        cluster_ID.landing_lat = landing.latitude;
+        cluster_ID.landing_lng = landing.longitude;
+        cluster_ID.landing_elevation = landingElevation; 
+        cluster_ID.area = area;
+        cluster_ID.mean_yarding = mean_yarding; //need to change
+        cluster_ID.slope = averageSlope;
+        cluster_ID.year = year;
+        cluster_ID.wood_density = wood_density;
+      })
+      
+      resolve(treatedClusters);
     });
   });
 };
