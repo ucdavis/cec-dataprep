@@ -139,3 +139,13 @@ insert into treatments values
   (9,'twentyPercentGroupSelection','Private'),
   (10,'biomassSalvage','Private,Forest')
   
+
+-- Create the url table
+CREATE TABLE url (
+    url_id bigserial PRIMARY KEY,
+    all_year_inputs varchar(10000) NOT NULL,
+    biomass_coordinates varchar(10000) NOT NULL,
+    frcs_inputs varchar(10000) NOT NULL,
+    transport_inputs varchar(10000) NOT NULL,
+    short_url varchar(100) NOT NULL
+);
