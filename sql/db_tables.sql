@@ -141,11 +141,11 @@ insert into treatments values
   
 
 -- Create the url table
-CREATE TABLE url (
-    url_id bigserial PRIMARY KEY,
-    all_year_inputs varchar(10000) NOT NULL,
-    biomass_coordinates varchar(10000) NOT NULL,
-    frcs_inputs varchar(10000) NOT NULL,
-    transport_inputs varchar(10000) NOT NULL,
-    short_url varchar(100) NOT NULL
+create table url (
+    url_id bigserial primary key,
+    all_year_inputs varchar(10000) not null,
+    biomass_coordinates varchar(10000) not null,
+    frcs_inputs varchar(10000) not null,
+    transport_inputs varchar(10000) not null,
+    short_url varchar(100) not null
 );
