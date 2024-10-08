@@ -139,3 +139,29 @@ insert into treatments values
   (9,'twentyPercentGroupSelection','Private'),
   (10,'biomassSalvage','Private,Forest')
   
+
+-- Create the url table
+create table url (
+    url_id bigserial primary key,
+    all_year_inputs varchar(10000) not null,
+    biomass_coordinates varchar(10000) not null,
+    frcs_inputs varchar(10000) not null,
+    transport_inputs varchar(10000) not null,
+    short_url varchar(100) not null
+);
+
+CREATE TABLE user_details (
+    id SERIAL PRIMARY KEY,
+    full_name VARCHAR(1000) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    organization VARCHAR(1000) NOT NULL,
+    org_type VARCHAR(100) NOT NULL,
+    org_website VARCHAR(10000),
+    job_title VARCHAR(255) NOT NULL,
+    linkedin VARCHAR(1000),
+    expertise VARCHAR(100),
+    about_me TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_details_email ON user_details(email);
