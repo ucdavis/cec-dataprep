@@ -143,11 +143,9 @@ insert into treatments values
 -- Create the url table
 CREATE TABLE url (
     url_id SERIAL PRIMARY KEY,
-    all_year_inputs TEXT NOT NULL,
-    biomass_coordinates TEXT NOT NULL,
-    frcs_inputs TEXT NOT NULL,
-    transport_inputs TEXT NOT NULL,
-    short_url VARCHAR(100) NOT NULL
+    data JSONB NOT NULL,
+    short_url VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create the user_details table
