@@ -139,3 +139,29 @@ insert into treatments values
   (9,'twentyPercentGroupSelection','Private'),
   (10,'biomassSalvage','Private,Forest')
   
+
+-- Create the url table
+CREATE TABLE url (
+    url_id SERIAL PRIMARY KEY,
+    data JSONB NOT NULL,
+    short_url VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the user_details table
+CREATE TABLE user_details (
+    id SERIAL PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    organization VARCHAR(100) NOT NULL,
+    org_type VARCHAR(50) NOT NULL,
+    org_website VARCHAR(255),
+    job_title VARCHAR(100) NOT NULL,
+    linkedin VARCHAR(255),
+    expertise VARCHAR(50),
+    about_me TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index on email in user_details
+CREATE INDEX idx_user_details_email ON user_details(email);
