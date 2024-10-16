@@ -22,7 +22,7 @@ const processClustersStreaming = async () => {
   const promises: Promise<void>[] = [];
 
   // process the csv and get a callback each time a new cluster is read
-  await processTreatedClustersCsv(process.env.PIXEL_FILE || './data/small_GLRBT.csv', (cluster_ID, treatedClusters) => {
+  await processTreatedClustersCsv(process.env.PIXEL_FILE || './data/complete_GLRBT_2025.csv', (cluster_ID, treatedClusters) => {
     console.log(`there are ${treatedClusters.length} rows in cluster ${cluster_ID}, processing now`);
     // process the treatements for this cluster and write the results to the csv
     promises.push(

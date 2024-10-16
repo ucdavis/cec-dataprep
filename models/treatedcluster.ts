@@ -2,11 +2,11 @@ export interface TreatedCluster {
   DEM360: string;
   cluster_no: string;
   'Treatment Name': string;
-  treatmentid: string;
+  treatmentid: number;
   center_lng: number;
-  Lon: number;
+  lng: number;
   center_lat: number;
-  Lat: number;
+  lat: number;
   Stem6to9_tonsAcre: number;
   stem6to9_tonsAcre: number;
   Stem4to6_tonsAcre: number;

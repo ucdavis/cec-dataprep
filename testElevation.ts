@@ -1,7 +1,7 @@
-import { getElevation } from './elevation';
+import { getElevation } from './elevation_alt';
 
 const testElevation = async () => {
-  const elevation = await getElevation(39.29701, -121.2147);
+  const elevation = await getElevation(41.1, -123.1);
 
   return elevation;
 };

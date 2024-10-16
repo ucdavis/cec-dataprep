@@ -12,11 +12,9 @@ The Wiki contains information on running the dataprep on the UC Davis Farm compu
 
 ## Preparing data
 
-1. Create a folder called `data` in the project root
-
-1. Add OSRM data to the `data` folder. You can create an OSRM extract yourself by following the guides at the official OSRM website. We also provide a custom OSRM extract which is available at (TBD - coming soon)
-
-1. Add your input files wherever you would like, by default they normall go in the `data` folder as well
+1. Download the data folder from box at the following link: https://ucdavis.box.com/s/bmyts3ps4e04yxs7uw7jla8bltq4rezp
+2. Place it in the project root and rename it "data"
+3. When running 2025 data, leave the file names as they are. When running 2030 data, change line 25 in index.ts to './data/complete_GLRBT_2030.csv' instead of './data/complete_GLRBT_2025.csv'
 
 ## Setting environmental variables
 
