@@ -1,7 +1,7 @@
 import { getPreciseDistance } from 'geolib';
 import OSRM from '@project-osrm/osrm';
 import pg from 'pg';
-import { getElevation } from './elevation';
+import { getElevation } from './elevation_alt';
 import { TreatedCluster } from './models/treatedcluster';
 import fs from 'fs';
 import csv from 'csv-parser';
@@ -38,14 +38,13 @@ export const processCluster = async (
   const woodDensityMap = await woodDensityMapPromise;
 
   return new Promise(async (resolve, reject) => {
-    const year = 2016;
-
+    
     const firstCluster = treatedClusters[0]
     //const cluster_ID = firstCluster.DEM360
     //console.log(firstCluster['Treatment Name'])
-
-    const centerOfBiomassLat = firstCluster.Lat;
-    const centerOfBiomassLng = firstCluster.Lon;
+    const year = firstCluster.year;
+    const centerOfBiomassLat = firstCluster.lat;
+    const centerOfBiomassLng = firstCluster.lng;
     //console.log(centerOfBiomassLat,centerOfBiomassLng)
 
     const centerElevationInMeters = await getElevation(centerOfBiomassLat,centerOfBiomassLng);
@@ -120,7 +119,7 @@ export const processCluster = async (
         cluster_ID.landing_lng = landing.longitude;
         cluster_ID.landing_elevation = landingElevation; 
         cluster_ID.area = area;
-        cluster_ID.mean_yarding = mean_yarding; //need to change
+        cluster_ID.mean_yarding = mean_yarding; 
         cluster_ID.slope = averageSlope;
         cluster_ID.year = year;
         cluster_ID.wood_density = wood_density;

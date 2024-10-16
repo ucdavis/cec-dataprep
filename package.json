@@ -23,16 +23,20 @@
     "dotenv": "^16.4.5",
     "event-stream": "^4.0.1",
     "fs": "0.0.1-security",
+    "gdal": "^0.11.1",
     "geolib": "^3.3.4",
+    "geotiff": "^2.1.3",
     "knex": "^3.1.0",
     "pg": "^8.11.5",
     "ps": "^1.0.0",
     "shpjs": "^5.0.1",
-    "srtm-elevation": "^2.1.2"
+    "srtm-elevation": "^2.1.2",
+    "tiff.js": "^1.0.0"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
     "@types/event-stream": "^4.0.5",
+    "@types/gdal": "^0.9.6",
     "@types/geolib": "^2.0.23",
     "@types/knex": "^0.15.2",
     "@types/node": "^20.12.13",
