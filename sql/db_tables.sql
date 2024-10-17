@@ -90,6 +90,10 @@ create table "treatedclustersInfo"
 	county_name text
 );
 
+alter table "treatedclustersInfo"
+	add constraint treatedclustersinfo_pk
+		unique (cluster_no);
+
 create table substations
 (
 	objectid integer,
