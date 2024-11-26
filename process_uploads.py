@@ -1,3 +1,7 @@
+# Process the split csv files by adding them to the db
+# And moving the file to the "upload _completed" folder
+# If there's an error it will be moved to the "error_files" folder
+
 import psycopg2
 import os
 import shutil
@@ -20,10 +24,10 @@ def create_error_dir():
 def connect_to_db():
     try:
         conn = psycopg2.connect(
-            host='localhost',
-            dbname='cecdss2',
-            user='aunsh',
-            password='!@QW12qwaszx',
+            host='hostname',
+            dbname='dbname',
+            user='username',
+            password='password',
             port='5432'
         )
         return conn
@@ -69,11 +73,9 @@ if not os.path.exists(split_dir):
     print(f"Error: Directory {split_dir} not found!")
     sys.exit(1)
 
-# Create necessary directories
 completed_dir = create_completed_dir()
 error_dir = create_error_dir()
 
-# Connect to database
 conn = connect_to_db()
 print('Connected to db')
 cur = conn.cursor()

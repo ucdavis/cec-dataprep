@@ -15,11 +15,10 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     print("Created 'split_files' directory")
 
-# Dictionary to store rows by county and year
 county_year_data = {}
 
 # Count total input rows (excluding header)
-print("Counting total input rows...")
+print("Counting total input rows")
 with open(input_file, 'r') as infile:
     total_input_rows = sum(1 for line in infile) - 1
 print(f"Total input rows (excluding header): {total_input_rows}")
@@ -33,7 +32,7 @@ with open(input_file, 'r') as infile:
     for row in reader:
         processed_rows += 1
         if len(row) > 23:
-            # If we have extra columns, combine land_use fields
+            # If we have extra columns (which is a consistent error that was found), combine land_use fields
             row[14] = row[14] + ' ' + row[15]  # Combine land_use fields
             row = row[:15] + row[16:]  # Remove the extra field
         
