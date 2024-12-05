@@ -1,5 +1,3 @@
-# Split the data into county_year.csv files and check if all rows are exported
-
 import csv
 import os
 import sys
@@ -17,34 +15,42 @@ if not os.path.exists(output_dir):
 
 county_year_data = {}
 
-# Count total input rows (excluding header)
 print("Counting total input rows")
 with open(input_file, 'r') as infile:
     total_input_rows = sum(1 for line in infile) - 1
 print(f"Total input rows (excluding header): {total_input_rows}")
 
-print("\nReading and splitting file...")
+print("\nReading and splitting file")
 with open(input_file, 'r') as infile:
     reader = csv.reader(infile)
-    headers = next(reader)
-    processed_rows = 0
+    original_headers = next(reader)
+    clean_headers = [h.replace(' ', '').lower() for h in original_headers]
     
+    print("Original headers:", original_headers)
+    print("Cleaned headers:", clean_headers)
+    
+    land_use_index = clean_headers.index('land_use')
+    county_index = clean_headers.index('county_name')
+    year_index = clean_headers.index('year')
+    
+    processed_rows = 0
     for row in reader:
         processed_rows += 1
-        if len(row) > 23:
-            # If we have extra columns (which is a consistent error that was found), combine land_use fields
-            row[14] = row[14] + ' ' + row[15]  # Combine land_use fields
-            row = row[:15] + row[16:]  # Remove the extra field
         
-        county = row[13]
-        year = row[2]
+        if len(row) > 23:
+            row[land_use_index] = f"{row[land_use_index + 1]} {row[land_use_index]}"
+            row = row[:land_use_index + 1] + row[land_use_index + 2:]
+        
+        county = row[county_index]
+        year = row[year_index]
         key = (county, year)
         
         if key not in county_year_data:
-            county_year_data[key] = [headers]
-        county_year_data[key].append(row)
+            county_year_data[key] = [clean_headers[:23]]
+        
+        county_year_data[key].append(row[:23])
 
-print("\nCreating county/year files...")
+print("\nCreating county/year files")
 total_output_rows = 0
 file_counts = []
 
@@ -63,7 +69,7 @@ print("\nRow Count Summary:")
 print(f"Total input rows: {total_input_rows}")
 print(f"Total output rows: {total_output_rows}")
 if total_input_rows == total_output_rows:
-    print("✓ Row counts match!")
+    print("Counts match for the rows")
 else:
     print(f"! Row count mismatch: Difference of {abs(total_input_rows - total_output_rows)} rows")
 
