@@ -17,16 +17,16 @@ CREATE TABLE treatedclusters (
 	land_use text, 
 	forest_type text, 
 	haz_class int4, 
-	"Stem6to9_tonsAcre" double precision, 
-	"Stem4to6_tonsAcre" double precision, 
-	"Stem9Plus_tonsAcre" double precision, 
-	"Branch_tonsAcre" double precision, 
-	"Foliage_tonsAcre" double precision,
-	wood_density float4
+	stem6to9_tonsacre double precision, 
+	stem4to6_tonsacre double precision, 
+	stem9Plus_tonsacre double precision, 
+	branch_tonsacre double precision, 
+	foliage_tonsacre double precision,
+	wood_density double precision
 );
 
 -- Index on the treatedclusters table 
-CREATE TABLE idx_find_clusters
+CREATE INDEX idx_find_clusters
 	on treatedclusters (year, treatmentid, center_lat, center_lng, haz_class, land_use, cluster_no);
 
 -- Create table for clusters information
