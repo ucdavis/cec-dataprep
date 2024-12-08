@@ -86,7 +86,7 @@ INSERT INTO treatments VALUES
   (8,'TFB_20','Private,Forest'),
   (9,'TFB_40','Private'),
   (10,'TFB_60','Private,Forest'),
-  (11,'TFB_80','Private,Forest'),
+  (11,'TFB_80','Private,Forest');
   
 
 -- Create the url table
