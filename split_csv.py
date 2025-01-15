@@ -1,3 +1,7 @@
+# This files splits the GLBRT_processed data into smaller files county_name_year.csv in a files 'split_files'
+# For entries with no county name the entries will be added to No County_year.csv
+# Pass the second argument is the relative path of the processed data
+
 import csv
 import os
 import sys
@@ -42,6 +46,8 @@ with open(input_file, 'r') as infile:
             row = row[:land_use_index + 1] + row[land_use_index + 2:]
         
         county = row[county_index]
+        if not county.strip():
+            county = "No County"
         year = row[year_index]
         key = (county, year)
         

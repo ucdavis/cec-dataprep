@@ -1,6 +1,7 @@
 # Process the split csv files by adding them to the db
-# And moving the file to the "upload _completed" folder
-# If there's an error it will be moved to the "error_files" folder
+# And moving the file to the "upload_completed" folder
+# If there's an error (mostly will be in the file name) it will be moved to the "error_files" folder
+# Pass the second argument as the relative path of the 'split_files' csv folder (you'll get this folder after running split_csv.py)
 
 import psycopg2
 import os
@@ -18,7 +19,7 @@ VALID_COUNTIES = {
     'Santa Clara', 'Sierra', 'Alpine', 'Napa', 'Glenn', 'Amador',
     'Colusa', 'Stanislaus', 'Yuba', 'Marin', 'Yolo', 'Santa Cruz',
     'Alameda', 'Merced', 'Contra Costa', 'San Mateo', 'San Joaquin',
-    'Solano', 'Orange', 'Imperial', 'Sacramento', 'Sutter', 'Kings', 'San Francisco'
+    'Solano', 'Orange', 'Imperial', 'Sacramento', 'Sutter', 'Kings', 'San Francisco', 'No County'
 }
 
 def create_completed_dir():
@@ -38,10 +39,10 @@ def create_error_dir():
 def connect_to_db():
     try:
         conn = psycopg2.connect(
-            host='localhost',
-            dbname='cecdss2',
-            user='aunsh',
-            password='!@QW12qwaszx',
+            host='host',
+            dbname='db',
+            user='username',
+            password='password',
             port='5432'
         )
         return conn
@@ -66,7 +67,7 @@ def upload_file(cur, file_path):
         landing_elevation, center_lat, center_lng, center_elevation, 
         slope, area, mean_yarding, site_class, county_name, 
         land_use, forest_type, haz_class, stem6to9_tonsacre, 
-        stem4to6_tonsacre, stem9Plus_tonsacre, branch_tonsacre, 
+        stem4to6_tonsacre, stem9plus_tonsacre, branch_tonsacre, 
         foliage_tonsacre, wood_density
     ) FROM STDIN DELIMITER ',' CSV HEADER """
     

@@ -19,7 +19,7 @@ CREATE TABLE treatedclusters (
 	haz_class int4, 
 	stem6to9_tonsacre double precision, 
 	stem4to6_tonsacre double precision, 
-	stem9Plus_tonsacre double precision, 
+	stem9plus_tonsacre double precision, 
 	branch_tonsacre double precision, 
 	foliage_tonsacre double precision,
 	wood_density double precision
