@@ -12,7 +12,7 @@ export interface TreatedCluster {
   Stem4to6_tonsAcre: number;
   stem4to6_tonsAcre: number;
   Stem9Plus_tonsAcre: number;
-  stem9Plus_tonsAcre: number;
+  stem9plus_tonsacre: number;
   Branch_tonsAcre: number;
   branch_tonsAcre: number;
   Foliage_tonsAcre: number;
@@ -31,7 +31,7 @@ export interface TreatedCluster {
   area: number;
   landing_lng: number;
   landing_lat: number;
-  landing_elevation: number;  
+  landing_elevation: number;
   mean_yarding: number;
   year: number;
   wood_density: number;
