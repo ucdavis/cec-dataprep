@@ -3,11 +3,13 @@ import shp from 'shpjs';
 
 import knex from 'knex';
 
+
 interface TreatedClusterInfo {
   cluster_no: number;
   geography: any;
   county_name: string;
 }
+
 
 const cluster_no_property_name = 'DEM360';
 
@@ -71,7 +73,6 @@ const upload = async (clusterInfo: TreatedClusterInfo[]) => {
   console.log('insert complete');
 };
 
-process('./data/CaliforniaClusters.zip')
-// process('./data/Sierra_Nevada_shapes.zip')
+process('./data/clusters.zip')
   .then(upload)
   .then(() => console.log('done'));
