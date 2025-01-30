@@ -39,11 +39,12 @@
     "@types/gdal": "^0.9.6",
     "@types/geolib": "^2.0.23",
     "@types/knex": "^0.15.2",
-    "@types/node": "^20.12.13",
+    "@types/node": "^20.17.16",
     "@types/pg": "^8.11.6",
     "@types/project-osrm__osrm": "^5.27.3",
     "@types/shpjs": "^3.4.7",
     "nodemon": "^3.1.2",
     "typescript": "^5.4.5"
-  }
+  },
+  "type": "module"
 }

@@ -5,6 +5,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+#Py files and data processing
+my_env
+upload_completed
+error_files
+split_files
+.DS_Store
+
 # Runtime data
 pids
 *.pid
