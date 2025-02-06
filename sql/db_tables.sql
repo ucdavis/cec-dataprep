@@ -48,7 +48,7 @@ CREATE TABLE "treatedclustersInfo"
 
  -- treatedclustersInfo table single-column index                                                                                                  
  CREATE INDEX idx_treatedclustersInfo_cluster_no                                                                                                   
- ON treatedclustersInfo (cluster_no); 
+ ON "treatedclustersInfo" (cluster_no); 
 
 -- Create substation table
 CREATE TABLE substations
