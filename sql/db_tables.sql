@@ -25,10 +25,19 @@ CREATE TABLE treatedclusters (
 	wood_density double precision
 );
 
--- Index on the treatedclusters table 
-CREATE INDEX idx_find_clusters
-	on treatedclusters (year, treatmentid, center_lat, center_lng, haz_class, land_use, cluster_no);
-
+ -- treatedclusters table composite indexes                                                                                                        
+ CREATE INDEX idx_treatedclusters_treatmentid_year                                                                                                 
+ ON treatedclusters (treatmentid, year);                                                                                                           
+                                                                                                                                                   
+ CREATE INDEX idx_treatedclusters_center_lat_lng                                                                                                   
+ ON treatedclusters (center_lat, center_lng);                                                                                                      
+                                                                                                                                                                                                                                                     
+ CREATE INDEX idx_treatedclusters_land_use                                                                                                         
+ ON treatedclusters (land_use);                                                                                                                    
+                                                                                                                                                   
+ CREATE INDEX idx_treatedclusters_cluster_no                                                                                                       
+ ON treatedclusters (cluster_no);                                                                                                                  
+                                           
 -- Create table for clusters information
 CREATE TABLE "treatedclustersInfo"
 (
@@ -36,6 +45,10 @@ CREATE TABLE "treatedclustersInfo"
 	geography json,
 	county_name text
 );
+
+ -- treatedclustersInfo table single-column index                                                                                                  
+ CREATE INDEX idx_treatedclustersInfo_cluster_no                                                                                                   
+ ON treatedclustersInfo (cluster_no); 
 
 -- Create substation table
 CREATE TABLE substations
