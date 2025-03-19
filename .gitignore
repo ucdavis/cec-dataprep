@@ -7,6 +7,7 @@ yarn-error.log*
 
 #Py files and data processing
 my_env
+venv
 upload_completed
 error_files
 split_files
