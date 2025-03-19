@@ -12,7 +12,7 @@ if len(sys.argv) != 2:
 
 input_file = sys.argv[1]
 
-output_dir = 'split_files'
+output_dir = '../../data/split_files'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     print("Created 'split_files' directory")

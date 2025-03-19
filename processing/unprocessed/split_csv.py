@@ -1,22 +1,23 @@
 # This script splits data into smaller files by county_name in a 'unprocessed_counties_2030' directory
 # For entries with no county name the entries will be added to No County.csv
 # Usage: python split_unprocessed.py giant-file.csv
-# Run the file - python split_unprocessed.py RELATIVE_PATH_OF_GLBRT_2030_DATA.CSV
+# Run the file - python split_unprocessed.py RELATIVE_PATH_OF_GLBRT_2030_DATA.CSV 2030 | python program_name file_name year
 
 import csv
 import os
 import sys
 
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     print('Usage: python split_unprocessed.py giant-file.csv')
     sys.exit()
 
 input_file = sys.argv[1]
+year = sys.argv[2]
 
-output_dir = '../data/unprocessed_counties_2030'
+output_dir = f"../../data/unprocessed_counties/{year}"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
-    print("Created 'unprocessed_counties_2030' directory")
+    print(f"Created 'unprocessed_counties_{year}' directory")
 
 county_data = {}
 
@@ -34,8 +35,6 @@ with open(input_file, 'r') as infile:
     print("Original headers:", original_headers)
     print("Cleaned headers:", clean_headers)
     
-    # Find the county index in the headers
-    # Looking at the screenshots, "county_name" or "County" could be the column name
     county_index = None
     for potential_name in ['county_name', 'county']:
         try:
@@ -56,10 +55,9 @@ with open(input_file, 'r') as infile:
         if processed_rows % 1000 == 0:
             print(f"Processed {processed_rows} rows...")
         
-        # Handle potential issues with row length
         if len(row) != len(original_headers):
             print(f"Warning: Row {processed_rows} has {len(row)} columns, expected {len(original_headers)}")
-            # Try to fix by truncating or padding
+            # Truncating/ padding
             if len(row) > len(original_headers):
                 row = row[:len(original_headers)]
             else:
@@ -79,7 +77,7 @@ total_output_rows = 0
 file_counts = []
 
 for county, rows in county_data.items():
-    rows_in_file = len(rows) - 1  # Subtract 1 for the header
+    rows_in_file = len(rows) - 1 
     total_output_rows += rows_in_file
     
     # Replace any special characters in county name for filename
@@ -101,7 +99,7 @@ if total_input_rows == total_output_rows:
 else:
     print(f"! Row count mismatch: Difference of {abs(total_input_rows - total_output_rows)} rows")
 
-print(f"\nCreated {len(county_data)} files in 'unprocessed_counties_2030' directory")
+print(f"\nCreated {len(county_data)} files in 'unprocessed_counties_{year}' directory")
 
 print("\nDetailed file counts (sorted by row count):")
 for filename, count in sorted(file_counts, key=lambda x: x[1], reverse=True):
