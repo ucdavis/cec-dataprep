@@ -1,21 +1,27 @@
 #!/bin/bash -l
 # Name of the job
 #SBATCH -J county-process
-# Standard out and Standard Error output files with the job number in the name
 #SBATCH -o slurm-county-process-%A_%a.output
 #SBATCH -e slurm-county-process-%A_%a.error
-# Ask for enough memory to hold our CSV contents
-#SBATCH --mem 8000
-# Increase to 8GB for node memory
-export NODE_OPTIONS="--max-old-space-size=8192"
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=3
+#SBATCH --time=1:00:00
+#SBATCH --mem=64G
+#SBATCH --no-requeue
+#SBATCH --account=adamgrp
+#SBATCH --partition=high
 
-# Print the hostname for debugging purposes
-hostname
+module load node-js/20.15.1-scagana
+module load npm/10.9.0-4tdev2b
+module load conda
+module load python/3.13.0-xf4zxxe
 
-# Year parameter with default value
+export OSRM_FILE="/scratch/cecdss/california-latest.osrm"
+export INPUT_FOLDER="./data/unprocessed_counties"
+export PROCESSED_FOLDER="./data/processed_files"
+
 YEAR=${1:-2030}
 
-# Define the array of county names
 declare -a COUNTIES=(
   "alameda" "alpine" "amador" "butte" "calaveras" "colusa" "contra_costa"
   "del_norte" "el_dorado" "fresno" "glenn" "humboldt" "imperial" "inyo"
@@ -28,27 +34,12 @@ declare -a COUNTIES=(
   "tuolumne" "ventura" "yolo" "yuba" "no_county"
 )
 
-# We will use array index to select which county to process
 COUNTY=${COUNTIES[$SLURM_ARRAY_TASK_ID]}
 
 echo "Processing county: $COUNTY for year: $YEAR"
 
-# Set environment variables for the processing script
-export OSRM_FILE="/home/YOUR_USERNAME/osrm-data/california-latest.osrm"
-export INPUT_FOLDER="/home/YOUR_USERNAME/data/unprocessed_counties"
-export PROCESSED_FOLDER="/home/YOUR_USERNAME/data/processed_files"
-
-# Make sure the output directory exists
-mkdir -p $PROCESSED_FOLDER/$YEAR
-
-# Load the conda environment
-module load conda3
 source activate cec
 
-# Change to the working directory
-cd $SLURM_SUBMIT_DIR
-
-# Run the processing script with the parameters
 npm run process $YEAR $COUNTY
 
 echo "Finished processing $COUNTY for year $YEAR"
