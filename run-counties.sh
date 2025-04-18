@@ -10,7 +10,7 @@
 #SBATCH --mem=64G
 #SBATCH --no-requeue
 #SBATCH --account=adamgrp
-#SBATCH --partition=high
+#SBATCH --partition=high (check access, srun)
 
 echo "Running on $(hostname)"
 
@@ -23,13 +23,15 @@ YEAR=${1:-2030}
 
 NUM_COUNTIES=58  
 
-export OSRM_FILE="/scratch/cecdss/california-latest.osrm"
-export INPUT_FOLDER="./data/unprocessed_counties"
-export PROCESSED_FOLDER="./data/processed_files"
+export OSRM_FILE="./data/california-latest.osrm"
+export INPUT_FOLDER="./data/unprocessed_split_files"
+export PROCESSED_FOLDER="./data/processed_split_files"
+
+npm install 
+npm run build
 
 echo "Submitting array job to process all counties for year $YEAR"
 
-# --array=0-58 means process all 59 counties (indices 0 to 58)
 sbatch --array=0-$NUM_COUNTIES process-counties.sh $YEAR
 
 echo "Job submitted. Monitor with 'squeue -u \$USER'"
