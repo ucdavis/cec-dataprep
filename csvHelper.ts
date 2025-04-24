@@ -40,7 +40,6 @@ export const processTreatedClustersCsv = (
         if (data.DEM360 === currentCluster) {
           // we are still in the current cluster, let's add to the pixels list
           currentTreatedClusters.push({ ...data });
-          
         } else {
           // we are in a new cluster, so callback that the previous cluster
           if (currentTreatedClusters.length > 0) {
@@ -56,6 +55,10 @@ export const processTreatedClustersCsv = (
       .on('error', reject)
       .on('end', () => {
         console.log('done reading file');
+        // Process the final cluster before resolving
+        if (currentTreatedClusters.length > 0) {
+          clusterReady(currentCluster, [...currentTreatedClusters]);
+        }
         resolve();
       });
   });

@@ -13,6 +13,7 @@ export interface TreatedCluster {
   stem4to6_tonsAcre: number;
   Stem9Plus_tonsAcre: number;
   stem9plus_tonsacre: number;
+  stem9Plus_tonsAcre: number;
   Branch_tonsAcre: number;
   branch_tonsAcre: number;
   Foliage_tonsAcre: number;
