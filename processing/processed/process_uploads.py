@@ -69,7 +69,7 @@ def fix_and_upload_csv_files(split_files_dir):
             
             # Upload the temporary file
             with open(temp_file_path, 'r') as f:
-                copy_sql = """ COPY treatedclusters_test_v1(
+                copy_sql = """ COPY treatedclusters(
                     cluster_no, treatmentid, year, landing_lat, landing_lng, 
                     landing_elevation, center_lat, center_lng, center_elevation, 
                     slope, area, mean_yarding, site_class, county_name, 

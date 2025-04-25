@@ -40,21 +40,16 @@ export const processCluster = async (
   return new Promise(async (resolve, reject) => {
     
     const firstCluster = treatedClusters[0]
-    //const cluster_ID = firstCluster.DEM360
-    //console.log(firstCluster['Treatment Name'])
     const year = firstCluster.year;
     const centerOfBiomassLat = firstCluster.lat;
     const centerOfBiomassLng = firstCluster.lng;
-    //console.log(centerOfBiomassLat,centerOfBiomassLng)
 
     const centerElevationInMeters = await getElevation(centerOfBiomassLat,centerOfBiomassLng);
     const centerElevation = centerElevationInMeters*metersToFeetConstant;
-    //console.log(centerElevation)
 
     const options: OSRM.NearestOptions = {
       coordinates: [[centerOfBiomassLng, centerOfBiomassLat]],
     };
-    //console.log('landing',options)
 
     // console.log(`running osrm for treatment ${treatmentName}...`);
     await osrm.nearest(options, async (err, response) => {
@@ -92,18 +87,12 @@ export const processCluster = async (
       }
 
       // get density
-      //console.log(firstCluster.Forest_type)
       const wood_density = woodDensityMap.get(firstCluster.Forest_type) || 589.68; //kg/m^3, 589.68 is the average wood density of all forest types in the USDA raster
-      //console.log(wood_density)
-
-      //NEVER READ
-      //const meanYardingDistance = 6 //totalBiomassDistance / totalBiomass;
 
       const averageSlope =
         Math.abs((landingElevation - centerOfBiomassElevation) / centerOfBiomassDistanceToLanding) *
         100;
 
-      //update treated clusters with new data
       treatedClusters.forEach((cluster_ID) => {
         cluster_ID.cluster_no = firstCluster.DEM360;
         cluster_ID.foliage_tonsAcre = firstCluster.Foliage_tonsAcre;
@@ -118,7 +107,6 @@ export const processCluster = async (
         cluster_ID.forest_type = firstCluster.Forest_type ?? '';
         cluster_ID.site_class = '0';
         cluster_ID.haz_class = firstCluster.Hazard_Class ?? 0;
-        //cluster_ID.treatment = firstCluster['Treatment Name'];
         cluster_ID.center_elevation = centerElevation;
         cluster_ID.landing_lat = landing.latitude;
         cluster_ID.landing_lng = landing.longitude;
