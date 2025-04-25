@@ -12,7 +12,7 @@ source activate cec
 # Checkout to a different branch
 git checkout CECDP-09
 
-export OSRM_FILE="../data/california-latest.osrm"
+export OSRM_FILE="./data/california-latest.osrm"
 export TREATED_OUT_FILE =  '../data/GLRBT_processed_2025.csv'
 export PIXEL_FILE = '../data/complete_GLRBT_2025.csv'
 

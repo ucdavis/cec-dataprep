@@ -12,17 +12,17 @@ dotenv.config();
 
 const processClustersStreaming = async () => {
   // get our ORSM instance we will use for all cluster processing
-  const osrm = new OSRM(process.env.OSRM_FILE || '../data/california-latest.osrm');
+  const osrm = new OSRM(process.env.OSRM_FILE || './data/california-latest.osrm');
 
   // open our output csv for writing
   const outputCsvActions = getCsvWriteStream(
-    process.env.TREATED_OUT_FILE || '../data/GLRBT_processed_2025.csv'
+    process.env.TREATED_OUT_FILE || './data/GLRBT_processed_2025.csv'
   );
 
   const promises: Promise<void>[] = [];
 
   // process the csv and get a callback each time a new cluster is read
-  await processTreatedClustersCsv(process.env.PIXEL_FILE || '../data/complete_GLRBT_2025.csv', (cluster_ID, treatedClusters) => {
+  await processTreatedClustersCsv(process.env.PIXEL_FILE || './data/complete_GLRBT_2025.csv', (cluster_ID, treatedClusters) => {
     console.log(`there are ${treatedClusters.length} rows in cluster ${cluster_ID}, processing now`);
     // process the treatements for this cluster and write the results to the csv
     promises.push(
