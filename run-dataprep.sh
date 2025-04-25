@@ -4,6 +4,8 @@
 #SBATCH --time=1-00:00
 #SBATCH --mem=64G
 #SBATCH --output=cecdataprep_output_%j.txt
+#SBATCH -o slurm-run-counties-%A_%a.output
+#SBATCH -e slurm-run-counties-%A_%a.error
 
 # NOTE: you need to have your conda env setup before running!
 module load conda
