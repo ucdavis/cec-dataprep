@@ -5,7 +5,6 @@ import psycopg2
 import shutil
 
 def fix_and_upload_csv_files(split_files_dir):
-    # Create output directories
     processed_dir = 'upload_completed'
     error_dir = 'error_files'
     
@@ -14,13 +13,12 @@ def fix_and_upload_csv_files(split_files_dir):
             os.makedirs(directory)
             print(f"Created '{directory}' directory")
     
-    # Connect to database
     try:
         conn = psycopg2.connect(
             host='localhost',
-            dbname='cecdssv2',
-            user='aunsh',
-            password='!@QW12qwaszx',
+            dbname='db',
+            user='user',
+            password='pass',
             port='5432'
         )
         cur = conn.cursor()
@@ -29,7 +27,6 @@ def fix_and_upload_csv_files(split_files_dir):
         print(f"Error connecting to database: {str(e)}")
         sys.exit(1)
     
-    # Get list of CSV files
     csv_files = [f for f in os.listdir(split_files_dir) if f.endswith('.csv')]
     total_files = len(csv_files)
     print(f"\nFound {total_files} CSV files to process")
