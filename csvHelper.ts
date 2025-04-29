@@ -55,10 +55,6 @@ export const processTreatedClustersCsv = (
       .on('error', reject)
       .on('end', () => {
         console.log('done reading file');
-        // Process the final cluster before resolving
-        if (currentTreatedClusters.length > 0) {
-          clusterReady(currentCluster, [...currentTreatedClusters]);
-        }
         resolve();
       });
   });
@@ -86,7 +82,6 @@ export const getCsvWriteStream = (
 
       const lineData = [];
 
-      // loop through each header value and write the property, then newline when finished
       for (let j = 0; j < headerSplit.length; j++) {
         const col = headerSplit[j].trim();
         lineData.push(tc[col]);
@@ -121,7 +116,6 @@ export const exportToCsv = async (treatedClusters: TreatedCluster[], filePath: s
     writeStream.write(header + '\n');
 
     for (let index = 0; index < treatedClusters.length; index++) {
-      // need to cast treated cluster to any so we can dynamically index its values
       const tc: any = treatedClusters[index];
 
       const lineData = [];

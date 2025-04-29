@@ -42,9 +42,8 @@ def fix_and_upload_csv_files(split_files_dir):
             # Read the CSV file and fix the land_use column issue
             with open(file_path, 'r') as f:
                 reader = csv.reader(f)
-                headers = next(reader)  # Get headers
+                headers = next(reader)
                 
-                # Create a temporary file with fixed rows
                 temp_file_path = os.path.join(split_files_dir, f"temp_{filename}")
                 with open(temp_file_path, 'w', newline='') as temp_f:
                     writer = csv.writer(temp_f)
@@ -64,7 +63,6 @@ def fix_and_upload_csv_files(split_files_dir):
                         # Write only the first 23 columns to ensure proper format
                         writer.writerow(row[:23])
             
-            # Upload the temporary file
             with open(temp_file_path, 'r') as f:
                 copy_sql = """ COPY treatedclusters(
                     cluster_no, treatmentid, year, landing_lat, landing_lng, 
@@ -78,33 +76,23 @@ def fix_and_upload_csv_files(split_files_dir):
                 cur.copy_expert(copy_sql, f)
                 conn.commit()
                 print(f"Successfully uploaded {filename}")
-                
-                # Move original file to completed directory
                 shutil.move(file_path, os.path.join(processed_dir, filename))
-                
-                # Remove temporary file
                 os.remove(temp_file_path)
-                
                 processed_count += 1
                 
         except Exception as e:
             conn.rollback()
             print(f"Error processing {filename}: {str(e)}")
             
-            # Move file to error directory
             shutil.move(file_path, os.path.join(error_dir, filename))
-            
-            # Clean up temporary file if it exists
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
                 
             error_count += 1
     
-    # Close database connection
     cur.close()
     conn.close()
     
-    # Print summary
     print("\nProcessing Summary:")
     print(f"Total files found: {total_files}")
     print(f"Successfully processed: {processed_count}")

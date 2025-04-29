@@ -80,7 +80,6 @@ for county, rows in county_data.items():
     rows_in_file = len(rows) - 1 
     total_output_rows += rows_in_file
     
-    # Replace any special characters in county name for filename
     safe_county = county.replace(' ', '_').replace('/', '_').replace('\\', '_')
     output_file = os.path.join(output_dir, f"{safe_county}.csv")
     

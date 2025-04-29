@@ -11,7 +11,6 @@ input_file = sys.argv[1]
 output_dir = './split_files_2025'  # Create in current directory
 
 try:
-    # Create directory and all necessary parent directories
     os.makedirs(output_dir, exist_ok=True)
     print(f"Using output directory: {os.path.abspath(output_dir)}")
 except Exception as e:
@@ -53,7 +52,7 @@ with open(input_file, 'r') as infile:
         if len(clean_headers) > 23:
             temp_headers = clean_headers[:land_use_index + 1] + clean_headers[land_use_index + 2:]
             
-        # These are the fields we want to check for null values
+        # THese are the fields we want to check for null values
         biomass_fields = ['stem4to6_tonsacre', 'stem6to9_tonsacre', 'stem9plus_tonsacre', 'branch_tonsacre', 'foliage_tonsacre']
         
         # Replace null biomass values with '0'
@@ -63,7 +62,6 @@ with open(input_file, 'r') as infile:
                 if index < len(row) and (not row[index] or row[index].lower() in ('null', 'none')):
                     row[index] = 0
             except ValueError:
-                # Field not found in headers
                 continue
                 
         county = row[county_index]
