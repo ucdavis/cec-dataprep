@@ -40,7 +40,6 @@ export const processTreatedClustersCsv = (
         if (data.DEM360 === currentCluster) {
           // we are still in the current cluster, let's add to the pixels list
           currentTreatedClusters.push({ ...data });
-          
         } else {
           // we are in a new cluster, so callback that the previous cluster
           if (currentTreatedClusters.length > 0) {
@@ -83,7 +82,6 @@ export const getCsvWriteStream = (
 
       const lineData = [];
 
-      // loop through each header value and write the property, then newline when finished
       for (let j = 0; j < headerSplit.length; j++) {
         const col = headerSplit[j].trim();
         lineData.push(tc[col]);
@@ -118,7 +116,6 @@ export const exportToCsv = async (treatedClusters: TreatedCluster[], filePath: s
     writeStream.write(header + '\n');
 
     for (let index = 0; index < treatedClusters.length; index++) {
-      // need to cast treated cluster to any so we can dynamically index its values
       const tc: any = treatedClusters[index];
 
       const lineData = [];

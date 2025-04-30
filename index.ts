@@ -16,7 +16,7 @@ const processClustersStreaming = async () => {
 
   // open our output csv for writing
   const outputCsvActions = getCsvWriteStream(
-    process.env.TREATED_OUT_FILE || './data/GLRBT_processed.csv'
+    process.env.TREATED_OUT_FILE || './data/GLRBT_processed_2025.csv'
   );
 
   const promises: Promise<void>[] = [];
